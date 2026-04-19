@@ -1,12 +1,20 @@
+require('dotenv').config()
+
 const express = require('express')
 const cors = require('cors')
-require('dotenv').config()
+const mongoose = require('mongoose')
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
 app.use(express.json())
+const animalsRouter = require('./routes/animals')
+app.use('/api/animals', animalsRouter)
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB підключено!'))
+  .catch((err) => console.log('Помилка підключення:', err))
 
 app.get('/', (req, res) => {
   res.json({ message: 'SafeTails API працює!' })
