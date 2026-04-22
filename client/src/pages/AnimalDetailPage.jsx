@@ -5,6 +5,8 @@ function AnimalDetailPage() {
   const { id } = useParams()
   const [animal, setAnimal] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [donated, setDonated] = useState(false)
+  const [amount, setAmount] = useState('')
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/animals/${id}`)
@@ -15,6 +17,11 @@ function AnimalDetailPage() {
       })
       .catch(() => setLoading(false))
   }, [id])
+
+  const handleDonate = () => {
+    if (!amount || amount <= 0) return alert('Введіть суму донату')
+    setDonated(true)
+  }
 
   if (loading) return <p>Завантаження...</p>
   if (!animal) return <p>Тварину не знайдено</p>
@@ -30,6 +37,22 @@ function AnimalDetailPage() {
       <p>Вік: {animal.age}</p>
       <p>Опис: {animal.description}</p>
       <p>Статус: {animal.status}</p>
+
+      <hr />
+      <h2>Recovery Fund — допоможи тварині</h2>
+      {donated ? (
+        <p>Дякуємо за ваш донат! 🐾</p>
+      ) : (
+        <div>
+          <input
+            type="number"
+            placeholder="Сума в грн"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+          />
+          <button onClick={handleDonate}>Задонатити</button>
+        </div>
+      )}
     </div>
   )
 }
