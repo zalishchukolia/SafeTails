@@ -6,7 +6,7 @@ function AnimalsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/animals')
+    fetch('https://safetails-production.up.railway.app/api/animals')
       .then(res => res.json())
       .then(data => {
         setAnimals(data)

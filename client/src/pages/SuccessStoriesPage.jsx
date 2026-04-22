@@ -5,7 +5,7 @@ function SuccessStoriesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/success-stories')
+    fetch('https://safetails-production.up.railway.app/api/success-stories')
       .then(res => res.json())
       .then(data => {
         setStories(data)

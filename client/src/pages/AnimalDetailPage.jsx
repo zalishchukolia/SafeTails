@@ -9,7 +9,7 @@ function AnimalDetailPage() {
   const [amount, setAmount] = useState('')
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/animals/${id}`)
+    fetch(`https://safetails-production.up.railway.app/api/animals/${id}`)
       .then(res => res.json())
       .then(data => {
         setAnimal(data)
