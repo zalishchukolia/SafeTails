@@ -9,17 +9,20 @@ const PORT = process.env.PORT || 3001
 
 app.use(cors())
 app.use(express.json())
-const animalsRouter = require('./routes/animals')
-app.use('/api/animals', animalsRouter)
+
+app.use('/api/animals', require('./routes/animals'))
+app.use('/api/adoptions', require('./routes/adoptions'))
+app.use('/api/success-stories', require('./routes/successStories'))
+app.use('/api/donations', require('./routes/donations'))
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB підключено!'))
-  .catch((err) => console.log('Помилка підключення:', err))
+  .then(() => console.log('✅ MongoDB підключено!'))
+  .catch((err) => console.log('❌ Помилка підключення:', err))
 
 app.get('/', (req, res) => {
-  res.json({ message: 'SafeTails API працює!' })
+  res.json({ message: 'SafeTails API працює! 🐾' })
 })
 
 app.listen(PORT, () => {
-  console.log(`Сервер запущено на порті ${PORT}`)
+  console.log(`🚀 Сервер запущено на порті ${PORT}`)
 })
