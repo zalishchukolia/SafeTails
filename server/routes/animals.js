@@ -7,6 +7,12 @@ router.get('/', async (req, res) => {
   res.json(animals)
 })
 
+router.get('/:id', async (req, res) => {
+  const animal = await Animal.findById(req.params.id)
+  if (!animal) return res.status(404).json({ message: 'Not found' })
+  res.json(animal)
+})
+
 router.post('/', async (req, res) => {
   const animal = new Animal(req.body)
   await animal.save()
