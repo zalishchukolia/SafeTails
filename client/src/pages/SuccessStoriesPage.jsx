@@ -5,7 +5,7 @@ function SuccessStoriesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/success-stories')
+    fetch(`${import.meta.env.VITE_API_URL}/api/success-stories`)
       .then(res => res.json())
       .then(data => {
         setStories(data)

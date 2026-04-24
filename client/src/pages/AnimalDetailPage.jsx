@@ -9,7 +9,7 @@ function AnimalDetailPage() {
   const [amount, setAmount] = useState('')
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/animals/${id}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/animals/${id}`)
       .then(res => res.json())
       .then(data => {
         setAnimal(data)
