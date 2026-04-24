@@ -16,7 +16,7 @@ function AdoptionFormPage() {
 
   const handleSubmit = e => {
     e.preventDefault()
-    fetch('https://safetails-production.up.railway.app/api/adoptions', {
+    fetch(`${import.meta.env.VITE_API_URL}/api/adoptions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)

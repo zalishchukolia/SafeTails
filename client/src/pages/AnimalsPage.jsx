@@ -6,7 +6,7 @@ function AnimalsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('https://safetails-production.up.railway.app/api/animals')
+    fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
       .then(res => res.json())
       .then(data => {
         setAnimals(data)
