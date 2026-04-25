@@ -10,7 +10,7 @@ import AdoptionFormPage from './pages/AdoptionFormPage'
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#0d0d0d] text-white">
+      <div style={{ minHeight: '100vh', background: '#141414', color: '#fff' }}>
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
