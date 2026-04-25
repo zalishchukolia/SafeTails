@@ -18,10 +18,21 @@ function AnimalDetailPage() {
       .catch(() => setLoading(false))
   }, [id])
 
-  const handleDonate = () => {
-    if (!amount || amount <= 0) return alert('Введіть суму донату')
-    setDonated(true)
-  }
+ const handleDonate = () => {
+  if (!amount || amount <= 0) return alert('Введіть суму донату')
+  
+  fetch(`${import.meta.env.VITE_API_URL}/api/donations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      animalId: id,
+      amount: Number(amount)
+    })
+  })
+    .then(res => res.json())
+    .then(() => setDonated(true))
+    .catch(() => alert('Помилка при відправці донату'))
+}
 
   if (loading) return <p>Завантаження...</p>
   if (!animal) return <p>Тварину не знайдено</p>
