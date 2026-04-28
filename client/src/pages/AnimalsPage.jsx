@@ -30,7 +30,6 @@ function useLeaflet(mapRef, pins, onPinClick) {
   const instanceRef = useRef(null)
 
   useEffect(() => {
-    if (!mapRef.current || instanceRef.current) return
 
     // Leaflet CSS
     if (!document.getElementById('leaflet-css')) {
