@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function AnimalsPage() {
   const [animals, setAnimals] = useState([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
@@ -20,6 +21,7 @@ function AnimalsPage() {
   return (
     <div>
       <h1>Каталог тварин</h1>
+
       {animals.length === 0 ? (
         <p>Тварин поки немає</p>
       ) : (
@@ -29,11 +31,32 @@ function AnimalsPage() {
               {animal.imageUrl && (
                 <img src={animal.imageUrl} alt={animal.name} width="200" />
               )}
+
               <h2>{animal.name}</h2>
               <p>Вид: {animal.species}</p>
               <p>Вік: {animal.age}</p>
               <p>Статус: {animal.status}</p>
+
               <Link to={`/animals/${animal._id}`}>Детальніше</Link>
+
+              <button
+                onClick={() =>
+                  navigate('/adoption-form', {
+                    state: { animalName: animal.name }
+                  })
+                }
+                style={{
+                  marginLeft: '12px',
+                  padding: '8px 14px',
+                  background: '#ff6b2b',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Подати заявку
+              </button>
             </div>
           ))}
         </div>
