@@ -7,6 +7,7 @@ const animalSchema = new mongoose.Schema({
   description: { type: String },
   status: { type: String, default: 'needs rescue' },
   imageUrl: { type: String },
+  temperament: { type: String, enum: ['спокійний', 'активний', 'грайливий', 'лагідний', 'незалежний'], default: 'спокійний' },
 }, { timestamps: true })
 
 module.exports = mongoose.model('Animal', animalSchema)
