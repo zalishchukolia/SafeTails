@@ -2,6 +2,11 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const Animal = require('./models/Animal')
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('❌ Seed заборонено в production!')
+  process.exit(1)
+}
+
 const animals = [
   { name: 'Барні', species: 'собака', age: 3, description: 'Дружній лабрадор', status: 'needs rescue', temperament: 'лагідний' },
   { name: 'Луна', species: 'кіт', age: 2, description: 'Ласкава кішечка', status: 'needs rescue', temperament: 'спокійний' },
