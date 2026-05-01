@@ -15,6 +15,18 @@ const BASE_COORDS = [
   [22.30, 49.83], [37.80, 48.97], [25.34, 48.92], [29.10, 47.60],
 ]
 
+// ✅ FALLBACK — показується коли backend недоступний
+const MOCK_ANIMALS = [
+  { _id: '0001', name: 'Buddy',   species: 'пес', age: 2, status: 'needs rescue',  description: 'Found roaming Highway 101. Malnourished but friendly. Needs immediate medical attention.', imageUrl: null },
+  { _id: '0002', name: 'Luna',    species: 'кіт', age: 1, status: 'rescued',       description: 'Rescued feline, safely arrived at Shelter Alpha. Doing well.', imageUrl: null },
+  { _id: '0003', name: 'Rex',     species: 'пес', age: 4, status: 'needs rescue',  description: 'Injured stray near Industrial Zone. Possible dehydration.', imageUrl: null },
+  { _id: '0004', name: 'Murzyk',  species: 'кіт', age: 3, status: 'in recovery',  description: 'In care at Medical Hub South. Recovering from injury.', imageUrl: null },
+  { _id: '0005', name: 'Bars',    species: 'пес', age: 5, status: 'needs rescue',  description: 'Spotted near Warehouse A4. Appears frightened.', imageUrl: null },
+  { _id: '0006', name: 'Sніжка', species: 'кіт', age: 2, status: 'rescued',       description: 'Rescued from flooded area. Now safe at Shelter Beta.', imageUrl: null },
+  { _id: '0007', name: 'Зірка',  species: 'пес', age: 6, status: 'in recovery',   description: 'Under veterinary observation. Expected full recovery.', imageUrl: null },
+  { _id: '0008', name: 'Тигр',   species: 'кіт', age: 1, status: 'needs rescue',  description: 'Kitten found alone near train station. Very young.', imageUrl: null },
+]
+
 const FEED = [
   { type:'critical', time:'2m ago',  title:'Injured stray – Industrial Zone', desc:'German Shepherd near Warehouse A4. Possible dehydration.', action:'Dispatch Unit' },
   { type:'progress', time:'12m ago', title:'Transport: Unit RR-02', desc:'Heading to: Medical Hub South' },
@@ -22,12 +34,12 @@ const FEED = [
 ]
 
 function AnimalCard({ animal, onClose }) {
-  const urgency = getUrgency(animal.status)
-  const color   = getColor(urgency)
-  const label   = getLabel(animal.status)
-  const idStr   = String(animal._id || '0001').slice(-4).toUpperCase()
-  const isCat   = animal.species === 'кіт'
-  const age     = animal.age
+  const urgency  = getUrgency(animal.status)
+  const color    = getColor(urgency)
+  const label    = getLabel(animal.status)
+  const idStr    = String(animal._id || '0001').slice(-4).toUpperCase()
+  const isCat    = animal.species === 'кіт'
+  const age      = animal.age
   const ageLabel = age === 1 ? 'рік' : age < 5 ? 'роки' : 'років'
 
   return (
@@ -139,12 +151,9 @@ function initMap(container, animals) {
 
     marker.on('click', function(e) {
       e.originalEvent.stopPropagation()
-      const event = new CustomEvent('animalPinClick', {
-        detail: animal,
-        bubbles: true,
-        cancelable: false,
-      })
-      window.dispatchEvent(event)
+      window.dispatchEvent(new CustomEvent('animalPinClick', {
+        detail: animal, bubbles: true, cancelable: false,
+      }))
     })
 
     marker.addTo(map)
@@ -158,8 +167,16 @@ function LeafletMap({ animals }) {
   const mapRef = useRef(null)
 
   useEffect(() => {
-    if (!animals.length) return
+    // ✅ Завантажуємо Leaflet CSS одразу при монтуванні
+    if (!document.getElementById('lf-css')) {
+      const l = document.createElement('link')
+      l.id = 'lf-css'; l.rel = 'stylesheet'
+      l.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+      document.head.appendChild(l)
+    }
+  }, [])
 
+  useEffect(() => {
     const load = () => new Promise(res => {
       if (window.L) return res()
       const s = document.createElement('script')
@@ -167,13 +184,6 @@ function LeafletMap({ animals }) {
       s.onload = res
       document.head.appendChild(s)
     })
-
-    if (!document.getElementById('lf-css')) {
-      const l = document.createElement('link')
-      l.id = 'lf-css'; l.rel = 'stylesheet'
-      l.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      document.head.appendChild(l)
-    }
 
     load().then(() => {
       if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
@@ -209,22 +219,19 @@ function LeafletMap({ animals }) {
 }
 
 export default function AnimalsPage() {
-  const [animals, setAnimals] = useState([])
+  const [animals, setAnimals] = useState(MOCK_ANIMALS) // ✅ одразу мок — не чекаємо API
   const [sel,     setSel]     = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // ✅ false — карта без спінера одразу
 
   useEffect(() => {
     fetch('https://safetails-production-8790.up.railway.app/api/animals')
       .then(r => r.json())
-      .then(d => { setAnimals(d); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then(d => { if (d && d.length) setAnimals(d) }) // ✅ замінюємо мок реальними даними якщо прийшли
+      .catch(() => {}) // мовчки — мок вже показується
   }, [])
 
   useEffect(() => {
-    const handler = e => {
-      console.log('PIN CLICKED:', e.detail)
-      setSel(e.detail)
-    }
+    const handler = e => { console.log('PIN CLICKED:', e.detail); setSel(e.detail) }
     window.addEventListener('animalPinClick', handler)
     return () => window.removeEventListener('animalPinClick', handler)
   }, [])
@@ -334,15 +341,8 @@ export default function AnimalsPage() {
             ))}
           </div>
 
-          {loading && (
-            <div style={{ position:'absolute', inset:0, background:'#07070f', display:'flex', alignItems:'center', justifyContent:'center', zIndex:500, flexDirection:'column', gap:14 }}>
-              <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-              <div style={{ width:34, height:34, border:'2px solid #1e1e30', borderTop:'2px solid #ff6b2b', borderRadius:'50%', animation:'spin .8s linear infinite' }}/>
-              <div style={{ color:'#555', fontSize:11, fontFamily:mono, letterSpacing:2 }}>LOADING MAP...</div>
-            </div>
-          )}
-
-          {!loading && <LeafletMap animals={animals} />}
+          {/* ✅ Карта завжди рендериться, спінера немає */}
+          <LeafletMap animals={animals} />
 
           {sel && <AnimalCard animal={sel} onClose={() => setSel(null)} />}
         </div>
