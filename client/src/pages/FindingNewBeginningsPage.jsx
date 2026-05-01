@@ -1,46 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 const font = "'DM Sans', 'Inter', sans-serif"
 const mono = "'DM Mono', 'Courier New', monospace"
 
-const PETS = [
-  {
-    id: 1, name: 'Cooper', age: '2 YEARS', status: 'CRISIS CASE', statusColor: '#ff6b2b', statusBg: '#ff6b2b22',
-    desc: '"Recovered from the Sector 4 flood zone. Resilient, playful, and loves water."',
-    stars: 3, gender: 'HIM', emoji: '🐕', cardBg: '#f0e6d0', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#e8956d,#d4734a)',
-  },
-  {
-    id: 2, name: 'Luna', age: '4 YEARS', status: 'SAFE HAVEN', statusColor: '#22c55e', statusBg: '#22c55e22',
-    desc: '"A calm soul who prefers quiet afternoons and sun-drenched window sills."',
-    stars: 2, gender: 'HER', emoji: '🐈‍⬛', cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#0a0a0a,#1a1a2e)',
-  },
-  {
-    id: 3, name: 'Barnaby', age: '6 MONTHS', status: 'ACTIVE PULSE', statusColor: '#ff6b2b', statusBg: '#ff6b2b22',
-    desc: '"Full of energy and needs an active companion for mountain trail runs."',
-    stars: 4, gender: 'HIM', emoji: '🦮', cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#c8a050,#a07030)',
-  },
-  {
-    id: 4, name: 'Ghost', age: '3 YEARS', status: 'URGENT CARE', statusColor: '#ff4444', statusBg: '#ff444422',
-    desc: '"A majestic survivor of the northern tundra. Highly intelligent and vocal."',
-    stars: 3, gender: 'HIM', emoji: '🐺', cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#3a4a4a,#2a3a3a)',
-  },
-  {
-    id: 5, name: 'Oliver', age: '3 MONTHS', status: 'RECOVERED', statusColor: '#22c55e', statusBg: '#22c55e22',
-    desc: '"Found abandoned in a warehouse. Now healthy, happy, and ready for cuddles."',
-    stars: 5, gender: 'HIM', emoji: '🐱', cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#c87040,#a05030)',
-  },
-  {
-    id: 6, name: 'Ziggy', age: '1 YEAR', status: 'BONDED', statusColor: '#ff6b2b', statusBg: '#ff6b2b22',
-    desc: '"A bundle of joy who loves social interaction and other furry friends."',
-    stars: 3, gender: 'HIM', emoji: '🐕‍🦺', cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#6a9a40,#4a7a30)',
-  },
-]
-
 const AGE_FILTERS = ['Puppy / Kitten', 'Young Adult', 'Senior']
 const TEMP_FILTERS = ['Energetic', 'Couch Potato', 'Kid Friendly', 'Protective', 'Independent']
 
-function Stars({ count }) {
+const getStatusColor = (status) => {
+  if (status === 'needs rescue') return { color: '#ff4444', bg: '#ff444422', label: 'NEEDS RESCUE' }
+  if (status === 'rescued') return { color: '#22c55e', bg: '#22c55e22', label: 'RESCUED' }
+  return { color: '#ff8c00', bg: '#ff8c0022', label: 'IN CARE' }
+}
+
+const speciesEmoji = (species) => species === 'кіт' ? '🐈' : '🐕'
+
+const CARD_STYLES = [
+  { cardBg: '#f0e6d0', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#e8956d,#d4734a)' },
+  { cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#0a0a0a,#1a1a2e)' },
+  { cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#c8a050,#a07030)' },
+  { cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#3a4a4a,#2a3a3a)' },
+  { cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#c87040,#a05030)' },
+  { cardBg: '#f5f0e8', textColor: '#1a1a1a', subColor: '#7a6a55', photoBg: 'linear-gradient(160deg,#6a9a40,#4a7a30)' },
+]
+
+function Stars({ count = 3 }) {
   return (
     <div style={{ display: 'flex', gap: 3 }}>
       {[1,2,3,4,5].map(i => (
@@ -50,14 +34,19 @@ function Stars({ count }) {
   )
 }
 
-function PetCard({ pet }) {
+function PetCard({ pet, index }) {
   const [hovered, setHovered] = useState(false)
+  const style = CARD_STYLES[index % CARD_STYLES.length]
+  const { color, bg, label } = getStatusColor(pet.status)
+  const gender = pet.species === 'кіт' ? 'HER' : 'HIM'
+  const ageLabel = `${pet.age} ${pet.age === 1 ? 'YEAR' : 'YEARS'}`
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: pet.cardBg,
+        background: style.cardBg,
         borderRadius: 20,
         overflow: 'hidden',
         boxShadow: hovered ? '0 12px 40px #0005' : '0 4px 20px #0003',
@@ -67,35 +56,35 @@ function PetCard({ pet }) {
       }}
     >
       {/* Photo */}
-      <div style={{ position: 'relative', height: 220, background: pet.photoBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 90 }}>
-        {pet.emoji}
-        {/* Status badge */}
+      <div style={{ position: 'relative', height: 220, background: style.photoBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 90 }}>
+        {speciesEmoji(pet.species)}
         <div style={{
           position: 'absolute', bottom: 14, left: 14,
-          background: pet.statusBg, color: pet.statusColor,
+          background: bg, color: color,
           backdropFilter: 'blur(8px)',
-          border: `1px solid ${pet.statusColor}44`,
+          border: `1px solid ${color}44`,
           borderRadius: 20, padding: '4px 12px',
           fontSize: 10, fontWeight: 700, letterSpacing: 1,
-        }}>{pet.status}</div>
+        }}>{label}</div>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '16px 18px 20px', background: pet.cardBg }}>
+      <div style={{ padding: '16px 18px 20px', background: style.cardBg }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: 22, fontWeight: 700, color: pet.textColor }}>{pet.name}</span>
-          <span style={{ fontSize: 10, fontWeight: 600, color: pet.subColor, letterSpacing: 1, fontFamily: mono }}>{pet.age}</span>
+          <span style={{ fontSize: 22, fontWeight: 700, color: style.textColor }}>{pet.name}</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: style.subColor, letterSpacing: 1, fontFamily: mono }}>{ageLabel}</span>
         </div>
-        <p style={{ fontSize: 12, color: pet.subColor, lineHeight: 1.6, marginBottom: 16, fontStyle: 'italic' }}>{pet.desc}</p>
+        <p style={{ fontSize: 12, color: style.subColor, lineHeight: 1.6, marginBottom: 16, fontStyle: 'italic' }}>
+          "{pet.description}"
+        </p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Stars count={pet.stars} />
-          <Link to={`/animals/${pet.id}`} style={{
+          <Stars count={3} />
+          <Link to={`/animals/${pet._id}`} style={{
             background: '#1a1a1a', color: '#fff',
             border: 'none', borderRadius: 22,
             padding: '8px 18px', fontSize: 11, fontWeight: 700,
             textDecoration: 'none', letterSpacing: 0.5,
-            transition: 'background 0.15s',
-          }}>MEET {pet.gender}</Link>
+          }}>MEET {gender}</Link>
         </div>
       </div>
     </div>
@@ -105,7 +94,6 @@ function PetCard({ pet }) {
 function Footer() {
   return (
     <footer style={{ background: '#0d0d0d', fontFamily: font }}>
-      {/* CTA block */}
       <div style={{ padding: '60px 40px', display: 'flex', justifyContent: 'center' }}>
         <div style={{
           maxWidth: 700, width: '100%',
@@ -139,7 +127,6 @@ function Footer() {
         </div>
       </div>
 
-      {/* Footer links */}
       <div style={{ borderTop: '1px solid #1e1e1e', padding: '48px 60px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 40, marginBottom: 48 }}>
           <div>
@@ -162,7 +149,7 @@ function Footer() {
             <div key={col.title}>
               <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 16 }}>{col.title}</div>
               {col.links.map(l => (
-                <div key={l} style={{ fontSize: 13, color: '#888', marginBottom: 10, cursor: 'pointer', transition: 'color 0.15s' }}
+                <div key={l} style={{ fontSize: 13, color: '#888', marginBottom: 10, cursor: 'pointer' }}
                   onMouseEnter={e => e.target.style.color = '#fff'}
                   onMouseLeave={e => e.target.style.color = '#888'}
                 >{l}</div>
@@ -183,10 +170,19 @@ function Footer() {
 }
 
 export default function FindingNewBeginningsPage() {
+  const [pets, setPets] = useState([])
+  const [loading, setLoading] = useState(true)
   const [ageFilters, setAgeFilters] = useState([])
   const [tempFilters, setTempFilters] = useState(['Kid Friendly'])
   const [urgency, setUrgency] = useState(null)
   const [sort, setSort] = useState('Newest Arrivals')
+
+  useEffect(() => {
+    fetch('https://safetails-production-8790.up.railway.app/api/animals')
+      .then(r => r.json())
+      .then(data => { setPets(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
 
   const toggleAge = f => setAgeFilters(p => p.includes(f) ? p.filter(x => x !== f) : [...p, f])
   const toggleTemp = f => setTempFilters(p => p.includes(f) ? p.filter(x => x !== f) : [...p, f])
@@ -200,7 +196,6 @@ export default function FindingNewBeginningsPage() {
 
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 60px)', fontFamily: font, background: '#0f0f0f' }}>
 
-        {/* ── LEFT SIDEBAR FILTER ── */}
         <aside style={{
           width: 200, flexShrink: 0,
           background: '#0f0f0f',
@@ -208,7 +203,6 @@ export default function FindingNewBeginningsPage() {
           padding: '24px 18px',
           position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto',
         }}>
-          {/* Catalog header */}
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 24 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 8,
@@ -217,11 +211,10 @@ export default function FindingNewBeginningsPage() {
             }}>🐾</div>
             <div>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Catalog Filter</div>
-              <div style={{ fontSize: 9, color: '#555', fontFamily: mono }}>124 SURVIVORS</div>
+              <div style={{ fontSize: 9, color: '#555', fontFamily: mono }}>{pets.length} SURVIVORS</div>
             </div>
           </div>
 
-          {/* Age category */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 9, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 12 }}>AGE CATEGORY</div>
             {AGE_FILTERS.map(f => (
@@ -240,7 +233,6 @@ export default function FindingNewBeginningsPage() {
             ))}
           </div>
 
-          {/* Temperament */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 9, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 12 }}>TEMPERAMENT</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -256,7 +248,6 @@ export default function FindingNewBeginningsPage() {
             </div>
           </div>
 
-          {/* Rescue urgency */}
           <div>
             <div style={{ fontSize: 9, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 12 }}>RESCUE URGENCY</div>
             {[
@@ -279,9 +270,7 @@ export default function FindingNewBeginningsPage() {
           </div>
         </aside>
 
-        {/* ── MAIN CONTENT ── */}
         <main style={{ flex: 1, padding: '40px 40px 0', minWidth: 0 }}>
-          {/* Hero text */}
           <div style={{ maxWidth: 560, marginBottom: 32 }}>
             <h1 style={{ fontSize: 48, fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: 16 }}>
               Finding New<br />
@@ -293,7 +282,6 @@ export default function FindingNewBeginningsPage() {
             </p>
           </div>
 
-          {/* Sort bar */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 11, color: '#555', fontFamily: mono, letterSpacing: 1 }}>SORT:</span>
@@ -310,10 +298,13 @@ export default function FindingNewBeginningsPage() {
             </div>
           </div>
 
-          {/* Pet grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 60 }}>
-            {PETS.map(pet => <PetCard key={pet.id} pet={pet} />)}
-          </div>
+          {loading ? (
+            <div style={{ color: '#555', textAlign: 'center', padding: 60 }}>Завантаження...</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 60 }}>
+              {pets.map((pet, i) => <PetCard key={pet._id} pet={pet} index={i} />)}
+            </div>
+          )}
         </main>
       </div>
 

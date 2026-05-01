@@ -15,6 +15,7 @@ app.use('/api/adoptions', require('./routes/adoptions'))
 app.use('/api/success-stories', require('./routes/successStories'))
 app.use('/api/donations', require('./routes/donations'))
 app.use('/api/chat', require('./routes/chat'))  // ← сюди
+app.use('/api/auth', require('./routes/auth'))
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB підключено!'))
