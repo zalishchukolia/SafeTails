@@ -17,22 +17,25 @@ router.get('/', async (req, res) => {
   res.json(animals)
 })
 
-// GET одна тварина — публічний
-router.get('/:id', async (req, res) => {
+// GET всі тварини — додай try/catch
+router.get('/', async (req, res) => {
   try {
-    const animal = await Animal.findById(req.params.id)
-    if (!animal) return res.status(404).json({ message: 'Тварину не знайдено' })
-    res.json(animal)
+    const animals = await Animal.find()
+    res.json(animals)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
 })
 
-// POST — захищений
+// POST — теж
 router.post('/', requireSecret, async (req, res) => {
-  const animal = new Animal(req.body)
-  await animal.save()
-  res.status(201).json(animal)
+  try {
+    const animal = new Animal(req.body)
+    await animal.save()
+    res.status(201).json(animal)
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
 })
 
 // PUT — захищений

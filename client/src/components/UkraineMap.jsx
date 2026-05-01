@@ -6,7 +6,6 @@ export default function UkraineMap({ pins, selectedId, onPinClick }) {
   const markersRef = useRef([])
 
   useEffect(() => {
-    // Підвантажуємо Leaflet CSS і JS динамічно
     if (!document.getElementById('leaflet-css')) {
       const link = document.createElement('link')
       link.id = 'leaflet-css'
@@ -24,22 +23,26 @@ export default function UkraineMap({ pins, selectedId, onPinClick }) {
     })
 
     loadLeaflet().then(L => {
-      if (instanceRef.current) return
+      // Ініціалізуємо карту тільки один раз
+      if (!instanceRef.current) {
+        const map = L.map(mapRef.current, {
+          center: [49.0, 31.5],
+          zoom: 6,
+          zoomControl: false,
+          attributionControl: false,
+        })
+        instanceRef.current = map
 
-      const map = L.map(mapRef.current, {
-        center: [49.0, 31.5],
-        zoom: 6,
-        zoomControl: false,
-        attributionControl: false,
-      })
-      instanceRef.current = map
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+        }).addTo(map)
+      }
 
-      // Темна тайл-тема (як на референсі)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-      }).addTo(map)
+      // Очищаємо старі маркери
+      markersRef.current.forEach(({ marker }) => marker.remove())
+      markersRef.current = []
 
-      // Додаємо піни
+      // Додаємо нові маркери
       pins.forEach(pin => {
         const c = pin.urgency === 'critical' ? '#ff3333'
                 : pin.urgency === 'stable'   ? '#22c55e'
@@ -73,7 +76,7 @@ export default function UkraineMap({ pins, selectedId, onPinClick }) {
 
         const marker = L.marker([pin.coords[1], pin.coords[0]], { icon })
         marker.on('click', () => onPinClick(pin))
-        marker.addTo(map)
+        marker.addTo(instanceRef.current)
         markersRef.current.push({ id: pin.id, marker })
       })
     })
@@ -85,7 +88,7 @@ export default function UkraineMap({ pins, selectedId, onPinClick }) {
         markersRef.current = []
       }
     }
-  }, [])
+  }, [pins]) // ← pins в залежностях — карта оновлюється коли дані прийшли
 
   return (
     <>
