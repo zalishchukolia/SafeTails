@@ -13,12 +13,6 @@ const requireSecret = (req, res, next) => {
 
 // GET всі тварини — публічний
 router.get('/', async (req, res) => {
-  const animals = await Animal.find()
-  res.json(animals)
-})
-
-// GET всі тварини — додай try/catch
-router.get('/', async (req, res) => {
   try {
     const animals = await Animal.find()
     res.json(animals)
@@ -27,7 +21,18 @@ router.get('/', async (req, res) => {
   }
 })
 
-// POST — теж
+// GET одна тварина за ID — публічний
+router.get('/:id', async (req, res) => {
+  try {
+    const animal = await Animal.findById(req.params.id)
+    if (!animal) return res.status(404).json({ message: 'Тварину не знайдено' })
+    res.json(animal)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// POST — захищений
 router.post('/', requireSecret, async (req, res) => {
   try {
     const animal = new Animal(req.body)
