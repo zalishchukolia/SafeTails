@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Adoption = require('../models/Adoption');
+const requireAuth = require('../middleware/auth');
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
-    const adoption = new Adoption(req.body);
+    const adoption = new Adoption({ ...req.body, userId: req.user.id });
     await adoption.save();
     res.status(201).json(adoption);
   } catch (err) {
