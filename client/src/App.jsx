@@ -8,6 +8,7 @@ import FindingNewBeginningsPage from './pages/FindingNewBeginningsPage'
 import SuccessStoriesPage from './pages/SuccessStoriesPage'
 import AdoptionFormPage from './pages/AdoptionFormPage'
 import AdoptionApplicationPage from './pages/AdoptionApplicationPage'
+import AuthPage from './pages/Authpage'
 
 const font = "'DM Sans', 'Inter', sans-serif"
 const mono = "'DM Mono', 'Courier New', monospace"
@@ -242,6 +243,7 @@ function AppInner() {
         <Route path="/success-stories" element={<SuccessStoriesPage />} />
         <Route path="/adoption-form" element={<AdoptionFormPage />} />
         <Route path="/adoption-application" element={<AdoptionApplicationPage />} />
+        <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <RightMiniSidebar />
       <FloatingChat />
