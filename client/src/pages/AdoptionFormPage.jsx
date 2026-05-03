@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LoginPromptModal from '../components/LoginPromptModal'
+import AuthModal from '../components/AuthModal'
 
 const FILTERS = {
   age: ['All Ages', 'Puppy/Kitten', 'Young', 'Adult', 'Senior'],
@@ -22,6 +24,9 @@ export default function AdoptionFormPage() {
   const [ageFilter, setAgeFilter] = useState('All Ages')
   const [tempFilter, setTempFilter] = useState('Any Temperament')
   const [visible, setVisible] = useState(8)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [pendingAnimal, setPendingAnimal] = useState(null)
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
@@ -71,6 +76,24 @@ export default function AdoptionFormPage() {
   })
 
   const displayed = filtered.slice(0, visible)
+
+  const handleApply = (animalName) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setPendingAnimal(animalName)
+      setShowLoginPrompt(true)
+    } else {
+      navigate('/adoption-application', { state: { animalName } })
+    }
+  }
+
+  const handleLoginSuccess = () => {
+    setShowAuthModal(false)
+    setShowLoginPrompt(false)
+    if (pendingAnimal) {
+      navigate('/adoption-application', { state: { animalName: pendingAnimal } })
+    }
+  }
 
   return (
     <div
@@ -297,11 +320,7 @@ export default function AdoptionFormPage() {
                 key={animal._id || animal.id}
                 animal={animal}
                 onClick={() => navigate(`/animals/${animal._id || animal.id}`)}
-                onApply={() =>
-                  navigate('/adoption-application', {
-                    state: { animalName: animal.name },
-                  })
-                }
+                onApply={() => handleApply(animal.name)}
               />
             ))}
           </div>
@@ -340,6 +359,23 @@ export default function AdoptionFormPage() {
           </div>
         )}
       </div>
+
+      {showLoginPrompt && (
+        <LoginPromptModal
+          onClose={() => setShowLoginPrompt(false)}
+          onLogin={() => {
+            setShowLoginPrompt(false)
+            setShowAuthModal(true)
+          }}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleLoginSuccess}
+        />
+      )}
 
       <style>{`
         @keyframes pulse {
