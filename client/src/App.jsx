@@ -8,7 +8,7 @@ import FindingNewBeginningsPage from './pages/FindingNewBeginningsPage'
 import SuccessStoriesPage from './pages/SuccessStoriesPage'
 import AdoptionFormPage from './pages/AdoptionFormPage'
 import AdoptionApplicationPage from './pages/AdoptionApplicationPage'
-import AuthPage from './pages/Authpage'
+import AuthPage from './pages/AuthPage'
 
 const font = "'DM Sans', 'Inter', sans-serif"
 const mono = "'DM Mono', 'Courier New', monospace"
