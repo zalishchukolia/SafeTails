@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 function AnimalDetailPage() {
   const { id } = useParams()
   const [animal, setAnimal] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [donated, setDonated] = useState(false)
-  const [amount, setAmount] = useState('')
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals/${id}`)
@@ -18,173 +16,251 @@ function AnimalDetailPage() {
       .catch(() => setLoading(false))
   }, [id])
 
-  const handleDonate = () => {
-    if (!amount || amount <= 0) return alert('Введіть суму донату')
-    fetch(`${import.meta.env.VITE_API_URL}/api/donations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ animalId: id, amount: Number(amount) })
-    })
-      .then(res => res.json())
-      .then(() => setDonated(true))
-      .catch(() => alert('Помилка при відправці донату'))
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0f0f10] text-white flex items-center justify-center">
+        Завантаження...
+      </div>
+    )
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0d0d0d]">
-      <div className="text-gray-400">Завантаження...</div>
-    </div>
-  )
+  if (!animal) {
+    return (
+      <div className="min-h-screen bg-[#0f0f10] text-white flex items-center justify-center">
+        Тварину не знайдено
+      </div>
+    )
+  }
 
-  if (!animal) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0d0d0d]">
-      <div className="text-gray-400">Тварину не знайдено</div>
-    </div>
-  )
+  const mainImage = animal.imageUrl || animal.image || animal.photo
+  const title = animal.name || 'Unknown'
+  const species = animal.species || 'Animal'
+  const age = animal.age ? `${animal.age} years` : 'Age unknown'
+  const temperament = animal.temperament || 'Friendly'
+  const weight = animal.weight || '24 kg'
+
+  const gallery =
+    animal.gallery && Array.isArray(animal.gallery) && animal.gallery.length > 0
+      ? animal.gallery.slice(0, 4)
+      : [mainImage, mainImage, mainImage, mainImage]
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] flex">
-      {/* Sidebar */}
-      <div className="w-56 bg-[#111] border-r border-[#222] p-4 flex flex-col">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[#ff6b2b] text-lg">★</span>
-            <span className="text-white font-semibold text-sm">Command Center</span>
-          </div>
-          <span className="text-gray-600 text-xs">Sector 7 Delta</span>
-        </div>
-        <nav className="space-y-1">
-          {['Dashboard', 'Active Rescues', 'Dispatch', 'Medical Log', 'Archive'].map((item, i) => (
-            <div
-              key={item}
-              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
-                i === 1
-                  ? 'bg-[#ff6b2b] bg-opacity-20 text-[#ff6b2b]'
-                  : 'text-gray-500 hover:text-white'
-              }`}
-            >
-              {item}
-            </div>
-          ))}
-        </nav>
-        <div className="mt-auto">
-          <Link
-            to="/finding-new-beginnings"
-            className="block w-full bg-[#ff6b2b] text-white text-center py-2 rounded-xl text-sm font-semibold hover:bg-[#e55a1f] transition-colors"
-          >
-            ← Back
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#0f0f10] text-white">
+      <main className="max-w-[1500px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.02fr)_470px] gap-6">
+          <section className="space-y-6">
+            <div className="rounded-[30px] bg-[#151517] border border-white/10 p-4">
+              <div className="relative rounded-[24px] overflow-hidden bg-black h-[280px] sm:h-[320px] lg:h-[360px]">
+                {mainImage ? (
+                  <img
+                    src={mainImage}
+                    alt={title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-7xl">
+                    🐾
+                  </div>
+                )}
 
-      {/* Основний контент */}
-      <div className="flex-1 flex gap-6 p-6">
-        {/* Фото тварини */}
-        <div className="w-80 flex-shrink-0">
-          <div className="relative rounded-2xl overflow-hidden">
-            {animal.imageUrl ? (
-              <img
-                src={animal.imageUrl}
-                alt={animal.name}
-                className="w-full h-96 object-cover"
-              />
-            ) : (
-              <div className="w-full h-96 bg-[#1a1a1a] flex items-center justify-center">
-                <span className="text-6xl">🐾</span>
-              </div>
-            )}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs bg-red-600 text-white px-2 py-1 rounded-full">
-                  CRITICAL STATUS
-                </span>
-                <span className="text-gray-400 text-xs">#{id.slice(-6)}</span>
-              </div>
-              <h1 className="text-white text-3xl font-bold">{animal.name}</h1>
-              <p className="text-gray-300 text-sm mt-1">{animal.description}</p>
-            </div>
-          </div>
-        </div>
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/50 to-transparent">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold px-3 py-1 uppercase tracking-[0.2em]">
+                      Ready to meet
+                    </span>
+                    <span className="inline-flex items-center rounded-full bg-white/10 text-white/80 text-[11px] font-medium px-3 py-1">
+                      #{String(id).slice(-6)}
+                    </span>
+                  </div>
 
-        {/* Права панель */}
-        <div className="flex-1 space-y-4">
-          {/* Статус */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#222]">
-              <div className="text-gray-500 text-xs mb-1">CURRENT PHASE</div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                <span className="text-white font-semibold">Medical Stabilization</span>
-              </div>
-            </div>
-            <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#222]">
-              <div className="text-gray-500 text-xs mb-1">SPECIES</div>
-              <div className="text-white font-semibold">{animal.species}</div>
-            </div>
-          </div>
+                  <h1 className="text-3xl sm:text-4xl font-bold">{title}</h1>
 
-          {/* Recovery Fund */}
-          <div className="bg-[#f5f0e8] rounded-xl p-5">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-gray-700 font-semibold">Recovery Fund</span>
-              <span className="text-gray-900 font-bold text-xl">$4,280</span>
-            </div>
-            <p className="text-gray-500 text-xs mb-3">Covering surgical and rehabilitation costs</p>
-            <div className="w-full bg-gray-300 rounded-full h-2 mb-4">
-              <div className="bg-[#ff6b2b] h-2 rounded-full" style={{ width: '68%' }}></div>
-            </div>
-            {donated ? (
-              <div className="bg-green-900 text-green-300 text-center py-3 rounded-xl">
-                Дякуємо за донат! 🐾
+                  <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/70">
+                    {animal.description ||
+                      'This animal is being cared for and is ready for the next stage of the rescue journey.'}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Сума"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  className="flex-1 bg-white border border-gray-300 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:border-[#ff6b2b]"
-                />
-                <button
-                  onClick={handleDonate}
-                  className="bg-[#ff6b2b] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#e55a1f] transition-colors"
-                >
-                  DONATE NOW
-                </button>
-              </div>
-            )}
-          </div>
 
-          {/* Field Updates */}
-          <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#222]">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-white font-semibold">Field Updates</span>
-              <span className="text-[#ff6b2b] text-xs">Live Mission Log</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                {gallery.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-2xl overflow-hidden bg-white/5 aspect-[4/3] border border-white/10"
+                  >
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={`${title} ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-3xl">
+                        🐶
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <span className="w-2 h-2 bg-green-500 rounded-full mt-1 flex-shrink-0"></span>
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">MEDICAL UPDATE • 2 HOURS AGO</div>
-                  <div className="text-white text-sm font-semibold">Vitals Stabilized</div>
-                  <div className="text-gray-400 text-xs">
-                    Temperature has returned to normal range. Resting comfortably in the high-care unit.
+
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] gap-6">
+              <article className="rounded-[28px] bg-[#f4efe3] text-[#2a261e] p-6 border border-black/5">
+                <div className="flex items-center gap-2 mb-3 text-xs uppercase tracking-[0.2em] text-[#7e6d56]">
+                  <span className="w-2 h-2 rounded-full bg-[#ff6b2b]" />
+                  The Rescue Story
+                </div>
+
+                <h2 className="text-2xl font-semibold mb-3">
+                  {title} is ready for a new beginning
+                </h2>
+
+                <p className="text-sm sm:text-base leading-7 text-[#4f4638]">
+                  {animal.description ||
+                    'This animal came into care with a detailed history, received treatment, and is now being prepared for adoption. The story here can be fully edited from the database and expanded with milestones, medical notes, or rescue context.'}
+                </p>
+              </article>
+
+              <div className="space-y-6">
+                <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
+                    Personality
+                  </div>
+
+                  <ul className="space-y-3 text-sm text-white/70">
+                    <li>• Calm around people and other animals.</li>
+                    <li>• Learns routines quickly and responds well to care.</li>
+                    <li>• Enjoys soft space, gentle walks, and quiet time.</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
+                    Medical History
+                  </div>
+
+                  <div className="space-y-3 text-sm text-white/70">
+                    <div className="flex justify-between gap-3">
+                      <span>Initial check</span>
+                      <span className="text-white/40">Completed</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span>Vaccination</span>
+                      <span className="text-white/40">Up to date</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span>Recovery phase</span>
+                      <span className="text-white/40">Active</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <span className="w-2 h-2 bg-yellow-500 rounded-full mt-1 flex-shrink-0"></span>
+            </div>
+          </section>
+
+          <aside className="space-y-4">
+            <div className="rounded-[28px] bg-[#151517] border border-white/10 p-6">
+              <div className="text-xs uppercase tracking-[0.24em] text-white/35">
+                Profile
+              </div>
+
+              <div className="mt-2 text-3xl font-semibold">{title}</div>
+              <div className="mt-1 text-sm text-white/50">{species}</div>
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    AGE
+                  </div>
+                  <div className="mt-2 text-base font-semibold">{age}</div>
+                </div>
+
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    WEIGHT
+                  </div>
+                  <div className="mt-2 text-base font-semibold">{weight}</div>
+                </div>
+
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    TEMPERAMENT
+                  </div>
+                  <div className="mt-2 text-base font-semibold">{temperament}</div>
+                </div>
+
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
+                    STATUS
+                  </div>
+                  <div className="mt-2 text-base font-semibold">
+                    {animal.status || 'Recovering'}
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                to={`/adoption-application?animalName=${encodeURIComponent(title)}`}
+                className="mt-5 block w-full rounded-2xl bg-[#ff6b2b] hover:bg-[#e95c1d] transition-colors py-4 text-center text-lg font-semibold text-white"
+              >
+                Apply to Adopt
+              </Link>
+
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 p-4">
+                <div className="w-12 h-12 rounded-full bg-white/10" />
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">TRANSPORT LOG • 5 HOURS AGO</div>
-                  <div className="text-white text-sm font-semibold">Arrival at Sector 7 HQ</div>
-                  <div className="text-gray-400 text-xs">Age: {animal.age} years • Status: {animal.status}</div>
+                  <div className="text-base font-medium">Sarah Admin</div>
+                  <div className="text-sm text-white/45">Assigned caregiver</div>
                 </div>
               </div>
             </div>
-          </div>
+
+            <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35">
+                    Recovery fund
+                  </div>
+                  <div className="mt-1 text-lg font-semibold">Support treatment</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-white/35">Raised</div>
+                  <div className="text-2xl font-bold">$4,280</div>
+                </div>
+              </div>
+
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[#ff6b2b]"
+                  style={{ width: '68%' }}
+                />
+              </div>
+
+              <p className="text-xs text-white/45 mt-3">
+                Covering medical care, food, and recovery support.
+              </p>
+
+              <div className="mt-4">
+                <a
+                  href="https://send.monobank.ua/jar/7VeXaqv4r8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full rounded-2xl bg-[#ff6b2b] hover:bg-[#e95c1d] transition-colors px-5 py-3 text-center font-semibold text-white"
+                >
+                  Donate
+                </a>
+              </div>
+            </div>
+
+            <Link
+              to="/adoption-form"
+              className="block rounded-[24px] bg-white/5 border border-white/10 px-5 py-4 text-center text-sm font-semibold hover:bg-white/10 transition-colors"
+            >
+              ← Back to list
+            </Link>
+          </aside>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

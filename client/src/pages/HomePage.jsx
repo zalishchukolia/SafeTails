@@ -1,241 +1,1494 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 
-const font = "'DM Sans', 'Inter', sans-serif"
-const mono = "'DM Mono', 'Courier New', monospace"
+const missionsSeed = [
+  {
+    id: '7712',
+    name: 'Cooper',
+    emoji: '🐕',
+    status: 'Critical',
+    priority: 1,
+    distance: '2.4 km',
+    location: 'Industrial Zone — Terminal B',
+    summary: 'Severe dehydration, possible limb trauma.',
+    team: 'Dr. Aris + 2',
+    updated: '4 min ago',
+    heartRate: '128 BPM',
+    action: 'Dispatch now',
+    theme: 'danger',
+  },
+  {
+    id: '7690',
+    name: 'Luna',
+    emoji: '🐈',
+    status: 'Stable',
+    priority: 3,
+    distance: '5.1 km',
+    location: 'Residential Transfer — Sector 4',
+    summary: 'Post-op recovery, needs monitoring and feeding.',
+    team: 'Nurse Milla + 1',
+    updated: '12 min ago',
+    heartRate: '112 BPM',
+    action: 'Review report',
+    theme: 'calm',
+  },
+  {
+    id: '7724',
+    name: 'Milo',
+    emoji: '🦊',
+    status: 'Watch',
+    priority: 2,
+    distance: '1.1 km',
+    location: 'East Bridge Underpass',
+    summary: 'Possible sprain, alert but movement is limited.',
+    team: 'Field Unit B',
+    updated: '9 min ago',
+    heartRate: '104 BPM',
+    action: 'Assign volunteer',
+    theme: 'watch',
+  },
+  {
+    id: '7731',
+    name: 'Nova',
+    emoji: '🐕',
+    status: 'Critical',
+    priority: 1,
+    distance: '3.0 km',
+    location: 'Dock 3 — Storage Yard',
+    summary: 'Open wound, rescue route prepared, urgent pickup.',
+    team: 'Rapid Team A',
+    updated: '2 min ago',
+    heartRate: '136 BPM',
+    action: 'Accept mission',
+    theme: 'danger',
+  },
+]
 
-function Avatar({ initials, color = '#ff6b2b', size = 30 }) {
+const logisticsSeed = [
+  { id: 1, icon: '📋', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
+  { id: 2, icon: '🏠', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
+  { id: 3, icon: '🚑', title: 'Transport pickup', detail: 'Crate and ambulance required at Dock 2', eta: '15 min', type: 'High' },
+]
+
+const medicalSeed = [
+  { id: 1, patient: 'Cooper', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
+  { id: 2, patient: 'Luna', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
+  { id: 3, patient: 'Nova', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
+]
+
+const archiveSeed = [
+  { id: 'A-102', name: 'Bella', result: 'Adopted', date: 'Apr 28' },
+  { id: 'A-097', name: 'Rocky', result: 'Transferred to shelter', date: 'Apr 25' },
+  { id: 'A-091', name: 'Misty', result: 'Recovered', date: 'Apr 21' },
+]
+
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: '▦' },
+  { id: 'rescues', label: 'Active Rescues', icon: '✦' },
+  { id: 'dispatch', label: 'Dispatch', icon: '⊹' },
+  { id: 'medical', label: 'Medical Log', icon: '♥' },
+  { id: 'archive', label: 'Archive', icon: '▤' },
+]
+
+function statusTone(status) {
+  if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
+  if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
+  if (status === 'Urgent') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
+  return { fg: '#fef3c7', bg: '#3d2f12', dot: '#fbbf24' }
+}
+
+function themeFromStatus(status) {
+  if (status === 'Critical') return 'danger'
+  if (status === 'Stable') return 'calm'
+  return 'watch'
+}
+
+function actionFromStatus(status) {
+  if (status === 'Critical') return 'Dispatch now'
+  if (status === 'Stable') return 'Review report'
+  return 'Assign volunteer'
+}
+
+function StatCard({ label, value, meta }) {
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', background: color,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 700, color: '#fff', flexShrink: 0,
-    }}>{initials}</div>
+    <section className="stat-card">
+      <span className="eyebrow">{label}</span>
+      <strong>{value}</strong>
+      <p>{meta}</p>
+    </section>
   )
 }
 
-function StatusBadge({ label, color, bg }) {
+function StatusPill({ status }) {
+  const tone = statusTone(status)
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      background: bg, color, fontSize: 10, fontWeight: 700,
-      letterSpacing: 1, padding: '3px 10px', borderRadius: 20,
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block' }} />
-      {label}
+    <span className="status-pill" style={{ color: tone.fg, background: tone.bg }}>
+      <span className="status-dot" style={{ background: tone.dot }} />
+      {status}
     </span>
   )
 }
 
-function StatCard({ label, value, sub, accentColor, isBar, delay }) {
-  const [barW, setBarW] = useState(0)
-  useEffect(() => { if (isBar) setTimeout(() => setBarW(84), 200) }, [isBar])
+function MissionRow({ mission, active, onSelect }) {
   return (
-    <div style={{
-      background: '#1a1a1a', border: '1px solid #252525',
-      borderLeft: `3px solid ${accentColor}`, borderRadius: 10,
-      padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 4,
-      animation: `fadeUp 0.4s ease ${delay}s both`,
-    }}>
-      <div style={{ fontSize: 9, color: '#666', letterSpacing: 1.5, fontFamily: mono, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: accentColor, lineHeight: 1, fontFamily: mono }}>{value}</div>
-      {isBar ? (
-        <div style={{ marginTop: 6, background: '#333', borderRadius: 3, height: 4 }}>
-          <div style={{ width: `${barW}%`, height: '100%', background: '#fff', borderRadius: 3, transition: 'width 1.2s ease' }} />
+    <button type="button" className={`mission-row ${active ? 'active' : ''}`} onClick={() => onSelect(mission.id)}>
+      <div className={`mission-thumb ${mission.theme}`}>{mission.emoji}</div>
+
+      <div className="mission-copy">
+        <div className="mission-topline">
+          <h3>Case #{mission.id}: {mission.name}</h3>
+          <StatusPill status={mission.status} />
         </div>
-      ) : (
-        <div style={{ fontSize: 9, color: '#555', lineHeight: 1.4 }}>{sub}</div>
-      )}
-    </div>
+
+        <p>{mission.location}</p>
+
+        <div className="mission-meta">
+          <span>{mission.distance}</span>
+          <span>{mission.updated}</span>
+          <span>{mission.team}</span>
+        </div>
+      </div>
+    </button>
   )
 }
 
-const NAV_ITEMS = [
-  { icon: <GridIcon />, label: 'Dashboard',      active: true,  path: '/' },
-  { icon: <StarIcon />, label: 'Active Rescues', active: false, path: '/animals' },
-  { icon: <DispIcon />, label: 'Dispatch',       active: false, path: '#' },
-  { icon: <MedIcon />,  label: 'Medical Log',    active: false, path: '#' },
-  { icon: <ArchIcon />, label: 'Archive',        active: false, path: '#' },
-]
-
-function GridIcon() { return <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg> }
-function StarIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> }
-function DispIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> }
-function MedIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> }
-function ArchIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> }
+function SectionCard({ title, subtitle, children }) {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <div>
+          <h3>{title}</h3>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
+      </div>
+      <div className="panel-pad">{children}</div>
+    </section>
+  )
+}
 
 export default function HomePage() {
+  const [missions, setMissions] = useState(missionsSeed)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeSection, setActiveSection] = useState('rescues')
+  const [selectedId, setSelectedId] = useState(missionsSeed[0].id)
+  const [filter, setFilter] = useState('All')
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState('Priority')
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap');
-        @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-      `}</style>
+  const [form, setForm] = useState({
+    name: '',
+    emoji: '🐕',
+    status: 'Watch',
+    priority: '2',
+    distance: '',
+    location: '',
+    summary: '',
+    team: '',
+    heartRate: '',
+  })
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 60px)', fontFamily: font, background: '#141414', color: '#e0e0e0', overflow: 'hidden', position: 'relative' }}>
+  const visibleMissions = useMemo(() => {
+    let items = [...missions]
 
-        {/* SIDEBAR */}
-        <aside style={{
-          width: sidebarOpen ? 190 : 0, minWidth: sidebarOpen ? 190 : 0,
-          background: '#111', borderRight: sidebarOpen ? '1px solid #222' : 'none',
-          display: 'flex', flexDirection: 'column', flexShrink: 0,
-          overflow: 'hidden', transition: 'width 0.25s ease, min-width 0.25s ease',
-        }}>
-          <div style={{ padding: '18px 14px 16px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1a1a1a', border: '1px solid #272727', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#ff6b2b22,#ff6b2b44)', border: '1px solid #ff6b2b44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 16 }}>✦</span>
-              </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' }}>Command Center</div>
-                <div style={{ fontSize: 10, color: '#555', whiteSpace: 'nowrap' }}>Sector 7 Delta</div>
-              </div>
+    if (query.trim()) {
+      const q = query.toLowerCase()
+      items = items.filter((mission) =>
+        [mission.name, mission.location, mission.status, mission.summary, mission.team]
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
+      )
+    }
+
+    if (filter !== 'All') {
+      items = items.filter((mission) => mission.status === filter)
+    }
+
+    if (sort === 'Priority') {
+      items.sort((a, b) => a.priority - b.priority)
+    } else if (sort === 'Distance') {
+      items.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+    } else {
+      items.sort((a, b) => a.name.localeCompare(b.name))
+    }
+
+    return items
+  }, [missions, filter, query, sort])
+
+  const selectedMission =
+    visibleMissions.find((mission) => mission.id === selectedId) ||
+    missions.find((mission) => mission.id === selectedId) ||
+    missions[0]
+
+  const criticalCount = missions.filter((item) => item.status === 'Critical').length
+  const stableCount = missions.filter((item) => item.status === 'Stable').length
+  const watchCount = missions.filter((item) => item.status === 'Watch').length
+  const inTransitCount = missions.length + 8
+
+  function resetForm() {
+    setForm({
+      name: '',
+      emoji: '🐕',
+      status: 'Watch',
+      priority: '2',
+      distance: '',
+      location: '',
+      summary: '',
+      team: '',
+      heartRate: '',
+    })
+  }
+
+  function handleFormChange(e) {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function handleCreateMission(e) {
+    e.preventDefault()
+
+    if (!form.name.trim() || !form.location.trim() || !form.summary.trim()) {
+      return
+    }
+
+    const id = String(Date.now()).slice(-4)
+    const newMission = {
+      id,
+      name: form.name.trim(),
+      emoji: form.emoji,
+      status: form.status,
+      priority: Number(form.priority),
+      distance: form.distance.trim() || '0.0 km',
+      location: form.location.trim(),
+      summary: form.summary.trim(),
+      team: form.team.trim() || 'Unassigned',
+      updated: 'Just now',
+      heartRate: form.heartRate.trim() || 'N/A',
+      action: actionFromStatus(form.status),
+      theme: themeFromStatus(form.status),
+    }
+
+    setMissions((prev) => [newMission, ...prev])
+    setSelectedId(newMission.id)
+    setActiveSection('rescues')
+    setIsCreateOpen(false)
+    resetForm()
+  }
+
+  function renderContent() {
+    if (activeSection === 'dashboard') {
+      return (
+        <>
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Dashboard</h2>
+              <p>Overview of rescue activity, critical alerts, logistics load, and current medical flow.</p>
             </div>
-          </div>
 
-          <nav style={{ flex: 1, padding: '8px 0', overflow: 'hidden' }}>
-            {NAV_ITEMS.map(({ icon, label, active, path }) => (
-              <Link key={label} to={path} style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
-                background: active ? '#1e1e1e' : 'transparent',
-                color: active ? '#fff' : '#555', fontSize: 13, textDecoration: 'none',
-                borderLeft: active ? '2px solid #ff6b2b' : '2px solid transparent',
-                fontWeight: active ? 600 : 400, whiteSpace: 'nowrap', transition: 'all 0.15s',
-              }}>{icon}{label}</Link>
-            ))}
-          </nav>
-
-          <div style={{ padding: '14px', borderTop: '1px solid #1e1e1e', flexShrink: 0 }}>
-            <button style={{
-              width: '100%', background: 'linear-gradient(90deg,#ff6b2b,#e55a1f)',
-              color: '#fff', border: 'none', borderRadius: 22, padding: '10px 0',
-              fontSize: 12, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.5, fontFamily: font, whiteSpace: 'nowrap',
-            }}>NEW MISSION</button>
-            {[{ icon: '?', label: 'Support' }, { icon: '→', label: 'Sign Out' }].map(({ icon, label }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555', fontSize: 12, cursor: 'pointer', padding: '6px 2px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: 13 }}>{icon}</span>{label}
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        {/* Sidebar collapse tab */}
-        <div style={{ position: 'relative', width: 0, flexShrink: 0, zIndex: 20 }}>
-          <button onClick={() => setSidebarOpen(p => !p)} style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-            left: sidebarOpen ? -1 : 0,
-            width: 20, height: 48,
-            background: '#1e1e1e', border: '1px solid #2e2e2e',
-            borderRadius: sidebarOpen ? '0 8px 8px 0' : '0 8px 8px 0',
-            color: '#555', fontSize: 10, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
-            padding: 0,
-          }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = '#2a2a2a' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#555'; e.currentTarget.style.background = '#1e1e1e' }}
-          >{sidebarOpen ? '‹' : '›'}</button>
-        </div>
-
-        {/* MAIN */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '20px 22px', minWidth: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 28 }}>
-            <StatCard label="Active Alerts"  value="04" sub="High Priority Rescues"    accentColor="#ff4444" delay={0} />
-            <StatCard label="In Transit"     value="12" sub="Units En Route"            accentColor="#ff6b2b" delay={0.07} />
-            <StatCard label="Safe Today"     value="28" sub="Successful Extractions"    accentColor="#22c55e" delay={0.14} />
-            <StatCard label="Capacity"       value="84%" isBar                          accentColor="#ffffff" delay={0.21} />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Active Mission Stream</h2>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {['Filter: All', 'Sort: Priority'].map(t => (
-                <button key={t} style={{ background: '#1e1e1e', border: '1px solid #2e2e2e', color: '#888', borderRadius: 20, padding: '6px 14px', fontSize: 11, cursor: 'pointer', fontFamily: font }}>{t}</button>
-              ))}
+            <div className="topbar-actions">
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+                {sidebarOpen ? 'Hide menu' : 'Show menu'}
+              </button>
             </div>
-          </div>
+          </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
-            {/* Cooper */}
-            <div style={{ background: '#f0e6d0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 24px #0008', animation: 'fadeUp 0.5s ease 0.1s both' }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ width: '100%', height: 200, background: 'linear-gradient(160deg,#3a2010,#7a4020)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 90 }}>🐕</div>
-                <div style={{ position: 'absolute', top: 12, left: 12 }}><StatusBadge label="CRITICAL" color="#fff" bg="#cc2222dd" /></div>
-              </div>
-              <div style={{ padding: '16px 18px 18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.2 }}>Case #7712:<br />"Cooper"</div>
-                    <div style={{ fontSize: 11, color: '#7a6a55', marginTop: 4 }}>Industrial Zone – Terminal B</div>
-                  </div>
-                  <span style={{ background: '#e0d0b8', border: '1px solid #c8b89a', borderRadius: 8, padding: '5px 10px', fontSize: 10, color: '#5a4a35', fontWeight: 500, whiteSpace: 'nowrap' }}>2.4km Away</span>
-                </div>
-                {[{ icon: '🏥', text: 'Severe dehydration, left limb trauma suspected.' }, { icon: '📍', text: 'Secure Perimeter established. Dispatch arriving 4m.' }].map(({ icon, text }) => (
-                  <div key={text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 6, background: '#e8d8be', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14 }}>{icon}</div>
-                    <span style={{ fontSize: 12, color: '#3a2a1a', lineHeight: 1.5 }}>{text}</span>
+          <section className="stats-grid">
+            <StatCard label="Critical alerts" value={String(criticalCount).padStart(2, '0')} meta="Immediate response required" />
+            <StatCard label="Stable cases" value={String(stableCount).padStart(2, '0')} meta="Animals under controlled care" />
+            <StatCard label="Watch list" value={String(watchCount).padStart(2, '0')} meta="Observation and follow-up needed" />
+            <StatCard label="In transit" value={String(inTransitCount).padStart(2, '0')} meta="Teams and vehicles moving now" />
+          </section>
+
+          <section className="workspace">
+            <SectionCard title="Priority board" subtitle="Quick overview of urgent assignments">
+              <div className="simple-list">
+                {missions.slice(0, 3).map((item) => (
+                  <div className="simple-row" key={item.id}>
+                    <div>
+                      <strong>#{item.id} — {item.name}</strong>
+                      <p>{item.location}</p>
+                    </div>
+                    <StatusPill status={item.status} />
                   </div>
                 ))}
-                <button style={{ width: '100%', background: 'linear-gradient(90deg,#ff4444,#cc2222)', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 0', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: font, marginTop: 8 }}>Accept Mission</button>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Operations note" subtitle="Live command summary">
+              <div className="detail-note">
+                <p>Two critical field missions require immediate transport coordination, while stable cases continue under controlled observation and support staff review.</p>
+              </div>
+            </SectionCard>
+          </section>
+        </>
+      )
+    }
+
+    if (activeSection === 'dispatch') {
+      return (
+        <>
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Dispatch</h2>
+              <p>Coordinate teams, assign routes, and track outgoing rescue transport requests.</p>
+            </div>
+
+            <div className="topbar-actions">
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+                {sidebarOpen ? 'Hide menu' : 'Show menu'}
+              </button>
+            </div>
+          </section>
+
+          <section className="logistics" aria-label="Dispatch queue">
+            {logisticsSeed.map((item) => (
+              <button key={item.id} className="logistics-item" type="button">
+                <div className="logistics-icon">{item.icon}</div>
+                <div>
+                  <h4>{item.title}</h4>
+                  <p>{item.detail}</p>
+                </div>
+                <div className="logistics-meta">
+                  <strong>{item.eta}</strong>
+                  <span>{item.type}</span>
+                </div>
+              </button>
+            ))}
+          </section>
+        </>
+      )
+    }
+
+    if (activeSection === 'medical') {
+      return (
+        <>
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Medical Log</h2>
+              <p>Review treatment progress, assigned staff, and recovery updates for each patient.</p>
+            </div>
+
+            <div className="topbar-actions">
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+                {sidebarOpen ? 'Hide menu' : 'Show menu'}
+              </button>
+            </div>
+          </section>
+
+          <SectionCard title="Medical records" subtitle="Latest care actions">
+            <div className="simple-list">
+              {medicalSeed.map((item) => (
+                <div className="simple-row" key={item.id}>
+                  <div>
+                    <strong>{item.patient}</strong>
+                    <p>{item.treatment} · {item.doctor}</p>
+                  </div>
+                  <StatusPill status={item.status} />
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </>
+      )
+    }
+
+    if (activeSection === 'archive') {
+      return (
+        <>
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Archive</h2>
+              <p>Browse completed rescue missions, recovery outcomes, and shelter transfer history.</p>
+            </div>
+
+            <div className="topbar-actions">
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+                {sidebarOpen ? 'Hide menu' : 'Show menu'}
+              </button>
+            </div>
+          </section>
+
+          <SectionCard title="Completed cases" subtitle="Resolved and archived missions">
+            <div className="simple-list">
+              {archiveSeed.map((item) => (
+                <div className="simple-row" key={item.id}>
+                  <div>
+                    <strong>{item.name}</strong>
+                    <p>Case {item.id} · {item.date}</p>
+                  </div>
+                  <span className="archive-tag">{item.result}</span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </>
+      )
+    }
+
+    return (
+      <>
+        <section className="hero-block">
+          <div className="hero-copy">
+            <h2>Active Rescues</h2>
+            <p>Track active rescue cases, dispatch teams, and review field details in one place.</p>
+          </div>
+
+          <div className="topbar-actions">
+            <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+              {sidebarOpen ? 'Hide menu' : 'Show menu'}
+            </button>
+          </div>
+        </section>
+
+        <section className="stats-grid" aria-label="Mission statistics">
+          <StatCard label="Critical alerts" value={String(criticalCount).padStart(2, '0')} meta="Rescues needing immediate action" />
+          <StatCard label="In transit" value={String(inTransitCount).padStart(2, '0')} meta="Teams currently moving" />
+          <StatCard label="Safe today" value={String(stableCount + 28).padStart(2, '0')} meta="Successful extractions today" />
+          <StatCard label="Capacity" value="84%" meta="Available shelter and transport load" />
+        </section>
+
+        <section className="workspace">
+          <div className="panel">
+            <div className="panel-header">
+              <div>
+                <h3>Active mission stream</h3>
+                <p>Pick a mission to review the current status and dispatch notes.</p>
+              </div>
+
+              <div className="controls">
+                <input
+                  className="search"
+                  type="text"
+                  placeholder="Search missions"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  autoComplete="off"
+                />
+
+                {['All', 'Critical', 'Stable', 'Watch'].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`toolbar-btn ${filter === value ? 'active' : ''}`}
+                    onClick={() => setFilter(value)}
+                  >
+                    {value}
+                  </button>
+                ))}
+
+                {['Priority', 'Distance', 'Name'].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`toolbar-btn ${sort === value ? 'active' : ''}`}
+                    onClick={() => setSort(value)}
+                  >
+                    {value}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Luna */}
-            <div style={{ background: '#1a1a1a', border: '1px solid #272727', borderRadius: 16, overflow: 'hidden', animation: 'fadeUp 0.5s ease 0.18s both' }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ width: '100%', height: 200, background: 'linear-gradient(160deg,#071510,#0e2a1a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 90 }}>🐈</div>
-                <div style={{ position: 'absolute', top: 12, left: 12 }}><StatusBadge label="STABLE" color="#22c55e" bg="#22c55e22" /></div>
-              </div>
-              <div style={{ padding: '16px 18px 18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Case #7690:<br />"Luna"</div>
-                    <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>Residential Transfer – Sector 4</div>
-                  </div>
-                  <span style={{ background: '#252525', border: '1px solid #333', borderRadius: 8, padding: '5px 10px', fontSize: 10, color: '#888', whiteSpace: 'nowrap' }}>Post-Op Recovery</span>
+            <div className="mission-list">
+              {visibleMissions.length > 0 ? (
+                visibleMissions.map((mission) => (
+                  <MissionRow
+                    key={mission.id}
+                    mission={mission}
+                    active={selectedMission?.id === mission.id}
+                    onSelect={setSelectedId}
+                  />
+                ))
+              ) : (
+                <div className="detail-note">
+                  <p>No missions match the current search or filters.</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <Avatar initials="DA" color="#ff6b2b" size={26} />
-                  <Avatar initials="+2" color="#555" size={26} />
-                  <span style={{ fontSize: 11, color: '#666' }}>Team: Dr. Aris + 2 Others</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {[{ label: 'HEART RATE', value: '112 BPM', color: '#22c55e' }, { label: 'LAST FEED', value: '14:20', color: '#ccc' }].map(({ label, value, color }) => (
-                    <div key={label} style={{ background: '#222', border: '1px solid #2e2e2e', borderRadius: 10, padding: '11px 14px' }}>
-                      <div style={{ fontSize: 8, color: '#555', letterSpacing: 1.5, fontFamily: mono, marginBottom: 6 }}>{label}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color, fontFamily: mono }}>{value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
-          <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 12 }}>SECONDARY LOGISTICS</div>
-          {[
-            { icon: '📋', title: 'Supply Run: Medical Grade Alpha', sub: 'Courier needed for central clinic resupply', eta: 'ETA 45m', priority: 'Low Priority', etaColor: '#ff6b2b' },
-            { icon: '🏠', title: 'Shelter Maintenance – Kennel A', sub: 'Routine sanitation and water check', eta: 'NOW', priority: 'Scheduled', etaColor: '#fff' },
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#1a1a1a', border: '1px solid #252525', borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#222', border: '1px solid #2e2e2e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{item.icon}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: '#ddd', fontWeight: 500 }}>{item.title}</div>
-                <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{item.sub}</div>
+          {selectedMission && (
+            <aside className="panel detail-card">
+              <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
+
+              <div className="detail-body">
+                <div className="detail-head">
+                  <div>
+                    <StatusPill status={selectedMission.status} />
+                    <h3 style={{ marginTop: 12 }}>Case #{selectedMission.id}: {selectedMission.name}</h3>
+                    <p>{selectedMission.location}</p>
+                  </div>
+
+                  <span className="distance-chip">{selectedMission.distance}</span>
+                </div>
+
+                <div className="detail-grid">
+                  <div className="mini-card">
+                    <span>Assigned team</span>
+                    <strong>{selectedMission.team}</strong>
+                  </div>
+
+                  <div className="mini-card">
+                    <span>Heart rate</span>
+                    <strong>{selectedMission.heartRate}</strong>
+                  </div>
+                </div>
+
+                <div className="detail-note">
+                  <p>{selectedMission.summary}</p>
+                </div>
+
+                <div className="detail-actions">
+                  <button className="detail-primary-btn" type="button">{selectedMission.action}</button>
+                  <button className="detail-ghost-btn" type="button">Open case</button>
+                </div>
               </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: item.etaColor, fontFamily: mono }}>{item.eta}</div>
-                <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>{item.priority}</div>
+            </aside>
+          )}
+        </section>
+
+        <section className="logistics" aria-label="Secondary logistics">
+          <div className="logistics-head">
+            <h3>Secondary logistics</h3>
+            <span className="eyebrow small-no-margin">Support queue</span>
+          </div>
+
+          {logisticsSeed.map((item) => (
+            <button key={item.id} className="logistics-item" type="button">
+              <div className="logistics-icon">{item.icon}</div>
+              <div>
+                <h4>{item.title}</h4>
+                <p>{item.detail}</p>
               </div>
-              <span style={{ color: '#444', fontSize: 18, marginLeft: 4 }}>›</span>
-            </div>
+              <div className="logistics-meta">
+                <strong>{item.eta}</strong>
+                <span>{item.type}</span>
+              </div>
+            </button>
           ))}
+        </section>
+      </>
+    )
+  }
+
+  return (
+    <div className="missions-shell">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+          --bg: #07090d;
+          --panel: #11151c;
+          --panel-2: #171c24;
+          --panel-3: #0d1117;
+          --border: rgba(255,255,255,0.08);
+          --text: #f4f7fb;
+          --muted: #9aa4b2;
+          --soft: #6b7280;
+          --accent: #ff6b2b;
+          --shadow: 0 18px 48px rgba(0,0,0,0.24);
+          --radius: 22px;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        .missions-shell {
+          min-height: calc(100vh - 60px);
+          background:
+            radial-gradient(circle at top right, rgba(255,107,43,0.12), transparent 26%),
+            linear-gradient(180deg, #07090d 0%, #090c11 100%);
+          color: var(--text);
+          font-family: 'Inter', sans-serif;
+        }
+
+        .layout {
+          display: grid;
+          grid-template-columns: ${sidebarOpen ? '188px 1fr' : '1fr'};
+          gap: 24px;
+          min-height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+          min-width: 0;
+          min-height: calc(100vh - 60px);
+          background: linear-gradient(180deg, #05070b 0%, #070912 100%);
+          border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .command-card {
+          margin: 14px 8px 14px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(180deg, rgba(32,30,54,0.95), rgba(25,24,42,0.92));
+          border-radius: 12px;
+          padding: 8px 10px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .command-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 11px;
+          display: grid;
+          place-items: center;
+          background: linear-gradient(135deg, #ff7b32, #ff5a1f);
+          color: white;
+          font-size: 13px;
+          font-weight: 700;
+          flex-shrink: 0;
+        }
+
+        .command-card h3 {
+          margin: 0;
+          font-size: 10px;
+          font-weight: 700;
+          color: #f4f4f8;
+          line-height: 1.15;
+        }
+
+        .command-card p {
+          margin: 3px 0 0;
+          font-size: 8px;
+          letter-spacing: 0.16em;
+          color: #73778a;
+          line-height: 1.1;
+        }
+
+        .nav-list {
+          display: grid;
+          padding: 0 0 8px;
+          border-top: 1px solid rgba(255,255,255,0.04);
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .ref-nav-link {
+          position: relative;
+          min-height: 42px;
+          border-radius: 0;
+          padding: 0 13px;
+          color: #6f7385;
+          border: 0;
+          background: transparent;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          width: 100%;
+          cursor: pointer;
+          text-align: left;
+        }
+
+        .ref-nav-link:hover {
+          background: rgba(255,255,255,0.02);
+          color: #d5d8e3;
+        }
+
+        .ref-nav-link.active {
+          background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04));
+          color: #ff6b2b;
+        }
+
+        .ref-nav-link.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 8px;
+          bottom: 8px;
+          width: 3px;
+          border-radius: 0 3px 3px 0;
+          background: #ff6b2b;
+        }
+
+        .nav-icon {
+          width: 12px;
+          display: inline-flex;
+          justify-content: center;
+          font-size: 10px;
+        }
+
+        .sidebar-footer-ref {
+          padding: 12px 8px 14px;
+          display: grid;
+          gap: 6px;
+        }
+
+        .new-mission-btn,
+        .footer-link-btn,
+        .collapse-btn,
+        .toolbar-btn,
+        .mission-row,
+        .detail-primary-btn,
+        .detail-ghost-btn,
+        .logistics-item,
+        .modal-close-btn,
+        .modal-submit-btn {
+          transition: transform .18s ease, background .18s ease, border-color .18s ease;
+        }
+
+        .new-mission-btn:hover,
+        .footer-link-btn:hover,
+        .collapse-btn:hover,
+        .toolbar-btn:hover,
+        .mission-row:hover,
+        .detail-primary-btn:hover,
+        .detail-ghost-btn:hover,
+        .logistics-item:hover,
+        .modal-close-btn:hover,
+        .modal-submit-btn:hover {
+          transform: translateY(-1px);
+        }
+
+        .new-mission-btn {
+          width: 100%;
+          min-height: 40px;
+          border: 0;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #ff7c32, #f35a19);
+          color: white;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .footer-link-btn {
+          width: 100%;
+          text-align: left;
+          background: transparent;
+          border: 0;
+          color: #6f7385;
+          padding: 6px 0;
+          font-size: 12px;
+          cursor: pointer;
+        }
+
+        .content {
+          min-width: 0;
+          display: grid;
+          gap: 24px;
+          padding: 28px 28px 28px 0;
+        }
+
+        .hero-block {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 16px;
+          align-items: start;
+        }
+
+        .hero-copy h2 {
+          margin: 0;
+          font-size: 42px;
+          line-height: 1.05;
+        }
+
+        .hero-copy p {
+          margin: 12px 0 0;
+          max-width: 620px;
+          color: var(--muted);
+          font-size: 16px;
+          line-height: 1.6;
+        }
+
+        .topbar-actions {
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .collapse-btn,
+        .toolbar-btn,
+        .modal-close-btn {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          color: var(--text);
+          border-radius: 14px;
+          min-height: 46px;
+          padding: 0 16px;
+          cursor: pointer;
+        }
+
+        .modal-submit-btn,
+        .detail-primary-btn {
+          border: 0;
+          background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%);
+          color: white;
+          border-radius: 14px;
+          min-height: 46px;
+          padding: 0 16px;
+          cursor: pointer;
+          font-weight: 700;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
+        }
+
+        .stat-card,
+        .panel {
+          background: rgba(17,21,28,0.94);
+          border: 1px solid var(--border);
+          border-radius: 24px;
+          box-shadow: var(--shadow);
+        }
+
+        .stat-card {
+          padding: 18px;
+        }
+
+        .eyebrow {
+          display: block;
+          margin-bottom: 10px;
+          color: var(--muted);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .small-no-margin {
+          margin-bottom: 0;
+        }
+
+        .stat-card strong {
+          display: block;
+          font-size: 28px;
+          line-height: 1;
+          margin-bottom: 8px;
+        }
+
+        .stat-card p,
+        .panel-header p,
+        .mission-copy > p,
+        .logistics-item p,
+        .simple-row p {
+          margin: 0;
+          color: var(--muted);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .workspace {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px);
+          gap: 20px;
+          align-items: start;
+        }
+
+        .panel-header {
+          padding: 20px 20px 16px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .panel-header h3,
+        .logistics-head h3 {
+          margin: 0;
+          font-size: 18px;
+        }
+
+        .panel-pad {
+          padding: 16px;
+        }
+
+        .controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .search,
+        .form-input,
+        .form-select,
+        .form-textarea {
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          color: var(--text);
+          padding: 12px 14px;
+          outline: none;
+          font: inherit;
+        }
+
+        .search {
+          min-width: 220px;
+          border-radius: 999px;
+        }
+
+        .form-textarea {
+          min-height: 110px;
+          resize: vertical;
+        }
+
+        .toolbar-btn.active {
+          background: rgba(255,255,255,0.08);
+        }
+
+        .mission-list,
+        .logistics,
+        .simple-list {
+          display: grid;
+          gap: 12px;
+        }
+
+        .mission-list {
+          padding: 16px;
+        }
+
+        .mission-row,
+        .logistics-item,
+        .simple-row {
+          width: 100%;
+          border: 1px solid var(--border);
+          background: var(--panel-2);
+          color: inherit;
+          border-radius: 18px;
+          padding: 14px;
+        }
+
+        .mission-row {
+          display: grid;
+          grid-template-columns: 70px 1fr;
+          gap: 14px;
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .mission-row.active {
+          border-color: rgba(255,107,43,0.6);
+          background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02));
+        }
+
+        .mission-thumb {
+          width: 70px;
+          height: 70px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          font-size: 34px;
+        }
+
+        .mission-thumb.danger { background: linear-gradient(180deg, #4a201f, #2b1212); }
+        .mission-thumb.calm { background: linear-gradient(180deg, #12312b, #10201d); }
+        .mission-thumb.watch { background: linear-gradient(180deg, #3f3217, #241c0f); }
+
+        .mission-topline,
+        .detail-head,
+        .simple-row,
+        .logistics-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .mission-topline h3,
+        .detail-head h3 {
+          margin: 0;
+          font-size: 16px;
+        }
+
+        .mission-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          color: var(--soft);
+          font-size: 12px;
+        }
+
+        .status-pill,
+        .archive-tag,
+        .distance-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          border-radius: 999px;
+          padding: 7px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+
+        .detail-card {
+          overflow: hidden;
+        }
+
+        .hero {
+          min-height: 220px;
+          display: grid;
+          place-items: center;
+          font-size: 96px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
+        .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
+        .hero.watch { background: linear-gradient(180deg, #55451e 0%, #20180b 100%); }
+
+        .detail-body {
+          padding: 20px;
+          display: grid;
+          gap: 18px;
+        }
+
+        .detail-head p {
+          margin: 6px 0 0;
+          color: var(--muted);
+          font-size: 14px;
+        }
+
+        .distance-chip,
+        .archive-tag {
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          color: var(--text);
+        }
+
+        .detail-grid,
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+
+        .mini-card,
+        .detail-note {
+          border-radius: 18px;
+          background: var(--panel-3);
+          border: 1px solid var(--border);
+          padding: 16px;
+        }
+
+        .mini-card span {
+          display: block;
+          color: var(--muted);
+          font-size: 12px;
+          margin-bottom: 8px;
+        }
+
+        .mini-card strong {
+          font-size: 18px;
+        }
+
+        .detail-note p {
+          margin: 0;
+          color: #d0d5dd;
+          line-height: 1.6;
+          font-size: 14px;
+        }
+
+        .detail-actions,
+        .modal-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .detail-primary-btn,
+        .detail-ghost-btn,
+        .modal-close-btn,
+        .modal-submit-btn {
+          flex: 1;
+          min-height: 46px;
+          font-weight: 700;
+        }
+
+        .detail-ghost-btn {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          color: var(--text);
+          border-radius: 14px;
+          cursor: pointer;
+        }
+
+        .logistics-item {
+          text-align: left;
+          display: grid;
+          grid-template-columns: 44px 1fr auto;
+          gap: 14px;
+          align-items: center;
+          cursor: pointer;
+        }
+
+        .logistics-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          background: var(--panel-2);
+          font-size: 20px;
+        }
+
+        .logistics-item h4,
+        .simple-row strong {
+          margin: 0 0 4px;
+          font-size: 15px;
+        }
+
+        .logistics-meta {
+          text-align: right;
+        }
+
+        .logistics-meta strong {
+          display: block;
+          font-size: 14px;
+        }
+
+        .logistics-meta span {
+          color: var(--muted);
+          font-size: 12px;
+        }
+
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.62);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 1000;
+        }
+
+        .modal-card {
+          width: min(680px, 100%);
+          height: min(88vh, 760px);
+          background: #0f141b;
+          border: 1px solid var(--border);
+          border-radius: 24px;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          margin: auto;
+        }
+
+        .modal-head {
+          padding: 20px 20px 16px;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+
+        .modal-head h3 {
+          margin: 0 0 6px;
+          font-size: 22px;
+        }
+
+        .modal-head p {
+          margin: 0;
+          color: var(--muted);
+          font-size: 14px;
+        }
+
+        .modal-form {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+        }
+
+        .modal-scroll {
+          flex: 1;
+          min-height: 0;
+          padding: 20px;
+          display: grid;
+          gap: 14px;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .modal-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .form-field {
+          display: grid;
+          gap: 8px;
+        }
+
+        .form-field label {
+          font-size: 13px;
+          color: #d7dde6;
+          font-weight: 600;
+        }
+
+        .modal-actions {
+          padding: 16px 20px 20px;
+          border-top: 1px solid var(--border);
+          background: #0f141b;
+          flex-shrink: 0;
+        }
+
+        @media (max-width: 1180px) {
+          .workspace {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 980px) {
+          .layout {
+            grid-template-columns: 1fr;
+          }
+
+          .sidebar {
+            display: ${sidebarOpen ? 'block' : 'none'};
+            min-height: auto;
+          }
+
+          .content {
+            padding: 20px 16px 24px;
+          }
+        }
+
+        @media (max-width: 780px) {
+          .hero-block,
+          .mission-row,
+          .detail-grid,
+          .form-grid,
+          .logistics-item {
+            grid-template-columns: 1fr;
+          }
+
+          .mission-thumb {
+            width: 100%;
+            height: 120px;
+          }
+
+          .detail-head,
+          .simple-row,
+          .logistics-head,
+          .topbar-actions,
+          .controls,
+          .detail-actions,
+          .modal-actions {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .hero-copy h2 {
+            font-size: 34px;
+          }
+
+          .modal-card {
+            height: min(92vh, 760px);
+            width: 100%;
+          }
+
+          .modal-backdrop {
+            padding: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="layout">
+        {sidebarOpen && (
+          <aside className="sidebar">
+            <div className="command-card">
+              <div className="command-icon">✦</div>
+              <div>
+                <h3>Command Center</h3>
+                <p>SECTOR 7 DELTA</p>
+              </div>
+            </div>
+
+            <nav className="nav-list" aria-label="Main navigation">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(item.id)}
+                >
+                  <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className="sidebar-footer-ref">
+              <button className="new-mission-btn" type="button" onClick={() => setIsCreateOpen(true)}>
+                New Mission
+              </button>
+              <button className="footer-link-btn" type="button">Support</button>
+              <button className="footer-link-btn" type="button">Sign Out</button>
+            </div>
+          </aside>
+        )}
+
+        <main className="content">
+          {renderContent()}
         </main>
       </div>
-    </>
+
+      {isCreateOpen && (
+        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <h3>Create new mission</h3>
+              <p>Add a rescue case and place it directly into the active mission stream.</p>
+            </div>
+
+            <form className="modal-form" onSubmit={handleCreateMission} autoComplete="off">
+              <div className="modal-scroll">
+                <div className="form-grid">
+                  <div className="form-field">
+                    <label htmlFor="name">Animal name</label>
+                    <input
+                      id="name"
+                      name="name"
+                      className="form-input"
+                      value={form.name}
+                      onChange={handleFormChange}
+                      placeholder="Cooper"
+                      autoComplete="new-password"
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="emoji">Emoji</label>
+                    <select
+                      id="emoji"
+                      name="emoji"
+                      className="form-select"
+                      value={form.emoji}
+                      onChange={handleFormChange}
+                      autoComplete="off"
+                    >
+                      <option value="🐕">🐕 Dog</option>
+                      <option value="🐈">🐈 Cat</option>
+                      <option value="🦊">🦊 Fox</option>
+                      <option value="🐺">🐺 Wolf</option>
+                      <option value="🐇">🐇 Rabbit</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="status">Status</label>
+                    <select
+                      id="status"
+                      name="status"
+                      className="form-select"
+                      value={form.status}
+                      onChange={handleFormChange}
+                      autoComplete="off"
+                    >
+                      <option value="Critical">Critical</option>
+                      <option value="Watch">Watch</option>
+                      <option value="Stable">Stable</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="priority">Priority</label>
+                    <select
+                      id="priority"
+                      name="priority"
+                      className="form-select"
+                      value={form.priority}
+                      onChange={handleFormChange}
+                      autoComplete="off"
+                    >
+                      <option value="1">1 — High</option>
+                      <option value="2">2 — Medium</option>
+                      <option value="3">3 — Low</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="distance">Distance</label>
+                    <input
+                      id="distance"
+                      name="distance"
+                      className="form-input"
+                      value={form.distance}
+                      onChange={handleFormChange}
+                      placeholder="2.4 km"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="heartRate">Heart rate</label>
+                    <input
+                      id="heartRate"
+                      name="heartRate"
+                      className="form-input"
+                      value={form.heartRate}
+                      onChange={handleFormChange}
+                      placeholder="128 BPM"
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="location">Location</label>
+                  <input
+                    id="location"
+                    name="location"
+                    className="form-input"
+                    value={form.location}
+                    onChange={handleFormChange}
+                    placeholder="Industrial Zone — Terminal B"
+                    autoComplete="new-password"
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="team">Assigned team</label>
+                  <input
+                    id="team"
+                    name="team"
+                    className="form-input"
+                    value={form.team}
+                    onChange={handleFormChange}
+                    placeholder="Dr. Aris + 2"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="summary">Summary</label>
+                  <textarea
+                    id="summary"
+                    name="summary"
+                    className="form-textarea"
+                    value={form.summary}
+                    onChange={handleFormChange}
+                    placeholder="Short case description..."
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="modal-submit-btn">
+                  Create mission
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
