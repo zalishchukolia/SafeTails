@@ -41,16 +41,16 @@ function AnimalDetailPage() {
 
   const gallery =
     animal.gallery && Array.isArray(animal.gallery) && animal.gallery.length > 0
-      ? animal.gallery.slice(0, 4)
-      : [mainImage, mainImage, mainImage, mainImage]
+      ? animal.gallery.slice(0, 3)
+      : [mainImage, mainImage, mainImage]
 
   return (
     <div className="min-h-screen bg-[#0f0f10] text-white">
-      <main className="max-w-[1500px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.02fr)_470px] gap-6">
+      <main className="max-w-[1420px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_470px] gap-6">
           <section className="space-y-6">
             <div className="rounded-[30px] bg-[#151517] border border-white/10 p-4">
-              <div className="relative rounded-[24px] overflow-hidden bg-black h-[280px] sm:h-[320px] lg:h-[360px]">
+              <div className="relative rounded-[24px] overflow-hidden bg-black h-[270px] sm:h-[310px] lg:h-[360px]">
                 {mainImage ? (
                   <img
                     src={mainImage}
@@ -82,7 +82,7 @@ function AnimalDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 {gallery.map((img, idx) => (
                   <div
                     key={idx}
