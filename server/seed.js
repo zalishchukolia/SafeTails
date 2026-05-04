@@ -18,6 +18,7 @@ const animals = [
   { name: 'Арес',   species: 'собака', age: 3, description: 'Ротвейлер',                 status: 'needs rescue', temperament: 'активний'    },
   { name: 'Хмара',  species: 'кіт',    age: 5, description: 'Сірий товстун',             status: 'needs rescue', temperament: 'спокійний'   },
   { name: 'Дейзі',  species: 'собака', age: 2, description: 'Золотистий ретривер',       status: 'rescued',      temperament: 'лагідний'    },
+  { name: 'Мурка', species: 'кіт',    age: 4, description: 'Руденька красуня',            status: 'needs rescue', temperament: 'незалежний'  },
 ]
 
 mongoose.connect(process.env.MONGO_URI)
