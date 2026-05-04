@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
-const font = "'DM Sans', 'Inter', sans-serif"
-const mono = "'DM Mono', 'Courier New', monospace"
+
+const font = "'Inter', sans-serif"
+const mono = "'Inter', monospace"
+
 
 function SectionTag({ children }) {
   return (
@@ -22,6 +24,7 @@ function SectionTag({ children }) {
     </div>
   )
 }
+
 
 function StoryCard({ title, text, status, bg }) {
   return (
@@ -47,11 +50,13 @@ function StoryCard({ title, text, status, bg }) {
         🐾
       </div>
 
+
       <div style={{ padding: 22 }}>
         <h3 style={{ color: '#fff', fontSize: 22, margin: '0 0 10px' }}>{title}</h3>
         <p style={{ color: '#8e8e8e', fontSize: 14, lineHeight: 1.8, marginBottom: 16 }}>
           {text}
         </p>
+
 
         <div
           style={{
@@ -82,6 +87,7 @@ function StoryCard({ title, text, status, bg }) {
   )
 }
 
+
 function TeamCard({ name, role }) {
   return (
     <div
@@ -110,14 +116,17 @@ function TeamCard({ name, role }) {
         {name[0]}
       </div>
 
+
       <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
         {name}
       </div>
+
 
       <div style={{ color: '#8a8a8a', fontSize: 13, lineHeight: 1.7 }}>{role}</div>
     </div>
   )
 }
+
 
 function FooterColumn({ title, links }) {
   return (
@@ -133,6 +142,7 @@ function FooterColumn({ title, links }) {
       >
         {title}
       </div>
+
 
       {links.map((link) => (
         <div
@@ -150,6 +160,7 @@ function FooterColumn({ title, links }) {
     </div>
   )
 }
+
 
 function Footer() {
   return (
@@ -186,6 +197,7 @@ function Footer() {
               SafeTails
             </div>
 
+
             <p
               style={{
                 fontSize: 13,
@@ -195,16 +207,18 @@ function Footer() {
                 margin: 0,
               }}
             >
-              A tactical approach to animal welfare. Precision logistics meets radical empathy
-              for the voiceless. Sector 7 Delta Ops.
+              Допомагаємо тваринам знайти безпеку, турботу та новий дім.
+              Разом ми можемо змінити їхнє майбутнє.
             </p>
           </div>
 
-          <FooterColumn title="COMMAND" links={['Dashboard', 'Active Feed', 'Dispatch']} />
-          <FooterColumn title="IMPACT" links={['Adoptions', 'Medical Log', 'Archive']} />
-          <FooterColumn title="SUPPORT" links={['Help Center', 'Donate', 'Volunteer']} />
-          <FooterColumn title="LEGAL" links={['Privacy', 'Terms']} />
+
+          <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
+          <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
+          <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
+          <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
         </div>
+
 
         <div
           style={{
@@ -218,8 +232,9 @@ function Footer() {
           }}
         >
           <span style={{ fontSize: 12, color: '#4d4d4d' }}>
-            © 2024 Command Center Delta. Operative Network. All rights reserved.
+            © 2024 SafeTails. Всі права захищені.
           </span>
+
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
@@ -231,31 +246,36 @@ function Footer() {
   )
 }
 
+
 export default function FindingNewBeginningsPage() {
   const [form, setForm] = useState({
     fullName: '',
     city: '',
     contact: '',
-    helpType: 'Volunteer',
+    helpType: 'Волонтер',
     availability: '',
     experience: '',
     note: '',
   })
+
 
   const onChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,700&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+
 
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { margin: 0; background: #0f0f0f; }
         input, textarea, select, button { outline: none; }
+
 
         @media (max-width: 1100px) {
           .hero-grid,
@@ -268,21 +288,25 @@ export default function FindingNewBeginningsPage() {
           }
         }
 
+
         @media (max-width: 700px) {
           .page-wrap {
             padding: 32px 20px 70px !important;
           }
+
 
           .hero-title {
             font-size: 40px !important;
             line-height: 1.08 !important;
           }
 
+
           .double-grid {
             grid-template-columns: 1fr !important;
           }
         }
       `}</style>
+
 
       <div
         style={{
@@ -305,7 +329,8 @@ export default function FindingNewBeginningsPage() {
           }}
         >
           <section style={{ padding: '18px 0 58px' }}>
-            <SectionTag>GET INVOLVED</SectionTag>
+            <SectionTag>ДОЛУЧИТИСЯ</SectionTag>
+
 
             <div
               className="hero-grid"
@@ -324,18 +349,21 @@ export default function FindingNewBeginningsPage() {
                     lineHeight: 1.03,
                     margin: '0 0 18px',
                     letterSpacing: -2,
+                    fontFamily: "'Merriweather', serif",
                   }}
                 >
-                  Help Animals Find
+                  Допоможи тваринам знайти
                   <br />
-                  <span style={{ color: '#ff6b2b' }}>Care, Safety, Home</span>
+                  <span style={{ color: '#ff6b2b' }}>турботу, безпеку, дім</span>
                 </h1>
 
+
                 <p style={{ color: '#8d8d8d', fontSize: 16, lineHeight: 1.9, maxWidth: 650, marginBottom: 28 }}>
-                  SafeTails is a local initiative from Lviv, Ukraine. We bring together
-                  volunteers, foster families, and caring people who want to help rescued
-                  animals recover and start a new life.
+                  SafeTails — місцева ініціатива зі Львова, Україна. Ми об'єднуємо
+                  волонтерів, прийомні сім'ї та небайдужих людей, які хочуть допомогти
+                  врятованим тваринам одужати та розпочати нове життя.
                 </p>
+
 
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 26 }}>
                   <a
@@ -350,8 +378,9 @@ export default function FindingNewBeginningsPage() {
                       fontWeight: 700,
                     }}
                   >
-                    Join as Volunteer
+                    Стати волонтером
                   </a>
+
 
                   <a
                     href="#stories"
@@ -366,9 +395,10 @@ export default function FindingNewBeginningsPage() {
                       fontWeight: 600,
                     }}
                   >
-                    View Stories
+                    Історії успіху
                   </a>
                 </div>
+
 
                 <div
                   className="double-grid"
@@ -379,9 +409,9 @@ export default function FindingNewBeginningsPage() {
                   }}
                 >
                   {[
-                    ['3', 'Core team members'],
-                    ['Lviv', 'Main location'],
-                    ['24/7', 'Care and support mindset'],
+                    ['3', 'Учасники команди'],
+                    ['Львів', 'Основна локація'],
+                    ['24/7', 'Турбота та підтримка'],
                   ].map(([value, label]) => (
                     <div
                       key={label}
@@ -403,6 +433,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <div
                 style={{
                   background: 'linear-gradient(145deg,#1a1411,#2b1d17)',
@@ -416,15 +447,16 @@ export default function FindingNewBeginningsPage() {
               >
                 <div>
                   <div style={{ fontSize: 11, color: '#9d8a80', letterSpacing: 2, fontFamily: mono, marginBottom: 18 }}>
-                    HOW YOU CAN HELP
+                    ЯК ВИ МОЖЕТЕ ДОПОМОГТИ
                   </div>
+
 
                   <div style={{ display: 'grid', gap: 12 }}>
                     {[
-                      'Volunteer with daily coordination and support',
-                      'Become a foster home for an animal',
-                      'Help with transport and logistics',
-                      'Support communication and outreach',
+                      'Волонтерити з координацією та підтримкою щодня',
+                      'Стати прийомною сім\'єю для тварини',
+                      'Допомагати з транспортуванням та логістикою',
+                      'Підтримувати комунікацію та поширення інформації',
                     ].map((item) => (
                       <div
                         key={item}
@@ -443,6 +475,7 @@ export default function FindingNewBeginningsPage() {
                   </div>
                 </div>
 
+
                 <div
                   style={{
                     marginTop: 20,
@@ -452,20 +485,22 @@ export default function FindingNewBeginningsPage() {
                     padding: 18,
                   }}
                 >
-                  <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
-                    Small team, real impact
+                  <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8, fontFamily: "'Merriweather', serif" }}>
+                    Маленька команда — реальний вплив
                   </div>
                   <p style={{ color: '#8b7f79', fontSize: 13, lineHeight: 1.8, margin: 0 }}>
-                    Every volunteer, foster family, and caring message matters. Even one small
-                    action can change an animal’s future.
+                    Кожен волонтер, прийомна сім'я та небайдуже повідомлення важливі.
+                    Навіть одна маленька дія може змінити майбутнє тварини.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
+
           <section id="volunteer-form" style={{ padding: '10px 0 70px' }}>
-            <SectionTag>VOLUNTEER / FOSTER</SectionTag>
+            <SectionTag>ВОЛОНТЕР / ПРИЙОМНА СІМ'Я</SectionTag>
+
 
             <div
               className="form-grid"
@@ -483,19 +518,22 @@ export default function FindingNewBeginningsPage() {
                   padding: 28,
                 }}
               >
-                <h2 style={{ fontSize: 36, margin: '0 0 14px' }}>Become part of SafeTails</h2>
+                <h2 style={{ fontSize: 36, margin: '0 0 14px', fontFamily: "'Merriweather', serif" }}>
+                  Стань частиною SafeTails
+                </h2>
                 <p style={{ color: '#8a8a8a', fontSize: 14, lineHeight: 1.9, marginBottom: 24 }}>
-                  We are looking for people who want to help animals through care, foster
-                  support, transport, and communication. Fill in the form and tell us how you
-                  would like to join.
+                  Ми шукаємо людей, які хочуть допомагати тваринам через турботу, прийомний
+                  догляд, транспортування та комунікацію. Заповни форму та розкажи, як хочеш
+                  долучитися.
                 </p>
+
 
                 <div style={{ display: 'grid', gap: 12 }}>
                   {[
-                    ['Volunteer', 'Support daily work, communication, and coordination.'],
-                    ['Foster', 'Temporarily care for an animal before adoption.'],
-                    ['Transport', 'Help move animals or supplies when needed.'],
-                    ['Other help', 'Join with any skill or support you can offer.'],
+                    ['Волонтер', 'Підтримка щоденної роботи, комунікації та координації.'],
+                    ['Прийомна сім\'я', 'Тимчасовий догляд за твариною перед тим, як вона знайде дім.'],
+                    ['Транспорт', 'Допомога з перевезенням тварин або припасів за потреби.'],
+                    ['Інша допомога', 'Долучайся з будь-якими навичками або підтримкою.'],
                   ].map(([title, text]) => (
                     <div
                       key={title}
@@ -517,6 +555,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <form
                 style={{
                   background: '#151515',
@@ -525,7 +564,10 @@ export default function FindingNewBeginningsPage() {
                   padding: 28,
                 }}
               >
-                <h2 style={{ fontSize: 32, margin: '0 0 18px' }}>Application form</h2>
+                <h2 style={{ fontSize: 32, margin: '0 0 18px', fontFamily: "'Merriweather', serif" }}>
+                  Форма заявки
+                </h2>
+
 
                 <div
                   className="double-grid"
@@ -540,17 +582,18 @@ export default function FindingNewBeginningsPage() {
                     name="fullName"
                     value={form.fullName}
                     onChange={onChange}
-                    placeholder="Full name"
+                    placeholder="Повне ім'я"
                     style={inputStyle}
                   />
                   <input
                     name="city"
                     value={form.city}
                     onChange={onChange}
-                    placeholder="City"
+                    placeholder="Місто"
                     style={inputStyle}
                   />
                 </div>
+
 
                 <div
                   className="double-grid"
@@ -565,7 +608,7 @@ export default function FindingNewBeginningsPage() {
                     name="contact"
                     value={form.contact}
                     onChange={onChange}
-                    placeholder="Phone or email"
+                    placeholder="Телефон або email"
                     style={inputStyle}
                   />
                   <select
@@ -574,37 +617,41 @@ export default function FindingNewBeginningsPage() {
                     onChange={onChange}
                     style={inputStyle}
                   >
-                    <option>Volunteer</option>
-                    <option>Foster</option>
-                    <option>Transport</option>
-                    <option>Other</option>
+                    <option>Волонтер</option>
+                    <option>Прийомна сім'я</option>
+                    <option>Транспорт</option>
+                    <option>Інше</option>
                   </select>
                 </div>
+
 
                 <input
                   name="availability"
                   value={form.availability}
                   onChange={onChange}
-                  placeholder="Availability"
+                  placeholder="Доступність"
                   style={{ ...inputStyle, marginBottom: 14 }}
                 />
+
 
                 <input
                   name="experience"
                   value={form.experience}
                   onChange={onChange}
-                  placeholder="Experience with animals"
+                  placeholder="Досвід з тваринами"
                   style={{ ...inputStyle, marginBottom: 14 }}
                 />
+
 
                 <textarea
                   name="note"
                   value={form.note}
                   onChange={onChange}
-                  placeholder="Tell us how you would like to help"
+                  placeholder="Розкажи, як хочеш допомогти"
                   rows={6}
                   style={{ ...inputStyle, resize: 'vertical', paddingTop: 14, marginBottom: 18 }}
                 />
+
 
                 <button
                   type="button"
@@ -621,22 +668,27 @@ export default function FindingNewBeginningsPage() {
                     fontFamily: font,
                   }}
                 >
-                  Submit application
+                  Надіслати заявку
                 </button>
               </form>
             </div>
           </section>
 
+
           <section id="stories" style={{ padding: '10px 0 70px' }}>
-            <SectionTag>SUCCESS STORIES</SectionTag>
+            <SectionTag>ІСТОРІЇ УСПІХУ</SectionTag>
+
 
             <div style={{ marginBottom: 22 }}>
-              <h2 style={{ fontSize: 40, margin: '0 0 12px' }}>Stories with a warm ending</h2>
+              <h2 style={{ fontSize: 40, margin: '0 0 12px', fontFamily: "'Merriweather', serif" }}>
+                Історії з теплим фіналом
+              </h2>
               <p style={{ color: '#8a8a8a', fontSize: 14, lineHeight: 1.9, maxWidth: 720 }}>
-                Rescue is not only about emergencies. It is also about healing, patience,
-                trust, and the people who help animals move from fear to safety.
+                Порятунок — це не лише про надзвичайні ситуації. Це також про зцілення,
+                терпіння, довіру та людей, які допомагають тваринам перейти від страху до безпеки.
               </p>
             </div>
+
 
             <div
               className="stories-grid"
@@ -647,28 +699,30 @@ export default function FindingNewBeginningsPage() {
               }}
             >
               <StoryCard
-                title="Luna"
-                text="Luna needed calm care and time to trust people again. With support and patience, she recovered and found a loving family."
-                status="Recovered and adopted"
+                title="Луна"
+                text="Луна потребувала спокійного догляду та часу, щоб знову навчитися довіряти людям. З підтримкою і терпінням вона одужала та знайшла люблячу сім'ю."
+                status="Одужала та знайшла дім"
                 bg="linear-gradient(160deg,#111224,#20233f)"
               />
               <StoryCard
-                title="Rex"
-                text="Rex arrived tired and anxious. Step by step, volunteers helped him regain confidence and prepare for a new home."
-                status="Supported by volunteers"
+                title="Рекс"
+                text="Рекс прийшов втомленим і тривожним. Крок за кроком волонтери допомогли йому відновити впевненість і підготуватися до нового дому."
+                status="За підтримки волонтерів"
                 bg="linear-gradient(160deg,#925d2b,#d29d56)"
               />
               <StoryCard
-                title="Mia"
-                text="Mia was very small and needed foster care. A temporary home gave her safety, and later she found a permanent family."
-                status="Foster success story"
+                title="Міа"
+                text="Міа була зовсім маленькою і потребувала прийомного догляду. Тимчасовий дім дав їй безпеку, а згодом вона знайшла постійну сім'ю."
+                status="Успішна прийомна сім'я"
                 bg="linear-gradient(160deg,#7d3c31,#b96b56)"
               />
             </div>
           </section>
 
+
           <section id="about-team" style={{ padding: '10px 0 84px' }}>
-            <SectionTag>ABOUT / TEAM</SectionTag>
+            <SectionTag>ПРО НАС / КОМАНДА</SectionTag>
+
 
             <div
               className="about-grid"
@@ -687,15 +741,19 @@ export default function FindingNewBeginningsPage() {
                   padding: 28,
                 }}
               >
-                <h2 style={{ fontSize: 36, margin: '0 0 14px' }}>Who we are</h2>
+                <h2 style={{ fontSize: 36, margin: '0 0 14px', fontFamily: "'Merriweather', serif" }}>
+                  Хто ми
+                </h2>
                 <p style={{ color: '#8b8b8b', fontSize: 14, lineHeight: 1.9, marginBottom: 18 }}>
-                  SafeTails is an animal rescue initiative based in Lviv, Ukraine. We focus on helping
-                  animals through support, care, foster opportunities, and finding safe homes.
+                  SafeTails — ініціатива з порятунку тварин, що базується у Львові, Україна.
+                  Ми допомагаємо тваринам через підтримку, догляд, можливості прийомних сімей
+                  та пошук безпечних домівок.
                 </p>
                 <p style={{ color: '#8b8b8b', fontSize: 14, lineHeight: 1.9, marginBottom: 18 }}>
-                  Our team is small, but we care deeply about creating a better future for animals in
-                  need through rescue, coordination, and community support.
+                  Наша команда невелика, але ми глибоко переймаємося створенням кращого
+                  майбутнього для тварин, яким потрібна допомога.
                 </p>
+
 
                 <div
                   className="double-grid"
@@ -707,10 +765,10 @@ export default function FindingNewBeginningsPage() {
                   }}
                 >
                   {[
-                    ['Mission', 'Rescue, care, and rehome animals'],
-                    ['Focus', 'Support, fostering, and safe adoption'],
-                    ['Based in', 'Lviv, Ukraine'],
-                    ['Team', '3 core members'],
+                    ['Місія', 'Рятувати, доглядати та знаходити дім для тварин'],
+                    ['Напрямок', 'Підтримка, прийомні сім\'ї та безпечний прихисток'],
+                    ['Локація', 'Львів, Україна'],
+                    ['Команда', '3 основні учасники'],
                   ].map(([k, v]) => (
                     <div
                       key={k}
@@ -730,6 +788,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <div
                 style={{
                   background: '#141414',
@@ -738,11 +797,14 @@ export default function FindingNewBeginningsPage() {
                   padding: 28,
                 }}
               >
-                <h2 style={{ fontSize: 36, margin: '0 0 14px' }}>Contact us</h2>
+                <h2 style={{ fontSize: 36, margin: '0 0 14px', fontFamily: "'Merriweather', serif" }}>
+                  Зв'яжіться з нами
+                </h2>
                 <p style={{ color: '#8b8b8b', fontSize: 14, lineHeight: 1.9, marginBottom: 20 }}>
-                  If you want to become a volunteer, support the project, or ask about foster care,
-                  you can reach us directly.
+                  Якщо ви хочете стати волонтером, підтримати проєкт або дізнатися про
+                  прийомний догляд — зв'яжіться з нами напряму.
                 </p>
+
 
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div style={contactCardStyle}>
@@ -755,8 +817,9 @@ export default function FindingNewBeginningsPage() {
                     </a>
                   </div>
 
+
                   <div style={contactCardStyle}>
-                    <div style={contactLabelStyle}>PHONE</div>
+                    <div style={contactLabelStyle}>ТЕЛЕФОН</div>
                     <a
                       href="tel:0637776633"
                       style={{ color: '#fff', textDecoration: 'none', fontSize: 15 }}
@@ -765,15 +828,17 @@ export default function FindingNewBeginningsPage() {
                     </a>
                   </div>
 
+
                   <div style={contactCardStyle}>
-                    <div style={contactLabelStyle}>ADDRESS</div>
+                    <div style={contactLabelStyle}>АДРЕСА</div>
                     <div style={{ color: '#fff', fontSize: 15 }}>
-                      Ukraine, Lviv, вул. Шевченка, 20
+                      Україна, Львів, вул. Шевченка, 20
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
 
             <div
               className="team-grid"
@@ -783,18 +848,20 @@ export default function FindingNewBeginningsPage() {
                 gap: 18,
               }}
             >
-              <TeamCard name="Ольга" role="Coordination and support" />
-              <TeamCard name="Юліана" role="Volunteer communication" />
-              <TeamCard name="Анна" role="Animal care support" />
+              <TeamCard name="Ольга" role="Координація та підтримка" />
+              <TeamCard name="Юліана" role="Комунікація з волонтерами" />
+              <TeamCard name="Анна" role="Догляд за тваринами" />
             </div>
           </section>
         </main>
+
 
         <Footer />
       </div>
     </>
   )
 }
+
 
 const inputStyle = {
   width: '100%',
@@ -807,12 +874,14 @@ const inputStyle = {
   fontFamily: font,
 }
 
+
 const contactCardStyle = {
   background: '#181818',
   border: '1px solid #262626',
   borderRadius: 16,
   padding: '16px 18px',
 }
+
 
 const contactLabelStyle = {
   color: '#6f6f6f',

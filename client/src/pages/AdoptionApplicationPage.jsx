@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+
 export default function AdoptionApplicationPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const prefilledAnimal = location.state?.animalName || ''
+
 
   const [form, setForm] = useState({
     applicantName: '',
@@ -14,8 +16,10 @@ export default function AdoptionApplicationPage() {
     message: '',
   })
 
+
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
+
 
   useEffect(() => {
     if (prefilledAnimal) {
@@ -26,6 +30,7 @@ export default function AdoptionApplicationPage() {
     }
   }, [prefilledAnimal])
 
+
   const handleChange = e => {
     const { name, value } = e.target
     setForm(prev => ({
@@ -34,14 +39,17 @@ export default function AdoptionApplicationPage() {
     }))
   }
 
+
   const handleSubmit = async () => {
     if (!form.applicantName || !form.email || !form.animalName) {
       alert("Будь ласка, заповніть обов'язкові поля")
       return
     }
 
+
     try {
       setSending(true)
+
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/adoptions`, {
         method: 'POST',
@@ -52,6 +60,7 @@ export default function AdoptionApplicationPage() {
         body: JSON.stringify(form),
       })
 
+
       let data = null
       try {
         data = await response.json()
@@ -59,9 +68,11 @@ export default function AdoptionApplicationPage() {
         data = null
       }
 
+
       if (!response.ok) {
         throw new Error(data?.message || 'Помилка при відправці')
       }
+
 
       setSubmitted(true)
     } catch (error) {
@@ -70,6 +81,7 @@ export default function AdoptionApplicationPage() {
       setSending(false)
     }
   }
+
 
   if (submitted) {
     return (
@@ -81,7 +93,7 @@ export default function AdoptionApplicationPage() {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '24px',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
         }}
       >
         <div
@@ -97,16 +109,19 @@ export default function AdoptionApplicationPage() {
         >
           <div style={{ fontSize: 52, marginBottom: 16 }}>🐾</div>
 
+
           <h1
             style={{
               color: '#fff',
               fontSize: 24,
               fontWeight: 700,
               margin: '0 0 12px',
+              fontFamily: "'Merriweather', serif",
             }}
           >
             Дякуємо за заявку!
           </h1>
+
 
           <p
             style={{
@@ -117,6 +132,7 @@ export default function AdoptionApplicationPage() {
           >
             Ми зв'яжемося з вами найближчим часом.
           </p>
+
 
           <button
             onClick={() => navigate('/adoption-form')}
@@ -139,13 +155,14 @@ export default function AdoptionApplicationPage() {
     )
   }
 
+
   return (
     <div
       style={{
         minHeight: '100vh',
         background: '#0d0d0d',
         padding: '48px 24px',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -171,8 +188,9 @@ export default function AdoptionApplicationPage() {
             e.currentTarget.style.color = '#666'
           }}
         >
-          ← Назад до адопції
+          ← Назад
         </button>
+
 
         <div style={{ marginBottom: 32 }}>
           <h1
@@ -182,10 +200,14 @@ export default function AdoptionApplicationPage() {
               margin: '0 0 10px',
               color: '#fff',
               lineHeight: 1.15,
+              fontFamily: "'Merriweather', serif",
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
             }}
           >
-            Заявка на <span style={{ color: '#ff6b2b' }}>адопцію</span>
+            Заявка на <span style={{ color: '#ff6b2b' }}>прихисток</span>
           </h1>
+
 
           <p
             style={{
@@ -199,6 +221,7 @@ export default function AdoptionApplicationPage() {
             найкращу домівку для врятованої тварини.
           </p>
         </div>
+
 
         <div
           style={{
@@ -214,10 +237,12 @@ export default function AdoptionApplicationPage() {
               fontSize: 16,
               fontWeight: 600,
               margin: '0 0 24px',
+              fontFamily: "'Merriweather', serif",
             }}
           >
             Особисті дані
           </h2>
+
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="Ваше ім'я *">
@@ -230,6 +255,7 @@ export default function AdoptionApplicationPage() {
               />
             </Field>
 
+
             <Field label="Email *">
               <input
                 type="email"
@@ -239,6 +265,7 @@ export default function AdoptionApplicationPage() {
                 placeholder="your@email.com"
               />
             </Field>
+
 
             <Field label="Телефон">
               <input
@@ -250,6 +277,7 @@ export default function AdoptionApplicationPage() {
               />
             </Field>
 
+
             <Field label="Ім'я тварини *">
               <input
                 type="text"
@@ -260,7 +288,8 @@ export default function AdoptionApplicationPage() {
               />
             </Field>
 
-            <Field label="Чому ви хочете взяти цю тварину?">
+
+            <Field label="Чому ви хочете дати прихисток цій тварині?">
               <textarea
                 name="message"
                 value={form.message}
@@ -270,6 +299,7 @@ export default function AdoptionApplicationPage() {
                 style={{ resize: 'none' }}
               />
             </Field>
+
 
             <button
               onClick={handleSubmit}
@@ -302,7 +332,10 @@ export default function AdoptionApplicationPage() {
         </div>
       </div>
 
+
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+
         input, textarea {
           width: 100%;
           box-sizing: border-box;
@@ -312,14 +345,16 @@ export default function AdoptionApplicationPage() {
           padding: 12px 16px;
           color: #fff;
           font-size: 14px;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           outline: none;
           transition: border-color 0.2s;
         }
 
+
         input:focus, textarea:focus {
           border-color: #ff6b2b;
         }
+
 
         input::placeholder, textarea::placeholder {
           color: #444;
@@ -328,6 +363,7 @@ export default function AdoptionApplicationPage() {
     </div>
   )
 }
+
 
 function Field({ label, children }) {
   return (

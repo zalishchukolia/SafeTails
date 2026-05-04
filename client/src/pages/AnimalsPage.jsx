@@ -8,21 +8,33 @@ const getColor   = u => u === 'critical' ? '#ff3333' : u === 'stable' ? '#22c55e
 const getLabel   = s => s === 'needs rescue' ? 'URGENT' : s === 'rescued' ? 'RESCUED' : s === 'in recovery' ? 'IN CARE' : 'AVAILABLE'
 const speciesIcon = s => s === 'кіт' ? '🐈' : '🐕'
 
+// ─── Реальні координати міст України [lng, lat] ───────────────────────────
 const BASE_COORDS = [
-  [30.52, 50.45], [24.02, 49.84], [34.98, 48.46], [33.39, 47.91],
-  [28.47, 49.23], [36.23, 49.99], [26.23, 50.61], [31.99, 51.49],
-  [30.73, 46.48], [32.05, 49.43], [38.99, 47.83], [35.00, 48.45],
-  [22.30, 49.83], [37.80, 48.97], [25.34, 48.92], [29.10, 47.60],
+  [30.52, 50.45],  // Київ
+  [36.23, 49.99],  // Харків
+  [34.98, 48.46],  // Дніпро
+  [37.80, 47.97],  // Маріуполь
+  [24.02, 49.84],  // Львів
+  [28.47, 49.23],  // Вінниця
+  [33.39, 47.91],  // Кривий Ріг
+  [26.23, 50.61],  // Луцьк
+  [31.99, 51.49],  // Чернігів
+  [30.73, 46.48],  // Миколаїв
+  [25.34, 48.92],  // Тернопіль
+  [29.10, 46.48],  // Одеса
+  [22.30, 49.83],  // Ужгород
+  [32.05, 49.43],  // Черкаси
+  [35.14, 47.84],  // Запоріжжя
+  [38.01, 47.10],  // Бердянськ
 ]
 
-// ✅ FALLBACK — показується коли backend недоступний
 const MOCK_ANIMALS = [
-  { _id: '0001', name: 'Buddy',   species: 'пес', age: 2, status: 'needs rescue',  description: 'Found roaming Highway 101. Malnourished but friendly. Needs immediate medical attention.', imageUrl: null },
-  { _id: '0002', name: 'Luna',    species: 'кіт', age: 1, status: 'rescued',       description: 'Rescued feline, safely arrived at Shelter Alpha. Doing well.', imageUrl: null },
+  { _id: '0001', name: 'Buddy',   species: 'пес', age: 2, status: 'needs rescue',  description: 'Found roaming Highway 101. Malnourished but friendly.', imageUrl: null },
+  { _id: '0002', name: 'Luna',    species: 'кіт', age: 1, status: 'rescued',       description: 'Rescued feline, safely arrived at Shelter Alpha.', imageUrl: null },
   { _id: '0003', name: 'Rex',     species: 'пес', age: 4, status: 'needs rescue',  description: 'Injured stray near Industrial Zone. Possible dehydration.', imageUrl: null },
   { _id: '0004', name: 'Murzyk',  species: 'кіт', age: 3, status: 'in recovery',  description: 'In care at Medical Hub South. Recovering from injury.', imageUrl: null },
   { _id: '0005', name: 'Bars',    species: 'пес', age: 5, status: 'needs rescue',  description: 'Spotted near Warehouse A4. Appears frightened.', imageUrl: null },
-  { _id: '0006', name: 'Sніжка', species: 'кіт', age: 2, status: 'rescued',       description: 'Rescued from flooded area. Now safe at Shelter Beta.', imageUrl: null },
+  { _id: '0006', name: 'Сніжка', species: 'кіт', age: 2, status: 'rescued',       description: 'Rescued from flooded area. Now safe at Shelter Beta.', imageUrl: null },
   { _id: '0007', name: 'Зірка',  species: 'пес', age: 6, status: 'in recovery',   description: 'Under veterinary observation. Expected full recovery.', imageUrl: null },
   { _id: '0008', name: 'Тигр',   species: 'кіт', age: 1, status: 'needs rescue',  description: 'Kitten found alone near train station. Very young.', imageUrl: null },
 ]
@@ -33,7 +45,46 @@ const FEED = [
   { type:'stable',   time:'28m ago', title:'SUCCESS', desc:'Rescued feline "Luna" safely arrived at Shelter Alpha.' },
 ]
 
-function AnimalCard({ animal, onClose }) {
+// ─── DANGER ZONES: точні полігони по межах областей [lat, lng] ───────────
+const DANGER_ZONES = [
+  // Луганська область (схід)
+  [
+    [49.60, 38.10], [49.90, 38.60], [50.40, 39.20], [50.80, 39.80],
+    [51.40, 39.30], [51.50, 38.40], [51.00, 38.00], [50.60, 37.60],
+    [50.20, 37.20], [49.70, 37.40], [49.40, 37.90], [49.60, 38.10],
+  ],
+  // Донецька область
+  [
+    [48.10, 37.00], [48.60, 37.50], [49.00, 38.00], [49.40, 38.20],
+    [49.20, 38.80], [48.70, 39.20], [48.20, 39.00], [47.70, 38.40],
+    [47.40, 37.90], [47.20, 37.20], [47.50, 36.80], [48.00, 36.90],
+    [48.10, 37.00],
+  ],
+  // Запорізька область (прифронтова смуга)
+  [
+    [47.30, 35.10], [47.70, 35.70], [47.90, 36.40], [47.60, 37.00],
+    [47.10, 36.80], [46.80, 36.20], [46.60, 35.60], [46.90, 35.00],
+    [47.30, 35.10],
+  ],
+  // Херсонська область (Лівобережжя + частина правого)
+  [
+    [46.60, 32.40], [47.00, 32.90], [47.30, 33.60], [47.50, 34.40],
+    [47.30, 35.00], [46.80, 34.80], [46.40, 34.20], [46.20, 33.40],
+    [46.00, 32.80], [46.30, 32.20], [46.60, 32.40],
+  ],
+  // Харківська область (прикордонна частина)
+  [
+    [49.80, 36.20], [50.20, 36.80], [50.40, 37.50], [50.10, 38.00],
+    [49.70, 37.60], [49.40, 37.00], [49.60, 36.50], [49.80, 36.20],
+  ],
+]
+
+const LAYER_URGENCY_MAP = {
+  'Rescue Units': 'critical',
+  'Shelter Hubs': 'stable',
+}
+
+function AnimalCard({ animal, onClose, isHover }) {
   const urgency  = getUrgency(animal.status)
   const color    = getColor(urgency)
   const label    = getLabel(animal.status)
@@ -53,6 +104,8 @@ function AnimalCard({ animal, onClose }) {
         overflow: 'hidden', display: 'flex',
         boxShadow: '0 28px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)',
         animation: 'cardIn .26s cubic-bezier(.34,1.56,.64,1) both',
+        opacity: isHover ? 0.92 : 1,
+        pointerEvents: isHover ? 'none' : 'auto',
       }}
     >
       <div style={{
@@ -70,13 +123,15 @@ function AnimalCard({ animal, onClose }) {
       </div>
 
       <div style={{ flex: 1, padding: '16px 18px', position: 'relative' }}>
-        <button onClick={onClose} style={{
-          position: 'absolute', top: 10, right: 10,
-          width: 26, height: 26, borderRadius: '50%',
-          background: 'rgba(0,0,0,0.07)', border: 'none',
-          color: '#999', fontSize: 16, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>×</button>
+        {!isHover && (
+          <button onClick={onClose} style={{
+            position: 'absolute', top: 10, right: 10,
+            width: 26, height: 26, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.07)', border: 'none',
+            color: '#999', fontSize: 16, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>×</button>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, paddingRight: 32 }}>
           <span style={{ fontSize: 22, fontWeight: 700, color: '#1a1010', fontFamily: font }}>{animal.name}</span>
@@ -95,88 +150,51 @@ function AnimalCard({ animal, onClose }) {
           {animal.description}
         </p>
 
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button style={{
-            flex: 1, height: 40, background: '#ff5555', color: '#fff',
-            border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700,
-            cursor: 'pointer', fontFamily: font,
-            boxShadow: '0 4px 16px rgba(255,60,60,0.4)',
-          }}>Assign Dispatch</button>
-          <button
-            onClick={() => window.location.href = `/animals/${animal._id}`}
-            style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: '#ddd0b8', border: 'none',
-              color: '#888', fontSize: 16, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>ℹ</button>
-        </div>
+        {!isHover && (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button style={{
+              flex: 1, height: 40, background: '#ff5555', color: '#fff',
+              border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', fontFamily: font,
+              boxShadow: '0 4px 16px rgba(255,60,60,0.4)',
+            }}>Assign Dispatch</button>
+            <button
+              onClick={() => window.location.href = `/animals/${animal._id}`}
+              style={{
+                width: 40, height: 40, borderRadius: 12,
+                background: '#ddd0b8', border: 'none',
+                color: '#888', fontSize: 16, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>ℹ</button>
+          </div>
+        )}
+
+        {isHover && (
+          <div style={{ fontSize: 11, color: '#a09070', fontStyle: 'italic' }}>
+            Клікни щоб закріпити
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function initMap(container, animals) {
-  const L = window.L
-  const map = L.map(container, {
-    center: [49.0, 31.5], zoom: 6,
-    zoomControl: false, attributionControl: false,
-  })
+// ─── LeafletMap ───────────────────────────────────────────────────────────────
+function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut, onClick }) {
+  const divRef             = useRef(null)
+  const mapRef             = useRef(null)
+  const dangerLayerGroupRef = useRef(null)
+  const [ready, setReady]  = useState(false)
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
-  L.control.zoom({ position: 'topright' }).addTo(map)
-
-  animals.forEach((animal, i) => {
-    const coords = BASE_COORDS[i % BASE_COORDS.length]
-    if (!coords) return
-
-    const urgency = getUrgency(animal.status)
-    const c       = getColor(urgency)
-    const isCrit  = urgency === 'critical'
-
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="position:relative;width:28px;height:28px;cursor:pointer">
-        ${isCrit ? `
-          <div style="position:absolute;inset:-14px;border-radius:50%;background:${c};opacity:0.18;animation:lp 2.5s ease-in-out infinite"></div>
-          <div style="position:absolute;inset:-5px;border-radius:50%;background:${c};opacity:0.12;animation:lp 2.5s ease-in-out infinite .6s"></div>
-        ` : ''}
-        <div style="position:absolute;inset:3px;border-radius:50%;background:${c};opacity:0.2"></div>
-        <div style="position:absolute;inset:8px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,0.65);box-shadow:0 0 12px ${c}cc,0 0 28px ${c}55"></div>
-      </div>`,
-      iconSize: [28, 28], iconAnchor: [14, 14],
-    })
-
-    const marker = L.marker([coords[1], coords[0]], { icon })
-
-    marker.on('click', function(e) {
-      e.originalEvent.stopPropagation()
-      window.dispatchEvent(new CustomEvent('animalPinClick', {
-        detail: animal, bubbles: true, cancelable: false,
-      }))
-    })
-
-    marker.addTo(map)
-  })
-
-  return map
-}
-
-function LeafletMap({ animals }) {
-  const divRef = useRef(null)
-  const mapRef = useRef(null)
-
+  // Ініціалізація карти — тільки один раз
   useEffect(() => {
-    // ✅ Завантажуємо Leaflet CSS одразу при монтуванні
     if (!document.getElementById('lf-css')) {
       const l = document.createElement('link')
       l.id = 'lf-css'; l.rel = 'stylesheet'
       l.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
       document.head.appendChild(l)
     }
-  }, [])
 
-  useEffect(() => {
     const load = () => new Promise(res => {
       if (window.L) return res()
       const s = document.createElement('script')
@@ -186,12 +204,102 @@ function LeafletMap({ animals }) {
     })
 
     load().then(() => {
-      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
-      if (divRef.current) mapRef.current = initMap(divRef.current, animals)
+      if (mapRef.current || !divRef.current) return
+      const L = window.L
+      const map = L.map(divRef.current, {
+        center: [49.0, 31.5], zoom: 6,
+        zoomControl: false, attributionControl: false,
+      })
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map)
+      L.control.zoom({ position: 'topright' }).addTo(map)
+      mapRef.current = map
+      setReady(true)
     })
 
-    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null } }
-  }, [animals])
+    return () => {
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
+      dangerLayerGroupRef.current = null
+      setReady(false)
+    }
+  }, [])
+
+  // Маркери
+  useEffect(() => {
+    if (!ready || !mapRef.current) return
+    const L = window.L
+    const map = mapRef.current
+
+    map.eachLayer(layer => {
+      if (layer instanceof L.Marker) layer.remove()
+    })
+
+    // Використовуємо Set для надійної перевірки
+    const activeUrgencies = new Set(
+      Object.entries(LAYER_URGENCY_MAP)
+        .filter(([layer]) => activeLayers.includes(layer))
+        .map(([, u]) => u)
+    )
+
+    animals.forEach((animal, i) => {
+      const coords = BASE_COORDS[i % BASE_COORDS.length]
+      if (!coords) return
+
+      const urgency = getUrgency(animal.status)
+      if (!activeUrgencies.has(urgency)) return
+
+      const c = getColor(urgency)
+      const isCrit = urgency === 'critical'
+
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:28px;height:28px;cursor:pointer">
+          ${isCrit ? `
+            <div style="position:absolute;inset:-14px;border-radius:50%;background:${c};opacity:0.18;animation:lp 2.5s ease-in-out infinite"></div>
+            <div style="position:absolute;inset:-5px;border-radius:50%;background:${c};opacity:0.12;animation:lp 2.5s ease-in-out infinite .6s"></div>
+          ` : ''}
+          <div style="position:absolute;inset:3px;border-radius:50%;background:${c};opacity:0.2"></div>
+          <div style="position:absolute;inset:8px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,0.65);box-shadow:0 0 12px ${c}cc,0 0 28px ${c}55"></div>
+        </div>`,
+        iconSize: [28, 28], iconAnchor: [14, 14],
+      })
+
+      const marker = L.marker([coords[1], coords[0]], { icon })
+      marker.on('mouseover', () => onHover(animal))
+      marker.on('mouseout', () => onHoverOut())
+      marker.on('click', e => { e.originalEvent.stopPropagation(); onClick(animal) })
+      marker.addTo(map)
+    })
+  }, [animals, activeLayers, ready])
+
+  // ─── Danger Zones ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!ready || !mapRef.current || !window.L) return
+    const L = window.L
+
+    if (dangerLayerGroupRef.current) {
+      dangerLayerGroupRef.current.remove()
+      dangerLayerGroupRef.current = null
+    }
+
+    if (showDangerZone) {
+      const group = L.layerGroup()
+
+      DANGER_ZONES.forEach(coords => {
+        // coords вже у форматі [lat, lng] — передаємо як є
+        L.polygon(coords, {
+          color: '#ff4400',
+          fillColor: '#ff2200',
+          fillOpacity: 0.18,
+          weight: 1.5,
+          dashArray: '8 5',
+          opacity: 0.65,
+        }).addTo(group)
+      })
+
+      group.addTo(mapRef.current)
+      dangerLayerGroupRef.current = group
+    }
+  }, [showDangerZone, ready])
 
   return (
     <>
@@ -218,23 +326,36 @@ function LeafletMap({ animals }) {
   )
 }
 
+const ALL_LAYERS = [
+  { l:'Rescue Units', c:'#ff8c00' },
+  { l:'Shelter Hubs', c:'#888'    },
+  { l:'Danger Zones', c:'#ff4444' },
+]
+
 export default function AnimalsPage() {
-  const [animals, setAnimals] = useState(MOCK_ANIMALS) // ✅ одразу мок — не чекаємо API
-  const [sel,     setSel]     = useState(null)
-  const [loading, setLoading] = useState(false) // ✅ false — карта без спінера одразу
+  const [animals, setAnimals]           = useState(MOCK_ANIMALS)
+  const [sel, setSel]                   = useState(null)
+  const [hovered, setHovered]           = useState(null)
+  const [activeLayers, setActiveLayers] = useState(['Rescue Units', 'Danger Zones'])
 
   useEffect(() => {
     fetch('https://safetails-production-8790.up.railway.app/api/animals')
       .then(r => r.json())
-      .then(d => { if (d && d.length) setAnimals(d) }) // ✅ замінюємо мок реальними даними якщо прийшли
-      .catch(() => {}) // мовчки — мок вже показується
+      .then(d => { if (d && d.length) setAnimals(d) })
+      .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    const handler = e => { console.log('PIN CLICKED:', e.detail); setSel(e.detail) }
-    window.addEventListener('animalPinClick', handler)
-    return () => window.removeEventListener('animalPinClick', handler)
-  }, [])
+  const toggleLayer = (layer) => {
+    setActiveLayers(prev =>
+      prev.includes(layer) ? prev.filter(l => l !== layer) : [...prev, layer]
+    )
+  }
+
+  const handleHover   = (animal) => { if (!sel) setHovered(animal) }
+  const handleHoverOut = () => { if (!sel) setHovered(null) }
+  const handleClick   = (animal) => { setSel(animal); setHovered(null) }
+
+  const showDangerZone = activeLayers.includes('Danger Zones')
 
   return (
     <>
@@ -247,6 +368,7 @@ export default function AnimalsPage() {
 
       <div style={{ display:'flex', height:'calc(100vh - 60px)', fontFamily:font, background:'#08080e', color:'#e0e0e0', overflow:'hidden' }}>
 
+        {/* ── Sidebar ── */}
         <aside style={{ width:230, background:'#0d0d14', borderRight:'1px solid #1a1a28', display:'flex', flexDirection:'column', flexShrink:0 }}>
           <div style={{ padding:'16px 14px', borderBottom:'1px solid #1a1a28' }}>
             <div style={{ display:'flex', alignItems:'center', gap:10, background:'#1a1a28', border:'1px solid #2a2a40', borderRadius:10, padding:'10px 12px' }}>
@@ -306,8 +428,10 @@ export default function AnimalsPage() {
           </div>
         </aside>
 
-        <div style={{ flex:1, position:'relative', overflow:'hidden' }} onClick={() => setSel(null)}>
+        {/* ── Map area ── */}
+        <div style={{ flex:1, position:'relative', overflow:'hidden' }} onClick={() => { setSel(null); setHovered(null) }}>
 
+          {/* Top bar */}
           <div style={{ position:'absolute', top:14, left:14, zIndex:1000, display:'flex', gap:10 }}>
             <div style={{ background:'rgba(8,8,20,0.92)', backdropFilter:'blur(12px)', border:'1px solid #1e1e30', borderRadius:12, padding:'10px 16px', display:'flex', alignItems:'center', gap:8 }}>
               <span style={{ width:8, height:8, borderRadius:'50%', background:'#22c55e', display:'inline-block', boxShadow:'0 0 8px #22c55e88' }}/>
@@ -324,27 +448,34 @@ export default function AnimalsPage() {
             ))}
           </div>
 
-          <div style={{ position:'absolute', bottom: sel ? 210 : 14, right:14, zIndex:1000, background:'rgba(8,8,20,0.92)', backdropFilter:'blur(12px)', border:'1px solid #1e1e30', borderRadius:12, padding:'12px 14px', transition:'bottom 0.3s ease' }}>
+          {/* Layer controls */}
+          <div style={{ position:'absolute', bottom:14, left:14, zIndex:1000, background:'rgba(8,8,20,0.92)', backdropFilter:'blur(12px)', border:'1px solid #1e1e30', borderRadius:12, padding:'12px 14px' }}>
             <div style={{ fontSize:8, color:'#555', letterSpacing:2, fontFamily:mono, marginBottom:10 }}>MAP LAYERS</div>
-            {[
-              { l:'Rescue Units',    c:'#ff8c00', on:true  },
-              { l:'Shelter Hubs',   c:'#888',    on:false },
-              { l:'Danger Zones',   c:'#ff4444', on:true  },
-              { l:'Volunteer Grid', c:'#888',    on:false },
-            ].map(({l,c,on}) => (
-              <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
-                <div style={{ width:14, height:14, borderRadius:4, background:on?`${c}33`:'transparent', border:`2px solid ${on?c:'#333'}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  {on && <span style={{ color:c, fontSize:9 }}>✓</span>}
+            {ALL_LAYERS.map(({l, c}) => {
+              const on = activeLayers.includes(l)
+              return (
+                <div key={l} onClick={e => { e.stopPropagation(); toggleLayer(l) }}
+                  style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, cursor:'pointer' }}>
+                  <div style={{ width:14, height:14, borderRadius:4, background:on?`${c}33`:'transparent', border:`2px solid ${on?c:'#333'}`, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
+                    {on && <span style={{ color:c, fontSize:9 }}>✓</span>}
+                  </div>
+                  <span style={{ fontSize:11, color: on ? '#ccc' : '#555', transition:'color 0.15s' }}>{l}</span>
                 </div>
-                <span style={{ fontSize:11, color:'#777' }}>{l}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
-          {/* ✅ Карта завжди рендериться, спінера немає */}
-          <LeafletMap animals={animals} />
+          <LeafletMap
+            animals={animals}
+            activeLayers={activeLayers}
+            showDangerZone={showDangerZone}
+            onHover={handleHover}
+            onHoverOut={handleHoverOut}
+            onClick={handleClick}
+          />
 
-          {sel && <AnimalCard animal={sel} onClose={() => setSel(null)} />}
+          {hovered && !sel && <AnimalCard animal={hovered} onClose={() => {}} isHover={true} />}
+          {sel && <AnimalCard animal={sel} onClose={() => setSel(null)} isHover={false} />}
         </div>
       </div>
     </>

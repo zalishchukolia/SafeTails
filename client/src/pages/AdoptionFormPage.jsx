@@ -3,10 +3,24 @@ import { useNavigate } from 'react-router-dom'
 import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
 
+
+const font = "'Inter', sans-serif"
+
+
 const FILTERS = {
-  age: ['All Ages', 'Puppy/Kitten', 'Young', 'Adult', 'Senior'],
-  temperament: ['Any Temperament', 'Calm', 'Playful', 'Protective', 'Independent'],
+  age: ['Будь-який вік', 'Цуценя/Кошеня', 'Молодий', 'Дорослий', 'Старший'],
+  temperament: ['Будь-який характер', 'Спокійний', 'Грайливий', 'Захисний', 'Незалежний'],
 }
+
+
+const AGE_MAP = {
+  'All Ages': 'Будь-який вік',
+  'Puppy/Kitten': 'Цуценя/Кошеня',
+  'Young': 'Молодий',
+  'Adult': 'Дорослий',
+  'Senior': 'Старший',
+}
+
 
 const BADGE_COLORS = {
   URGENT: { bg: '#ff3b30', text: '#fff' },
@@ -15,18 +29,21 @@ const BADGE_COLORS = {
   READY: { bg: '#3b82f6', text: '#fff' },
 }
 
+
 export default function AdoptionFormPage() {
   const navigate = useNavigate()
+
 
   const [animals, setAnimals] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [ageFilter, setAgeFilter] = useState('All Ages')
-  const [tempFilter, setTempFilter] = useState('Any Temperament')
+  const [ageFilter, setAgeFilter] = useState('Будь-який вік')
+  const [tempFilter, setTempFilter] = useState('Будь-який характер')
   const [visible, setVisible] = useState(8)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [pendingAnimal, setPendingAnimal] = useState(null)
+
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
@@ -38,24 +55,34 @@ export default function AdoptionFormPage() {
       .catch(() => setLoading(false))
   }, [])
 
+
   const getAgeCategory = age => {
     const numericAge = Number(age)
-
-    if (Number.isNaN(numericAge)) return 'Unknown'
-    if (numericAge < 1) return 'Puppy/Kitten'
-    if (numericAge >= 1 && numericAge < 3) return 'Young'
-    if (numericAge >= 3 && numericAge < 8) return 'Adult'
-    return 'Senior'
+    if (Number.isNaN(numericAge)) return 'Невідомо'
+    if (numericAge < 1) return 'Цуценя/Кошеня'
+    if (numericAge >= 1 && numericAge < 3) return 'Молодий'
+    if (numericAge >= 3 && numericAge < 8) return 'Дорослий'
+    return 'Старший'
   }
+
+
+  const TEMP_MAP = {
+    'Будь-який характер': 'any temperament',
+    'Спокійний': 'calm',
+    'Грайливий': 'playful',
+    'Захисний': 'protective',
+    'Незалежний': 'independent',
+  }
+
 
   const filtered = animals.filter(animal => {
     const q = search.toLowerCase().trim()
-
     const name = (animal.name || '').toLowerCase()
     const breed = (animal.breed || '').toLowerCase()
     const species = (animal.species || '').toLowerCase()
     const description = (animal.description || '').toLowerCase()
     const temperament = (animal.temperament || '').toLowerCase()
+
 
     const matchesSearch =
       q === '' ||
@@ -64,18 +91,22 @@ export default function AdoptionFormPage() {
       species.includes(q) ||
       description.includes(q)
 
-    const animalAgeCategory = getAgeCategory(animal.age)
-    const matchesAge =
-      ageFilter === 'All Ages' || animalAgeCategory === ageFilter
 
+    const animalAgeCategory = getAgeCategory(animal.age)
+    const matchesAge = ageFilter === 'Будь-який вік' || animalAgeCategory === ageFilter
+
+
+    const tempEn = TEMP_MAP[tempFilter] || ''
     const matchesTemperament =
-      tempFilter === 'Any Temperament' ||
-      temperament.includes(tempFilter.toLowerCase())
+      tempFilter === 'Будь-який характер' || temperament.includes(tempEn)
+
 
     return matchesSearch && matchesAge && matchesTemperament
   })
 
+
   const displayed = filtered.slice(0, visible)
+
 
   const handleApply = (animalName) => {
     const token = localStorage.getItem('token')
@@ -87,6 +118,7 @@ export default function AdoptionFormPage() {
     }
   }
 
+
   const handleLoginSuccess = () => {
     setShowAuthModal(false)
     setShowLoginPrompt(false)
@@ -95,16 +127,26 @@ export default function AdoptionFormPage() {
     }
   }
 
+
   return (
     <div
       style={{
         minHeight: '100vh',
         background: '#0d0d0d',
         color: '#fff',
-        fontFamily: "'DM Sans', 'Inter', sans-serif",
+        fontFamily: font,
         paddingBottom: 80,
       }}
     >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+      `}</style>
+
       <div style={{ padding: '56px 48px 0', maxWidth: 1200, margin: '0 auto' }}>
         <div
           style={{
@@ -123,10 +165,13 @@ export default function AdoptionFormPage() {
                 fontWeight: 800,
                 margin: 0,
                 lineHeight: 1.1,
+                fontFamily: "'Merriweather', serif",
               }}
             >
-              Find a Soul to <span style={{ color: '#ff6b2b' }}>Protect</span>
+              Знайди того, кому дати{' '}
+              <span style={{ color: '#ff6b2b' }}>прихисток</span>
             </h1>
+
 
             <p
               style={{
@@ -137,10 +182,11 @@ export default function AdoptionFormPage() {
                 lineHeight: 1.6,
               }}
             >
-              Every animal here has a history of resilience. They aren't just pets,
-              they are survivors waiting for their final mission: a forever home.
+              Кожна тварина тут має свою історію. Вони не просто улюбленці —
+              вони чекають на свій останній крок: постійний дім.
             </p>
           </div>
+
 
           <div
             style={{
@@ -164,20 +210,14 @@ export default function AdoptionFormPage() {
                 display: 'inline-block',
               }}
             />
-            {loading ? 'Loading…' : `${filtered.length} survivors available`}
+            {loading ? 'Завантаження…' : `${filtered.length} тварин чекають`}
           </div>
         </div>
       </div>
 
+
       <div style={{ padding: '28px 48px', maxWidth: 1200, margin: '0 auto' }}>
-        <div
-          style={{
-            display: 'flex',
-            gap: 12,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-          }}
-        >
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
             <span
               style={{
@@ -192,13 +232,14 @@ export default function AdoptionFormPage() {
               🔍
             </span>
 
+
             <input
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
                 setVisible(8)
               }}
-              placeholder="Search by name, breed or type..."
+              placeholder="Пошук за іменем, породою або видом..."
               style={{
                 width: '100%',
                 boxSizing: 'border-box',
@@ -209,10 +250,11 @@ export default function AdoptionFormPage() {
                 color: '#fff',
                 fontSize: 14,
                 outline: 'none',
-                fontFamily: 'inherit',
+                fontFamily: font,
               }}
             />
           </div>
+
 
           <select
             value={ageFilter}
@@ -225,17 +267,18 @@ export default function AdoptionFormPage() {
               border: '1px solid #2a2a2a',
               borderRadius: 10,
               padding: '11px 16px',
-              color: ageFilter === 'All Ages' ? '#666' : '#fff',
+              color: ageFilter === 'Будь-який вік' ? '#666' : '#fff',
               fontSize: 14,
               outline: 'none',
               cursor: 'pointer',
-              fontFamily: 'inherit',
+              fontFamily: font,
             }}
           >
             {FILTERS.age.map(option => (
               <option key={option}>{option}</option>
             ))}
           </select>
+
 
           <select
             value={tempFilter}
@@ -248,11 +291,11 @@ export default function AdoptionFormPage() {
               border: '1px solid #2a2a2a',
               borderRadius: 10,
               padding: '11px 16px',
-              color: tempFilter === 'Any Temperament' ? '#666' : '#fff',
+              color: tempFilter === 'Будь-який характер' ? '#666' : '#fff',
               fontSize: 14,
               outline: 'none',
               cursor: 'pointer',
-              fontFamily: 'inherit',
+              fontFamily: font,
             }}
           >
             {FILTERS.temperament.map(option => (
@@ -260,11 +303,12 @@ export default function AdoptionFormPage() {
             ))}
           </select>
 
+
           <button
             onClick={() => {
               setSearch('')
-              setAgeFilter('All Ages')
-              setTempFilter('Any Temperament')
+              setAgeFilter('Будь-який вік')
+              setTempFilter('Будь-який характер')
               setVisible(8)
             }}
             style={{
@@ -275,16 +319,17 @@ export default function AdoptionFormPage() {
               color: '#888',
               fontSize: 14,
               cursor: 'pointer',
-              fontFamily: 'inherit',
+              fontFamily: font,
               display: 'flex',
               alignItems: 'center',
               gap: 6,
             }}
           >
-            Reset Filters
+            Скинути фільтри
           </button>
         </div>
       </div>
+
 
       <div style={{ padding: '0 48px', maxWidth: 1200, margin: '0 auto' }}>
         {loading ? (
@@ -305,7 +350,7 @@ export default function AdoptionFormPage() {
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0', color: '#555' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🐾</div>
-            <p>No animals found matching your filters.</p>
+            <p>Тварин за вашими фільтрами не знайдено.</p>
           </div>
         ) : (
           <div
@@ -326,11 +371,13 @@ export default function AdoptionFormPage() {
           </div>
         )}
 
+
         {!loading && visible < filtered.length && (
           <div style={{ textAlign: 'center', marginTop: 48 }}>
             <p style={{ color: '#555', fontSize: 13, marginBottom: 16 }}>
-              More survivors are arriving every day.
+              Нові тварини з'являються щодня.
             </p>
+
 
             <button
               onClick={() => setVisible(prev => prev + 8)}
@@ -342,7 +389,7 @@ export default function AdoptionFormPage() {
                 color: '#888',
                 fontSize: 14,
                 cursor: 'pointer',
-                fontFamily: 'inherit',
+                fontFamily: font,
                 transition: 'all 0.2s',
               }}
               onMouseEnter={e => {
@@ -354,11 +401,12 @@ export default function AdoptionFormPage() {
                 e.currentTarget.style.color = '#888'
               }}
             >
-              LOAD MORE MISSIONS
+              ПОКАЗАТИ БІЛЬШЕ
             </button>
           </div>
         )}
       </div>
+
 
       {showLoginPrompt && (
         <LoginPromptModal
@@ -370,35 +418,34 @@ export default function AdoptionFormPage() {
         />
       )}
 
+
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
           onSuccess={handleLoginSuccess}
         />
       )}
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
     </div>
   )
 }
 
+
 function AnimalCard({ animal, onApply, onClick }) {
   const [hovered, setHovered] = useState(false)
+
 
   const badge = animal.status?.toUpperCase() || animal.badge?.toUpperCase()
   const badgeStyle = BADGE_COLORS[badge] || BADGE_COLORS.READY
 
+
   const age = animal.age
-    ? `${animal.age} ${animal.age === 1 ? 'Year' : 'Years'}`
+    ? `${animal.age} ${animal.age === 1 ? 'рік' : animal.age < 5 ? 'роки' : 'років'}`
     : ''
 
-  const breed = animal.breed || animal.species || 'Mixed'
+
+  const breed = animal.breed || animal.species || 'Змішана порода'
   const imgUrl = animal.imageUrl || animal.image || animal.photo || null
+
 
   return (
     <div
@@ -454,6 +501,7 @@ function AnimalCard({ animal, onApply, onClick }) {
           </div>
         )}
 
+
         {badge && (
           <div
             style={{
@@ -475,6 +523,7 @@ function AnimalCard({ animal, onApply, onClick }) {
         )}
       </div>
 
+
       <div
         style={{
           padding: '14px 16px 16px',
@@ -488,11 +537,13 @@ function AnimalCard({ animal, onApply, onClick }) {
             {animal.name}
           </h3>
 
+
           <p style={{ margin: '3px 0 0', fontSize: 12, color: '#666' }}>
             {breed}
             {age ? ` · ${age}` : ''}
           </p>
         </div>
+
 
         {animal.description && (
           <p
@@ -512,6 +563,7 @@ function AnimalCard({ animal, onApply, onClick }) {
           </p>
         )}
 
+
         <button
           onClick={e => {
             e.stopPropagation()
@@ -527,14 +579,14 @@ function AnimalCard({ animal, onApply, onClick }) {
             color: hovered ? '#fff' : '#888',
             fontSize: 12,
             fontWeight: 600,
-            fontFamily: 'inherit',
+            fontFamily: "'Inter', sans-serif",
             cursor: 'pointer',
             width: '100%',
             transition: 'all 0.2s',
             letterSpacing: 0.5,
           }}
         >
-          MEET FRIEND
+          ДАТИ ПРИХИСТОК
         </button>
       </div>
     </div>
