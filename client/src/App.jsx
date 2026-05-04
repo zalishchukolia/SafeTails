@@ -8,6 +8,7 @@ import FindingNewBeginningsPage from './pages/FindingNewBeginningsPage'
 import SuccessStoriesPage from './pages/SuccessStoriesPage'
 import AdoptionFormPage from './pages/AdoptionFormPage'
 import AdoptionApplicationPage from './pages/AdoptionApplicationPage'
+import ProtectedRoute from './components/ProtectedRoute'
 import AuthPage from './pages/AuthPage'
 
 const font = "'DM Sans', 'Inter', sans-serif"
@@ -242,7 +243,7 @@ function AppInner() {
         <Route path="/finding-new-beginnings" element={<FindingNewBeginningsPage />} />
         <Route path="/success-stories" element={<SuccessStoriesPage />} />
         <Route path="/adoption-form" element={<AdoptionFormPage />} />
-        <Route path="/adoption-application" element={<AdoptionApplicationPage />} />
+        <Route path="/adoption-application" element={ <ProtectedRoute><AdoptionApplicationPage /></ProtectedRoute>} />
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <RightMiniSidebar />

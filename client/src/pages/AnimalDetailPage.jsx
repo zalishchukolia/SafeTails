@@ -74,7 +74,6 @@ function AnimalDetailPage() {
                   </div>
 
                   <h1 className="text-3xl sm:text-4xl font-bold">{title}</h1>
-
                   <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/70">
                     {animal.description ||
                       'This animal is being cared for and is ready for the next stage of the rescue journey.'}
@@ -126,7 +125,6 @@ function AnimalDetailPage() {
                   <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
                     Personality
                   </div>
-
                   <ul className="space-y-3 text-sm text-white/70">
                     <li>• Calm around people and other animals.</li>
                     <li>• Learns routines quickly and responds well to care.</li>
@@ -138,7 +136,6 @@ function AnimalDetailPage() {
                   <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
                     Medical History
                   </div>
-
                   <div className="space-y-3 text-sm text-white/70">
                     <div className="flex justify-between gap-3">
                       <span>Initial check</span>
@@ -163,39 +160,25 @@ function AnimalDetailPage() {
               <div className="text-xs uppercase tracking-[0.24em] text-white/35">
                 Profile
               </div>
-
               <div className="mt-2 text-3xl font-semibold">{title}</div>
               <div className="mt-1 text-sm text-white/50">{species}</div>
 
               <div className="grid grid-cols-2 gap-3 mt-5">
                 <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    AGE
-                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">AGE</div>
                   <div className="mt-2 text-base font-semibold">{age}</div>
                 </div>
-
                 <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    WEIGHT
-                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">WEIGHT</div>
                   <div className="mt-2 text-base font-semibold">{weight}</div>
                 </div>
-
                 <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    TEMPERAMENT
-                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">TEMPERAMENT</div>
                   <div className="mt-2 text-base font-semibold">{temperament}</div>
                 </div>
-
                 <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">
-                    STATUS
-                  </div>
-                  <div className="mt-2 text-base font-semibold">
-                    {animal.status || 'Recovering'}
-                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-white/35">STATUS</div>
+                  <div className="mt-2 text-base font-semibold">{animal.status || 'Recovering'}</div>
                 </div>
               </div>
 
@@ -218,9 +201,7 @@ function AnimalDetailPage() {
             <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/35">
-                    Recovery fund
-                  </div>
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35">Recovery fund</div>
                   <div className="mt-1 text-lg font-semibold">Support treatment</div>
                 </div>
                 <div className="text-right">
@@ -230,10 +211,7 @@ function AnimalDetailPage() {
               </div>
 
               <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-[#ff6b2b]"
-                  style={{ width: '68%' }}
-                />
+                <div className="h-full rounded-full bg-[#ff6b2b]" style={{ width: '68%' }} />
               </div>
 
               <p className="text-xs text-white/45 mt-3">
