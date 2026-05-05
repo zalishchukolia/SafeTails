@@ -1334,8 +1334,6 @@ export default function HomePage() {
                     <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
                       <option value="собака">🐕 Собака</option>
                       <option value="кіт">🐈 Кіт</option>
-                      <option value="кролик">🐇 Кролик</option>
-                      <option value="птах">🐦 Птах</option>
                       <option value="інше">🐾 Інше</option>
                     </select>
                   </div>
