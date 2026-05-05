@@ -4,6 +4,16 @@ const API = 'https://safetails-production-8790.up.railway.app'
 const font = "'Inter', sans-serif"
 const mono = "'Inter', monospace"
 
+const EMPTY_FORM = {
+  fullName: '',
+  city: '',
+  contact: '',
+  helpType: 'Волонтер',
+  availability: '',
+  experience: '',
+  note: '',
+}
+
 function SectionTag({ children }) {
   return (
     <div
@@ -232,34 +242,37 @@ function Footer() {
   )
 }
 
-export default function FindingNewBeginningsPage() {
-  const [form, setForm] = useState({
-    fullName: '',
-    city: '',
-    contact: '',
-    helpType: 'Волонтер',
-    availability: '',
-    experience: '',
-    note: '',
-  })
+const requiredFields = ['fullName', 'city', 'contact', 'availability', 'experience']
 
-  // ✅ НОВІ СТАНИ
+export default function FindingNewBeginningsPage() {
+  const [form, setForm] = useState(EMPTY_FORM)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [touched, setTouched] = useState(false)
 
   const onChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // ✅ НОВИЙ ХЕНДЛЕР
+  const isInvalid = (field) => touched && requiredFields.includes(field) && !form[field].trim()
+
+  const fieldStyle = (field) => ({
+    ...inputStyle,
+    border: isInvalid(field) ? '1px solid #ff4444' : '1px solid #262626',
+  })
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.fullName.trim() || !form.contact.trim()) {
-      setError("Заповни ім'я та контакт!")
+    setTouched(true)
+
+    const hasEmpty = requiredFields.some((f) => !form[f].trim())
+    if (hasEmpty) {
+      setError("Будь ласка, заповни всі обов'язкові поля!")
       return
     }
+
     setLoading(true)
     setError('')
     try {
@@ -269,6 +282,8 @@ export default function FindingNewBeginningsPage() {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error()
+      setForm(EMPTY_FORM)
+      setTouched(false)
       setSubmitted(true)
     } catch {
       setError('Щось пішло не так. Спробуй ще раз.')
@@ -276,6 +291,8 @@ export default function FindingNewBeginningsPage() {
       setLoading(false)
     }
   }
+
+  const closeModal = () => setSubmitted(false)
 
   return (
     <>
@@ -302,17 +319,83 @@ export default function FindingNewBeginningsPage() {
           .page-wrap {
             padding: 32px 20px 70px !important;
           }
-
           .hero-title {
             font-size: 40px !important;
             line-height: 1.08 !important;
           }
-
           .double-grid {
             grid-template-columns: 1fr !important;
           }
         }
       `}</style>
+
+      {/* МОДАЛКА */}
+      {submitted && (
+        <div
+          onClick={closeModal}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#151515',
+              border: '1px solid #2a2a2a',
+              borderRadius: 28,
+              padding: '48px 52px',
+              textAlign: 'center',
+              maxWidth: 440,
+              width: '90%',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{ fontSize: 56, marginBottom: 18 }}>🐾</div>
+            <h3
+              style={{
+                color: '#fff',
+                fontSize: 26,
+                margin: '0 0 14px',
+                fontFamily: "'Merriweather', serif",
+              }}
+            >
+              Дякуємо!
+            </h3>
+            <p
+              style={{
+                color: '#8a8a8a',
+                fontSize: 14,
+                lineHeight: 1.9,
+                margin: '0 0 28px',
+              }}
+            >
+              Твою заявку отримано. Ми зв'яжемося з тобою найближчим часом.
+            </p>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'linear-gradient(90deg,#ff6b2b,#ff4500)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 999,
+                padding: '13px 32px',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: font,
+              }}
+            >
+              Закрити
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         style={{
@@ -334,6 +417,7 @@ export default function FindingNewBeginningsPage() {
             width: '100%',
           }}
         >
+          {/* HERO */}
           <section style={{ padding: '18px 0 58px' }}>
             <SectionTag>ДОЛУЧИТИСЯ</SectionTag>
 
@@ -453,7 +537,7 @@ export default function FindingNewBeginningsPage() {
                   <div style={{ display: 'grid', gap: 12 }}>
                     {[
                       'Волонтерити з координацією та підтримкою щодня',
-                      'Стати прийомною сім\'єю для тварини',
+                      "Стати прийомною сім'єю для тварини",
                       'Допомагати з транспортуванням та логістикою',
                       'Підтримувати комунікацію та поширення інформації',
                     ].map((item) => (
@@ -495,6 +579,7 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
+          {/* ФОРМА */}
           <section id="volunteer-form" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ВОЛОНТЕР / ПРИЙОМНА СІМ'Я</SectionTag>
 
@@ -526,7 +611,7 @@ export default function FindingNewBeginningsPage() {
                 <div style={{ display: 'grid', gap: 12 }}>
                   {[
                     ['Волонтер', 'Підтримка щоденної роботи, комунікації та координації.'],
-                    ['Прийомна сім\'я', 'Тимчасовий догляд за твариною перед тим, як вона знайде дім.'],
+                    ["Прийомна сім'я", 'Тимчасовий догляд за твариною перед тим, як вона знайде дім.'],
                     ['Транспорт', 'Допомога з перевезенням тварин або припасів за потреби.'],
                     ['Інша допомога', 'Долучайся з будь-якими навичками або підтримкою.'],
                   ].map(([title, text]) => (
@@ -550,7 +635,6 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
-              {/* ✅ ФОРМА З onSubmit */}
               <form
                 onSubmit={handleSubmit}
                 style={{
@@ -560,9 +644,12 @@ export default function FindingNewBeginningsPage() {
                   padding: 28,
                 }}
               >
-                <h2 style={{ fontSize: 32, margin: '0 0 18px', fontFamily: "'Merriweather', serif" }}>
+                <h2 style={{ fontSize: 32, margin: '0 0 4px', fontFamily: "'Merriweather', serif" }}>
                   Форма заявки
                 </h2>
+                <p style={{ color: '#555', fontSize: 12, marginBottom: 18 }}>
+                  * всі поля, крім коментаря, є обов'язковими
+                </p>
 
                 <div
                   className="double-grid"
@@ -577,15 +664,15 @@ export default function FindingNewBeginningsPage() {
                     name="fullName"
                     value={form.fullName}
                     onChange={onChange}
-                    placeholder="Повне ім'я"
-                    style={inputStyle}
+                    placeholder="Повне ім'я *"
+                    style={fieldStyle('fullName')}
                   />
                   <input
                     name="city"
                     value={form.city}
                     onChange={onChange}
-                    placeholder="Місто"
-                    style={inputStyle}
+                    placeholder="Місто *"
+                    style={fieldStyle('city')}
                   />
                 </div>
 
@@ -602,14 +689,14 @@ export default function FindingNewBeginningsPage() {
                     name="contact"
                     value={form.contact}
                     onChange={onChange}
-                    placeholder="Телефон або email"
-                    style={inputStyle}
+                    placeholder="Телефон або email *"
+                    style={fieldStyle('contact')}
                   />
                   <select
                     name="helpType"
                     value={form.helpType}
                     onChange={onChange}
-                    style={inputStyle}
+                    style={fieldStyle('helpType')}
                   >
                     <option>Волонтер</option>
                     <option>Прийомна сім'я</option>
@@ -622,74 +709,56 @@ export default function FindingNewBeginningsPage() {
                   name="availability"
                   value={form.availability}
                   onChange={onChange}
-                  placeholder="Доступність"
-                  style={{ ...inputStyle, marginBottom: 14 }}
+                  placeholder="Доступність *"
+                  style={{ ...fieldStyle('availability'), marginBottom: 14 }}
                 />
 
                 <input
                   name="experience"
                   value={form.experience}
                   onChange={onChange}
-                  placeholder="Досвід з тваринами"
-                  style={{ ...inputStyle, marginBottom: 14 }}
+                  placeholder="Досвід з тваринами *"
+                  style={{ ...fieldStyle('experience'), marginBottom: 14 }}
                 />
 
                 <textarea
                   name="note"
                   value={form.note}
                   onChange={onChange}
-                  placeholder="Розкажи, як хочеш допомогти"
+                  placeholder="Розкажи, як хочеш допомогти (необов'язково)"
                   rows={6}
                   style={{ ...inputStyle, resize: 'vertical', paddingTop: 14, marginBottom: 18 }}
                 />
 
-                {/* ✅ КНОПКА + СТАНИ */}
-                {!submitted ? (
-                  <>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      style={{
-                        width: '100%',
-                        background: loading ? '#555' : 'linear-gradient(90deg,#ff6b2b,#ff4500)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 18,
-                        padding: '15px 18px',
-                        fontSize: 15,
-                        fontWeight: 700,
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        fontFamily: font,
-                      }}
-                    >
-                      {loading ? 'Надсилаємо...' : 'Надіслати заявку'}
-                    </button>
-                    {error && (
-                      <p style={{ color: '#ff4444', marginTop: 10, fontSize: 13, textAlign: 'center' }}>
-                        {error}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <div
-                    style={{
-                      background: '#0f2a1a',
-                      border: '1px solid #1a5c35',
-                      borderRadius: 16,
-                      padding: '20px 18px',
-                      color: '#4ade80',
-                      fontSize: 15,
-                      textAlign: 'center',
-                      fontWeight: 600,
-                    }}
-                  >
-                    ✅ Дякуємо! Ми зв'яжемося з тобою найближчим часом 🐾
-                  </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    background: loading ? '#555' : 'linear-gradient(90deg,#ff6b2b,#ff4500)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 18,
+                    padding: '15px 18px',
+                    fontSize: 15,
+                    fontWeight: 700,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    fontFamily: font,
+                  }}
+                >
+                  {loading ? 'Надсилаємо...' : 'Надіслати заявку'}
+                </button>
+
+                {error && (
+                  <p style={{ color: '#ff4444', marginTop: 10, fontSize: 13, textAlign: 'center' }}>
+                    {error}
+                  </p>
                 )}
               </form>
             </div>
           </section>
 
+          {/* STORIES */}
           <section id="stories" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ІСТОРІЇ УСПІХУ</SectionTag>
 
@@ -732,6 +801,7 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
+          {/* ABOUT / TEAM */}
           <section id="about-team" style={{ padding: '10px 0 84px' }}>
             <SectionTag>ПРО НАС / КОМАНДА</SectionTag>
 
@@ -776,7 +846,7 @@ export default function FindingNewBeginningsPage() {
                 >
                   {[
                     ['Місія', 'Рятувати, доглядати та знаходити дім для тварин'],
-                    ['Напрямок', 'Підтримка, прийомні сім\'ї та безпечний прихисток'],
+                    ['Напрямок', "Підтримка, прийомні сім'ї та безпечний прихисток"],
                     ['Локація', 'Львів, Україна'],
                     ['Команда', '3 основні учасники'],
                   ].map(([k, v]) => (
