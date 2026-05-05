@@ -8,6 +8,9 @@ const animalSchema = new mongoose.Schema({
   status: { type: String, default: 'needs rescue' },
   imageUrl: { type: String },
   temperament: { type: String, enum: ['спокійний', 'активний', 'грайливий', 'лагідний', 'незалежний'], default: 'спокійний' },
+  city: { type: String },      // ← ДОДАЙ ЦЕ
+  lat:  { type: Number },      // ← ДОДАЙ ЦЕ
+  lng:  { type: Number },      // ← ДОДАЙ ЦЕ
 }, { timestamps: true })
 
 module.exports = mongoose.model('Animal', animalSchema)
