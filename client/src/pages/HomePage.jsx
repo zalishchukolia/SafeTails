@@ -30,6 +30,7 @@ const navItems = [
 
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
+  if (status === 'in rescue') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
   if (status === 'rescued') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
@@ -39,12 +40,14 @@ function statusTone(status) {
 
 function statusLabel(status) {
   if (status === 'needs rescue') return 'Needs Rescue'
+  if (status === 'in rescue') return 'In Rescue'
   if (status === 'rescued') return 'Rescued'
   return status
 }
 
 function themeFromStatus(status) {
   if (status === 'needs rescue' || status === 'Critical') return 'danger'
+  if (status === 'in rescue' || status === 'Urgent') return 'watch'
   if (status === 'rescued' || status === 'Stable') return 'calm'
   return 'watch'
 }
@@ -122,7 +125,9 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('Name')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [formError, setFormError] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -142,20 +147,20 @@ export default function HomePage() {
       .then((data) => {
         if (!Array.isArray(data)) return
         const mapped = data.map((a) => ({
-          id:          a._id,
-          name:        a.name,
-          species:     a.species ?? 'невідомо',
-          age:         a.age ?? '?',
+          id: a._id,
+          name: a.name,
+          species: a.species ?? 'невідомо',
+          age: a.age ?? '?',
           description: a.description ?? '',
           temperament: a.temperament ?? '',
-          status:      a.status ?? 'needs rescue',
-          city:        a.city ?? '',
-          weight:      a.weight ?? null,
-          lat:         a.lat ?? null,
-          lng:         a.lng ?? null,
-          emoji:       emojiFromSpecies(a.species),
-          theme:       themeFromStatus(a.status),
-          updated:     new Date(a.updatedAt).toLocaleDateString('uk-UA'),
+          status: a.status ?? 'needs rescue',
+          city: a.city ?? '',
+          weight: a.weight ?? null,
+          lat: a.lat ?? null,
+          lng: a.lng ?? null,
+          emoji: emojiFromSpecies(a.species),
+          theme: themeFromStatus(a.status),
+          updated: new Date(a.updatedAt).toLocaleDateString('uk-UA'),
         }))
         setMissions(mapped)
         if (mapped.length > 0) setSelectedId(mapped[0].id)
@@ -166,17 +171,23 @@ export default function HomePage() {
 
   const visibleMissions = useMemo(() => {
     let items = [...missions]
+
     if (query.trim()) {
       const q = query.toLowerCase()
       items = items.filter((m) =>
         [m.name, m.species, m.status, m.description, m.temperament, m.city]
-          .join(' ').toLowerCase().includes(q)
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
       )
     }
+
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
+
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
+
     return items
   }, [missions, filter, query, sort])
 
@@ -186,6 +197,7 @@ export default function HomePage() {
     missions[0]
 
   const needsRescueCount = missions.filter((m) => m.status === 'needs rescue').length
+  const inRescueCount = missions.filter((m) => m.status === 'in rescue').length
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
   const totalCount = missions.length
   const dogsCount = missions.filter((m) =>
@@ -193,6 +205,7 @@ export default function HomePage() {
   ).length
 
   function resetForm() {
+    setFormError(false)
     setForm({
       name: '',
       species: 'собака',
@@ -208,13 +221,22 @@ export default function HomePage() {
   function handleFormChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    if (formError) setFormError(false)
   }
 
   async function handleCreateAnimal(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.description.trim()) return
 
-    let lat = null, lng = null
+    if (!form.name.trim() || !form.age || !form.city.trim() || !form.description.trim()) {
+      setFormError(true)
+      return
+    }
+
+    setFormError(false)
+
+    let lat = null
+    let lng = null
+
     if (form.city.trim()) {
       try {
         const geo = await fetch(
@@ -232,14 +254,14 @@ export default function HomePage() {
     }
 
     const payload = {
-      name:        form.name.trim(),
-      species:     form.species,
-      age:         Number(form.age) || 0,
+      name: form.name.trim(),
+      species: form.species,
+      age: Number(form.age) || 0,
       description: form.description.trim(),
-      status:      form.status,
+      status: form.status,
       temperament: form.temperament,
-      city:        form.city.trim(),
-      weight:      form.weight ? Number(form.weight) : null,
+      city: form.city.trim(),
+      weight: form.weight ? Number(form.weight) : null,
       lat,
       lng,
     }
@@ -253,24 +275,26 @@ export default function HomePage() {
         },
         body: JSON.stringify(payload),
       })
+
       if (!res.ok) throw new Error('Server error')
+
       const saved = await res.json()
 
       const newAnimal = {
-        id:          saved._id,
-        name:        saved.name,
-        species:     saved.species,
-        age:         saved.age,
+        id: saved._id,
+        name: saved.name,
+        species: saved.species,
+        age: saved.age,
         description: saved.description,
         temperament: saved.temperament,
-        status:      saved.status,
-        city:        saved.city ?? '',
-        weight:      saved.weight ?? null,
-        lat:         saved.lat ?? null,
-        lng:         saved.lng ?? null,
-        emoji:       emojiFromSpecies(saved.species),
-        theme:       themeFromStatus(saved.status),
-        updated:     new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
+        status: saved.status,
+        city: saved.city ?? '',
+        weight: saved.weight ?? null,
+        lat: saved.lat ?? null,
+        lng: saved.lng ?? null,
+        emoji: emojiFromSpecies(saved.species),
+        theme: themeFromStatus(saved.status),
+        updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
       }
 
       setMissions((prev) => [newAnimal, ...prev])
@@ -278,6 +302,7 @@ export default function HomePage() {
       setActiveSection('rescues')
       setIsCreateOpen(false)
       resetForm()
+      setIsSuccessOpen(true)
     } catch (err) {
       console.error('❌ Помилка збереження:', err)
       alert("Не вдалось зберегти. Перевір з'єднання з сервером.")
@@ -302,9 +327,9 @@ export default function HomePage() {
 
           <section className="stats-grid">
             <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
+            <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are on the way" />
             <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
             <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
-            <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
           </section>
 
           <section className="workspace">
@@ -321,9 +346,12 @@ export default function HomePage() {
                 ))}
               </div>
             </SectionCard>
+
             <SectionCard title="Operations note" subtitle="Live command summary">
               <div className="detail-note">
-                <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
+                <p>
+                  Наразі {needsRescueCount} тварин потребують термінової допомоги. {inRescueCount} уже в процесі порятунку. {rescuedCount} вже врятовано та перебувають під наглядом.
+                </p>
               </div>
             </SectionCard>
           </section>
@@ -345,6 +373,7 @@ export default function HomePage() {
               </button>
             </div>
           </section>
+
           <section className="logistics" aria-label="Dispatch queue">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
@@ -378,6 +407,7 @@ export default function HomePage() {
               </button>
             </div>
           </section>
+
           <SectionCard title="Medical records" subtitle="Latest care actions">
             <div className="simple-list">
               {medicalSeed.map((item) => (
@@ -409,6 +439,7 @@ export default function HomePage() {
               </button>
             </div>
           </section>
+
           <SectionCard title="Completed cases" subtitle="Resolved and archived missions">
             <div className="simple-list">
               {archiveSeed.map((item) => (
@@ -426,7 +457,6 @@ export default function HomePage() {
       )
     }
 
-    // rescues (default)
     return (
       <>
         <section className="hero-block">
@@ -443,9 +473,9 @@ export default function HomePage() {
 
         <section className="stats-grid" aria-label="Mission statistics">
           <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
+          <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are already responding" />
           <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Successfully helped" />
           <StatCard label="Total" value={String(totalCount).padStart(2, '0')} meta="All animals in system" />
-          <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
         </section>
 
         <section className="workspace">
@@ -455,6 +485,7 @@ export default function HomePage() {
                 <h3>Animal stream</h3>
                 <p>Pick an animal to review details.</p>
               </div>
+
               <div className="controls">
                 <input
                   className="search"
@@ -464,7 +495,8 @@ export default function HomePage() {
                   onChange={(e) => setQuery(e.target.value)}
                   autoComplete="off"
                 />
-                {['All', 'needs rescue', 'rescued'].map((value) => (
+
+                {['All', 'needs rescue', 'in rescue', 'rescued'].map((value) => (
                   <button
                     key={value}
                     type="button"
@@ -474,6 +506,7 @@ export default function HomePage() {
                     {value === 'All' ? 'All' : statusLabel(value)}
                   </button>
                 ))}
+
                 {['Name', 'Age', 'Status'].map((value) => (
                   <button
                     key={value}
@@ -486,6 +519,7 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+
             <div className="mission-list">
               {loading ? (
                 <div className="detail-note"><p>Завантаження тварин...</p></div>
@@ -517,21 +551,25 @@ export default function HomePage() {
                     <p>{selectedMission.species} · {selectedMission.age} р.</p>
                   </div>
                 </div>
+
                 <div className="detail-grid">
                   <div className="mini-card">
                     <span>Темперамент</span>
                     <strong>{selectedMission.temperament}</strong>
                   </div>
+
                   <div className="mini-card">
                     <span>Вік</span>
                     <strong>{selectedMission.age} р.</strong>
                   </div>
+
                   {selectedMission.city && (
                     <div className="mini-card">
                       <span>Місто</span>
                       <strong>{selectedMission.city}</strong>
                     </div>
                   )}
+
                   {selectedMission.weight && (
                     <div className="mini-card">
                       <span>Вага</span>
@@ -539,9 +577,11 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
+
                 <div className="detail-note">
                   <p>{selectedMission.description}</p>
                 </div>
+
                 <div className="detail-actions">
                   <button className="detail-primary-btn" type="button">Dispatch now</button>
                   <button className="detail-ghost-btn" type="button">Open case</button>
@@ -556,6 +596,7 @@ export default function HomePage() {
             <h3>Secondary logistics</h3>
             <span className="eyebrow small-no-margin">Support queue</span>
           </div>
+
           {logisticsSeed.map((item) => (
             <button key={item.id} className="logistics-item" type="button">
               <div className="logistics-icon">{item.icon}</div>
@@ -1178,6 +1219,41 @@ export default function HomePage() {
           margin: auto;
         }
 
+        .success-card {
+          width: min(560px, 100%);
+          height: auto;
+          min-height: 320px;
+        }
+
+        .success-hero {
+          min-height: 140px;
+          display: grid;
+          place-items: center;
+          font-size: 54px;
+          background: linear-gradient(180deg, rgba(255,107,43,0.18), rgba(255,255,255,0.03));
+          border-bottom: 1px solid var(--border);
+        }
+
+        .success-copy {
+          padding: 20px;
+          display: grid;
+          gap: 14px;
+        }
+
+        .success-copy h3 {
+          margin: 0;
+          font-size: 24px;
+          text-align: center;
+        }
+
+        .success-copy p {
+          margin: 0;
+          color: #d0d5dd;
+          font-size: 15px;
+          line-height: 1.7;
+          text-align: center;
+        }
+
         .modal-head {
           padding: 20px 20px 16px;
           border-bottom: 1px solid var(--border);
@@ -1224,6 +1300,21 @@ export default function HomePage() {
           font-weight: 600;
         }
 
+        .form-error-banner {
+          background: #3d1212;
+          border: 1px solid #7f1d1d;
+          color: #fca5a5;
+          border-radius: 14px;
+          padding: 12px 16px;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .required {
+          color: #ff6b6b;
+          margin-left: 2px;
+        }
+
         .modal-actions {
           padding: 16px 20px 20px;
           border-top: 1px solid var(--border);
@@ -1252,7 +1343,9 @@ export default function HomePage() {
           .logistics-item {
             grid-template-columns: 1fr;
           }
+
           .mission-thumb { width: 100%; height: 120px; }
+
           .detail-head,
           .simple-row,
           .logistics-head,
@@ -1263,8 +1356,10 @@ export default function HomePage() {
             flex-direction: column;
             align-items: stretch;
           }
+
           .hero-copy h2 { font-size: 34px; }
           .modal-card { height: min(92vh, 760px); width: 100%; }
+          .success-card { min-height: auto; }
           .modal-backdrop { padding: 12px; }
         }
       `}</style>
@@ -1310,7 +1405,13 @@ export default function HomePage() {
       </div>
 
       {isCreateOpen && (
-        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
+        <div
+          className="modal-backdrop"
+          onClick={() => {
+            setIsCreateOpen(false)
+            setFormError(false)
+          }}
+        >
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <h3>Add new animal</h3>
@@ -1319,13 +1420,23 @@ export default function HomePage() {
 
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
+                {formError && (
+                  <div className="form-error-banner">
+                    ⚠️ Будь ласка, заповни всі обов'язкові поля: ім'я, вік, місто та опис.
+                  </div>
+                )}
+
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Ім'я тварини</label>
+                    <label htmlFor="name">Ім'я тварини <span className="required">*</span></label>
                     <input
-                      id="name" name="name" className="form-input"
-                      value={form.name} onChange={handleFormChange}
-                      placeholder="Барні" autoComplete="new-password"
+                      id="name"
+                      name="name"
+                      className="form-input"
+                      value={form.name}
+                      onChange={handleFormChange}
+                      placeholder="Барні"
+                      autoComplete="new-password"
                     />
                   </div>
 
@@ -1339,20 +1450,33 @@ export default function HomePage() {
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="age">Вік (років)</label>
+                    <label htmlFor="age">Вік (років) <span className="required">*</span></label>
                     <input
-                      id="age" name="age" type="number" min="0" max="30"
-                      className="form-input" value={form.age}
-                      onChange={handleFormChange} placeholder="3"
+                      id="age"
+                      name="age"
+                      type="number"
+                      min="0"
+                      max="30"
+                      className="form-input"
+                      value={form.age}
+                      onChange={handleFormChange}
+                      placeholder="3"
                     />
                   </div>
 
                   <div className="form-field">
                     <label htmlFor="weight">Вага (кг)</label>
                     <input
-                      id="weight" name="weight" type="number" min="0" max="200" step="0.1"
-                      className="form-input" value={form.weight}
-                      onChange={handleFormChange} placeholder="5"
+                      id="weight"
+                      name="weight"
+                      type="number"
+                      min="0"
+                      max="200"
+                      step="0.1"
+                      className="form-input"
+                      value={form.weight}
+                      onChange={handleFormChange}
+                      placeholder="5"
                     />
                   </div>
 
@@ -1360,6 +1484,7 @@ export default function HomePage() {
                     <label htmlFor="status">Статус</label>
                     <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
                       <option value="needs rescue">Needs Rescue</option>
+                      <option value="in rescue">In Rescue</option>
                       <option value="rescued">Rescued</option>
                     </select>
                   </div>
@@ -1377,26 +1502,40 @@ export default function HomePage() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="city">Місто знаходження</label>
+                  <label htmlFor="city">Місто знаходження <span className="required">*</span></label>
                   <input
-                    id="city" name="city" className="form-input"
-                    value={form.city} onChange={handleFormChange}
-                    placeholder="Львів" autoComplete="new-password"
+                    id="city"
+                    name="city"
+                    className="form-input"
+                    value={form.city}
+                    onChange={handleFormChange}
+                    placeholder="Львів"
+                    autoComplete="new-password"
                   />
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="description">Опис</label>
+                  <label htmlFor="description">Опис <span className="required">*</span></label>
                   <textarea
-                    id="description" name="description" className="form-textarea"
-                    value={form.description} onChange={handleFormChange}
+                    id="description"
+                    name="description"
+                    className="form-textarea"
+                    value={form.description}
+                    onChange={handleFormChange}
                     placeholder="Короткий опис тварини..."
                   />
                 </div>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={() => {
+                    setIsCreateOpen(false)
+                    setFormError(false)
+                  }}
+                >
                   Cancel
                 </button>
                 <button type="submit" className="modal-submit-btn">
@@ -1404,6 +1543,32 @@ export default function HomePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isSuccessOpen && (
+        <div className="modal-backdrop" onClick={() => setIsSuccessOpen(false)}>
+          <div className="modal-card success-card" onClick={(e) => e.stopPropagation()}>
+            <div className="success-hero">💛🐾</div>
+
+            <div className="success-copy">
+              <h3>Дякуємо за твою турботу</h3>
+              <p>
+                Тварину успішно додано до системи. Твій крок — це не просто запис у базі,
+                а ще один шанс на безпеку, тепло та дбайливий прихисток для того,
+                хто зараз цього дуже потребує.
+              </p>
+              <p>
+                Кожна заповнена заявка допомагає нам швидше помітити, підтримати й урятувати.
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="modal-submit-btn" onClick={() => setIsSuccessOpen(false)}>
+                Добре
+              </button>
+            </div>
           </div>
         </div>
       )}
