@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-
+const API = 'https://safetails-production-8790.up.railway.app'
 const font = "'Inter', sans-serif"
 const mono = "'Inter', monospace"
-
 
 function SectionTag({ children }) {
   return (
@@ -24,7 +23,6 @@ function SectionTag({ children }) {
     </div>
   )
 }
-
 
 function StoryCard({ title, text, status, bg }) {
   return (
@@ -50,13 +48,11 @@ function StoryCard({ title, text, status, bg }) {
         🐾
       </div>
 
-
       <div style={{ padding: 22 }}>
         <h3 style={{ color: '#fff', fontSize: 22, margin: '0 0 10px' }}>{title}</h3>
         <p style={{ color: '#8e8e8e', fontSize: 14, lineHeight: 1.8, marginBottom: 16 }}>
           {text}
         </p>
-
 
         <div
           style={{
@@ -87,7 +83,6 @@ function StoryCard({ title, text, status, bg }) {
   )
 }
 
-
 function TeamCard({ name, role }) {
   return (
     <div
@@ -116,17 +111,14 @@ function TeamCard({ name, role }) {
         {name[0]}
       </div>
 
-
       <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
         {name}
       </div>
-
 
       <div style={{ color: '#8a8a8a', fontSize: 13, lineHeight: 1.7 }}>{role}</div>
     </div>
   )
 }
-
 
 function FooterColumn({ title, links }) {
   return (
@@ -142,7 +134,6 @@ function FooterColumn({ title, links }) {
       >
         {title}
       </div>
-
 
       {links.map((link) => (
         <div
@@ -160,7 +151,6 @@ function FooterColumn({ title, links }) {
     </div>
   )
 }
-
 
 function Footer() {
   return (
@@ -197,7 +187,6 @@ function Footer() {
               SafeTails
             </div>
 
-
             <p
               style={{
                 fontSize: 13,
@@ -212,13 +201,11 @@ function Footer() {
             </p>
           </div>
 
-
           <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
           <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
           <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
           <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
         </div>
-
 
         <div
           style={{
@@ -235,7 +222,6 @@ function Footer() {
             © 2024 SafeTails. Всі права захищені.
           </span>
 
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
@@ -245,7 +231,6 @@ function Footer() {
     </footer>
   )
 }
-
 
 export default function FindingNewBeginningsPage() {
   const [form, setForm] = useState({
@@ -258,24 +243,49 @@ export default function FindingNewBeginningsPage() {
     note: '',
   })
 
+  // ✅ НОВІ СТАНИ
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const onChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
+  // ✅ НОВИЙ ХЕНДЛЕР
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.fullName.trim() || !form.contact.trim()) {
+      setError("Заповни ім'я та контакт!")
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`${API}/api/volunteers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      setSubmitted(true)
+    } catch {
+      setError('Щось пішло не так. Спробуй ще раз.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
-
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { margin: 0; background: #0f0f0f; }
         input, textarea, select, button { outline: none; }
-
 
         @media (max-width: 1100px) {
           .hero-grid,
@@ -288,25 +298,21 @@ export default function FindingNewBeginningsPage() {
           }
         }
 
-
         @media (max-width: 700px) {
           .page-wrap {
             padding: 32px 20px 70px !important;
           }
-
 
           .hero-title {
             font-size: 40px !important;
             line-height: 1.08 !important;
           }
 
-
           .double-grid {
             grid-template-columns: 1fr !important;
           }
         }
       `}</style>
-
 
       <div
         style={{
@@ -330,7 +336,6 @@ export default function FindingNewBeginningsPage() {
         >
           <section style={{ padding: '18px 0 58px' }}>
             <SectionTag>ДОЛУЧИТИСЯ</SectionTag>
-
 
             <div
               className="hero-grid"
@@ -357,13 +362,11 @@ export default function FindingNewBeginningsPage() {
                   <span style={{ color: '#ff6b2b' }}>турботу, безпеку, дім</span>
                 </h1>
 
-
                 <p style={{ color: '#8d8d8d', fontSize: 16, lineHeight: 1.9, maxWidth: 650, marginBottom: 28 }}>
                   SafeTails — місцева ініціатива зі Львова, Україна. Ми об'єднуємо
                   волонтерів, прийомні сім'ї та небайдужих людей, які хочуть допомогти
                   врятованим тваринам одужати та розпочати нове життя.
                 </p>
-
 
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 26 }}>
                   <a
@@ -381,7 +384,6 @@ export default function FindingNewBeginningsPage() {
                     Стати волонтером
                   </a>
 
-
                   <a
                     href="#stories"
                     style={{
@@ -398,7 +400,6 @@ export default function FindingNewBeginningsPage() {
                     Історії успіху
                   </a>
                 </div>
-
 
                 <div
                   className="double-grid"
@@ -433,7 +434,6 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
-
               <div
                 style={{
                   background: 'linear-gradient(145deg,#1a1411,#2b1d17)',
@@ -449,7 +449,6 @@ export default function FindingNewBeginningsPage() {
                   <div style={{ fontSize: 11, color: '#9d8a80', letterSpacing: 2, fontFamily: mono, marginBottom: 18 }}>
                     ЯК ВИ МОЖЕТЕ ДОПОМОГТИ
                   </div>
-
 
                   <div style={{ display: 'grid', gap: 12 }}>
                     {[
@@ -475,7 +474,6 @@ export default function FindingNewBeginningsPage() {
                   </div>
                 </div>
 
-
                 <div
                   style={{
                     marginTop: 20,
@@ -497,10 +495,8 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
-
           <section id="volunteer-form" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ВОЛОНТЕР / ПРИЙОМНА СІМ'Я</SectionTag>
-
 
             <div
               className="form-grid"
@@ -526,7 +522,6 @@ export default function FindingNewBeginningsPage() {
                   догляд, транспортування та комунікацію. Заповни форму та розкажи, як хочеш
                   долучитися.
                 </p>
-
 
                 <div style={{ display: 'grid', gap: 12 }}>
                   {[
@@ -555,8 +550,9 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
-
+              {/* ✅ ФОРМА З onSubmit */}
               <form
+                onSubmit={handleSubmit}
                 style={{
                   background: '#151515',
                   border: '1px solid #242424',
@@ -567,7 +563,6 @@ export default function FindingNewBeginningsPage() {
                 <h2 style={{ fontSize: 32, margin: '0 0 18px', fontFamily: "'Merriweather', serif" }}>
                   Форма заявки
                 </h2>
-
 
                 <div
                   className="double-grid"
@@ -593,7 +588,6 @@ export default function FindingNewBeginningsPage() {
                     style={inputStyle}
                   />
                 </div>
-
 
                 <div
                   className="double-grid"
@@ -624,7 +618,6 @@ export default function FindingNewBeginningsPage() {
                   </select>
                 </div>
 
-
                 <input
                   name="availability"
                   value={form.availability}
@@ -633,7 +626,6 @@ export default function FindingNewBeginningsPage() {
                   style={{ ...inputStyle, marginBottom: 14 }}
                 />
 
-
                 <input
                   name="experience"
                   value={form.experience}
@@ -641,7 +633,6 @@ export default function FindingNewBeginningsPage() {
                   placeholder="Досвід з тваринами"
                   style={{ ...inputStyle, marginBottom: 14 }}
                 />
-
 
                 <textarea
                   name="note"
@@ -652,32 +643,55 @@ export default function FindingNewBeginningsPage() {
                   style={{ ...inputStyle, resize: 'vertical', paddingTop: 14, marginBottom: 18 }}
                 />
 
-
-                <button
-                  type="button"
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(90deg,#ff6b2b,#ff4500)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 18,
-                    padding: '15px 18px',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: font,
-                  }}
-                >
-                  Надіслати заявку
-                </button>
+                {/* ✅ КНОПКА + СТАНИ */}
+                {!submitted ? (
+                  <>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      style={{
+                        width: '100%',
+                        background: loading ? '#555' : 'linear-gradient(90deg,#ff6b2b,#ff4500)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 18,
+                        padding: '15px 18px',
+                        fontSize: 15,
+                        fontWeight: 700,
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        fontFamily: font,
+                      }}
+                    >
+                      {loading ? 'Надсилаємо...' : 'Надіслати заявку'}
+                    </button>
+                    {error && (
+                      <p style={{ color: '#ff4444', marginTop: 10, fontSize: 13, textAlign: 'center' }}>
+                        {error}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      background: '#0f2a1a',
+                      border: '1px solid #1a5c35',
+                      borderRadius: 16,
+                      padding: '20px 18px',
+                      color: '#4ade80',
+                      fontSize: 15,
+                      textAlign: 'center',
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✅ Дякуємо! Ми зв'яжемося з тобою найближчим часом 🐾
+                  </div>
+                )}
               </form>
             </div>
           </section>
 
-
           <section id="stories" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ІСТОРІЇ УСПІХУ</SectionTag>
-
 
             <div style={{ marginBottom: 22 }}>
               <h2 style={{ fontSize: 40, margin: '0 0 12px', fontFamily: "'Merriweather', serif" }}>
@@ -688,7 +702,6 @@ export default function FindingNewBeginningsPage() {
                 терпіння, довіру та людей, які допомагають тваринам перейти від страху до безпеки.
               </p>
             </div>
-
 
             <div
               className="stories-grid"
@@ -719,10 +732,8 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
-
           <section id="about-team" style={{ padding: '10px 0 84px' }}>
             <SectionTag>ПРО НАС / КОМАНДА</SectionTag>
-
 
             <div
               className="about-grid"
@@ -753,7 +764,6 @@ export default function FindingNewBeginningsPage() {
                   Наша команда невелика, але ми глибоко переймаємося створенням кращого
                   майбутнього для тварин, яким потрібна допомога.
                 </p>
-
 
                 <div
                   className="double-grid"
@@ -788,7 +798,6 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
-
               <div
                 style={{
                   background: '#141414',
@@ -805,7 +814,6 @@ export default function FindingNewBeginningsPage() {
                   прийомний догляд — зв'яжіться з нами напряму.
                 </p>
 
-
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>EMAIL</div>
@@ -817,7 +825,6 @@ export default function FindingNewBeginningsPage() {
                     </a>
                   </div>
 
-
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>ТЕЛЕФОН</div>
                     <a
@@ -828,7 +835,6 @@ export default function FindingNewBeginningsPage() {
                     </a>
                   </div>
 
-
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>АДРЕСА</div>
                     <div style={{ color: '#fff', fontSize: 15 }}>
@@ -838,7 +844,6 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
             </div>
-
 
             <div
               className="team-grid"
@@ -855,13 +860,11 @@ export default function FindingNewBeginningsPage() {
           </section>
         </main>
 
-
         <Footer />
       </div>
     </>
   )
 }
-
 
 const inputStyle = {
   width: '100%',
@@ -874,14 +877,12 @@ const inputStyle = {
   fontFamily: font,
 }
 
-
 const contactCardStyle = {
   background: '#181818',
   border: '1px solid #262626',
   borderRadius: 16,
   padding: '16px 18px',
 }
-
 
 const contactLabelStyle = {
   color: '#6f6f6f',
