@@ -244,28 +244,48 @@ export default function HomePage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  function handleCreateMission(e) {
-    e.preventDefault()
+  async function handleCreateMission(e) {
+  e.preventDefault()
 
-    if (!form.name.trim() || !form.location.trim() || !form.summary.trim()) {
-      return
-    }
+  if (!form.name.trim() || !form.location.trim() || !form.summary.trim()) {
+    return
+  }
 
-    const id = String(Date.now()).slice(-4)
+  const payload = {
+    name:         form.name.trim(),
+    status:       form.status,
+    priority:     Number(form.priority),
+    distance:     form.distance.trim() || '0.0 km',
+    heartRate:    form.heartRate.trim() || 'N/A',
+    location:     form.location.trim(),
+    assignedTeam: form.team.trim() || 'Unassigned',
+    summary:      form.summary.trim(),
+  }
+
+  try {
+    const res = await fetch('https://safetails-production-8790.up.railway.app/api/missions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) throw new Error('Server error')
+    const saved = await res.json()
+
     const newMission = {
-      id,
-      name: form.name.trim(),
-      emoji: form.emoji,
-      status: form.status,
-      priority: Number(form.priority),
-      distance: form.distance.trim() || '0.0 km',
-      location: form.location.trim(),
-      summary: form.summary.trim(),
-      team: form.team.trim() || 'Unassigned',
-      updated: 'Just now',
-      heartRate: form.heartRate.trim() || 'N/A',
-      action: actionFromStatus(form.status),
-      theme: themeFromStatus(form.status),
+      id:        String(saved._id).slice(-4),
+      name:      saved.name,
+      emoji:     form.emoji,
+      status:    saved.status,
+      priority:  saved.priority,
+      distance:  saved.distance,
+      location:  saved.location,
+      summary:   saved.summary,
+      team:      saved.assignedTeam,
+      updated:   'Just now',
+      heartRate: saved.heartRate,
+      action:    actionFromStatus(saved.status),
+      theme:     themeFromStatus(saved.status),
     }
 
     setMissions((prev) => [newMission, ...prev])
@@ -273,7 +293,12 @@ export default function HomePage() {
     setActiveSection('rescues')
     setIsCreateOpen(false)
     resetForm()
+
+  } catch (err) {
+    console.error('❌ Помилка збереження місії:', err)
+    alert("Не вдалось зберегти місію. Перевір з'єднання з сервером.")
   }
+}
 
   function renderContent() {
     if (activeSection === 'dashboard') {

@@ -11,6 +11,8 @@ const requireSecret = (req, res, next) => {
   next()
 }
 
+// ─── ANIMALS ────────────────────────────────────────────
+
 // GET всі тварини — публічний
 router.get('/', async (req, res) => {
   try {
