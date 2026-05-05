@@ -18,7 +18,8 @@ app.use('/api/success-stories', require('./routes/successStories'))
 app.use('/api/donations', require('./routes/donations'))
 app.use('/api/chat', require('./routes/chat'))
 app.use('/api/auth', require('./routes/auth'))
-app.use('/api/missions', require('./routes/missions'))  // ✅ тут
+app.use('/api/missions', require('./routes/missions'))
+app.use('/api/volunteers', require('./routes/volunteers')) // ✅ сюди
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB підключено!'))
