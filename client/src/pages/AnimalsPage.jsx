@@ -16,14 +16,14 @@ const BASE_COORDS = [
 ]
 
 const MOCK_ANIMALS = [
-  { _id: '0001', name: 'Buddy',   species: 'пес', age: 2, status: 'needs rescue', description: 'Found roaming Highway 101. Malnourished but friendly.',     imageUrl: null },
-  { _id: '0002', name: 'Luna',    species: 'кіт', age: 1, status: 'rescued',      description: 'Rescued feline, safely arrived at Shelter Alpha.',          imageUrl: null },
-  { _id: '0003', name: 'Rex',     species: 'пес', age: 4, status: 'needs rescue', description: 'Injured stray near Industrial Zone. Possible dehydration.', imageUrl: null },
-  { _id: '0004', name: 'Murzyk', species: 'кіт', age: 3, status: 'in recovery',  description: 'In care at Medical Hub South. Recovering from injury.',      imageUrl: null },
-  { _id: '0005', name: 'Bars',   species: 'пес', age: 5, status: 'needs rescue', description: 'Spotted near Warehouse A4. Appears frightened.',             imageUrl: null },
-  { _id: '0006', name: 'Сніжка',species: 'кіт', age: 2, status: 'rescued',      description: 'Rescued from flooded area. Now safe at Shelter Beta.',       imageUrl: null },
-  { _id: '0007', name: 'Зірка', species: 'пес', age: 6, status: 'in recovery',  description: 'Under veterinary observation. Expected full recovery.',       imageUrl: null },
-  { _id: '0008', name: 'Тигр',  species: 'кіт', age: 1, status: 'needs rescue', description: 'Kitten found alone near train station. Very young.',         imageUrl: null },
+  { _id: '0001', name: 'Buddy',  species: 'пес', age: 2, status: 'needs rescue', description: 'Found roaming Highway 101. Malnourished but friendly.',     imageUrl: null },
+  { _id: '0002', name: 'Luna',   species: 'кіт', age: 1, status: 'rescued',      description: 'Rescued feline, safely arrived at Shelter Alpha.',          imageUrl: null },
+  { _id: '0003', name: 'Rex',    species: 'пес', age: 4, status: 'needs rescue', description: 'Injured stray near Industrial Zone. Possible dehydration.', imageUrl: null },
+  { _id: '0004', name: 'Murzyk',species: 'кіт', age: 3, status: 'in recovery',  description: 'In care at Medical Hub South. Recovering from injury.',      imageUrl: null },
+  { _id: '0005', name: 'Bars',   species: 'пес', age: 5, status: 'needs rescue', description: 'Spotted near Warehouse A4. Appears frightened.',            imageUrl: null },
+  { _id: '0006', name: 'Сніжка',species: 'кіт', age: 2, status: 'rescued',      description: 'Rescued from flooded area. Now safe at Shelter Beta.',      imageUrl: null },
+  { _id: '0007', name: 'Зірка', species: 'пес', age: 6, status: 'in recovery',  description: 'Under veterinary observation. Expected full recovery.',      imageUrl: null },
+  { _id: '0008', name: 'Тигр',  species: 'кіт', age: 1, status: 'needs rescue', description: 'Kitten found alone near train station. Very young.',        imageUrl: null },
 ]
 
 const FEED = [
@@ -105,6 +105,7 @@ function AnimalCard({ animal, onClose, isHover }) {
 
         <div style={{ fontSize: 11, color: '#a09070', fontFamily: mono, marginBottom: 10 }}>
           ID: #RC-{idStr} • {isCat ? 'Cat' : 'Dog'} • {age} {ageLabel}
+          {animal.city && ` • 📍 ${animal.city}`}
         </div>
 
         <p style={{ fontSize: 12, color: '#5a4030', lineHeight: 1.65, marginBottom: 14 }}>
@@ -182,7 +183,7 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
     }
   }, [])
 
-  // Маркери
+  // ─── Маркери — використовуємо lat/lng з бази, fallback на BASE_COORDS ───
   useEffect(() => {
     if (!ready || !mapRef.current) return
     const L = window.L
@@ -197,11 +198,21 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
     )
 
     animals.forEach((animal, i) => {
-      const coords = BASE_COORDS[i % BASE_COORDS.length]
-      if (!coords) return
       const urgency = getUrgency(animal.status)
       if (!activeUrgencies.has(urgency)) return
-      const c = getColor(urgency)
+
+      // ✅ ВИПРАВЛЕННЯ: беремо lat/lng з бази, fallback на BASE_COORDS
+      let lat, lng
+      if (animal.lat != null && animal.lng != null) {
+        lat = animal.lat
+        lng = animal.lng
+      } else {
+        const fallback = BASE_COORDS[i % BASE_COORDS.length]
+        lng = fallback[0]
+        lat = fallback[1]
+      }
+
+      const c      = getColor(urgency)
       const isCrit = urgency === 'critical'
 
       const icon = L.divIcon({
@@ -217,7 +228,8 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
         iconSize: [28, 28], iconAnchor: [14, 14],
       })
 
-      const marker = L.marker([coords[1], coords[0]], { icon })
+      // ✅ Leaflet очікує [lat, lng] — передаємо правильно
+      const marker = L.marker([lat, lng], { icon })
       marker.on('mouseover', () => onHover(animal))
       marker.on('mouseout',  () => onHoverOut())
       marker.on('click', e => { e.originalEvent.stopPropagation(); onClick(animal) })
@@ -225,7 +237,7 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
     })
   }, [animals, activeLayers, ready])
 
-  // ─── Danger Zones — повне заливання областей як на ukrainealarm ───────────
+  // ─── Danger Zones ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!ready || !mapRef.current || !window.L) return
     const L = window.L

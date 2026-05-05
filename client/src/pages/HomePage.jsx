@@ -1,67 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-const missionsSeed = [
-  {
-    id: '7712',
-    name: 'Cooper',
-    emoji: '🐕',
-    status: 'Critical',
-    priority: 1,
-    distance: '2.4 km',
-    location: 'Industrial Zone — Terminal B',
-    summary: 'Severe dehydration, possible limb trauma.',
-    team: 'Dr. Aris + 2',
-    updated: '4 min ago',
-    heartRate: '128 BPM',
-    action: 'Dispatch now',
-    theme: 'danger',
-  },
-  {
-    id: '7690',
-    name: 'Luna',
-    emoji: '🐈',
-    status: 'Stable',
-    priority: 3,
-    distance: '5.1 km',
-    location: 'Residential Transfer — Sector 4',
-    summary: 'Post-op recovery, needs monitoring and feeding.',
-    team: 'Nurse Milla + 1',
-    updated: '12 min ago',
-    heartRate: '112 BPM',
-    action: 'Review report',
-    theme: 'calm',
-  },
-  {
-    id: '7724',
-    name: 'Milo',
-    emoji: '🦊',
-    status: 'Watch',
-    priority: 2,
-    distance: '1.1 km',
-    location: 'East Bridge Underpass',
-    summary: 'Possible sprain, alert but movement is limited.',
-    team: 'Field Unit B',
-    updated: '9 min ago',
-    heartRate: '104 BPM',
-    action: 'Assign volunteer',
-    theme: 'watch',
-  },
-  {
-    id: '7731',
-    name: 'Nova',
-    emoji: '🐕',
-    status: 'Critical',
-    priority: 1,
-    distance: '3.0 km',
-    location: 'Dock 3 — Storage Yard',
-    summary: 'Open wound, rescue route prepared, urgent pickup.',
-    team: 'Rapid Team A',
-    updated: '2 min ago',
-    heartRate: '136 BPM',
-    action: 'Accept mission',
-    theme: 'danger',
-  },
-]
+const API = 'https://safetails-production-8790.up.railway.app'
 
 const logisticsSeed = [
   { id: 1, icon: '📋', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
@@ -70,15 +9,15 @@ const logisticsSeed = [
 ]
 
 const medicalSeed = [
-  { id: 1, patient: 'Cooper', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
-  { id: 2, patient: 'Luna', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
-  { id: 3, patient: 'Nova', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
+  { id: 1, patient: 'Барні', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
+  { id: 2, patient: 'Луна', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
+  { id: 3, patient: 'Рекс', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
 ]
 
 const archiveSeed = [
-  { id: 'A-102', name: 'Bella', result: 'Adopted', date: 'Apr 28' },
-  { id: 'A-097', name: 'Rocky', result: 'Transferred to shelter', date: 'Apr 25' },
-  { id: 'A-091', name: 'Misty', result: 'Recovered', date: 'Apr 21' },
+  { id: 'A-102', name: 'Міа', result: 'Adopted', date: 'Apr 28' },
+  { id: 'A-097', name: 'Сніжка', result: 'Transferred to shelter', date: 'Apr 25' },
+  { id: 'A-091', name: 'Зевс', result: 'Recovered', date: 'Apr 21' },
 ]
 
 const navItems = [
@@ -90,22 +29,34 @@ const navItems = [
 ]
 
 function statusTone(status) {
+  if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
+  if (status === 'rescued') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Urgent') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
   return { fg: '#fef3c7', bg: '#3d2f12', dot: '#fbbf24' }
 }
 
+function statusLabel(status) {
+  if (status === 'needs rescue') return 'Needs Rescue'
+  if (status === 'rescued') return 'Rescued'
+  return status
+}
+
 function themeFromStatus(status) {
-  if (status === 'Critical') return 'danger'
-  if (status === 'Stable') return 'calm'
+  if (status === 'needs rescue' || status === 'Critical') return 'danger'
+  if (status === 'rescued' || status === 'Stable') return 'calm'
   return 'watch'
 }
 
-function actionFromStatus(status) {
-  if (status === 'Critical') return 'Dispatch now'
-  if (status === 'Stable') return 'Review report'
-  return 'Assign volunteer'
+function emojiFromSpecies(species) {
+  if (!species) return '🐾'
+  const s = species.toLowerCase()
+  if (s.includes('кіт') || s.includes('кішк') || s.includes('cat')) return '🐈'
+  if (s.includes('собак') || s.includes('пес') || s.includes('dog')) return '🐕'
+  if (s.includes('кролик') || s.includes('rabbit')) return '🐇'
+  if (s.includes('птах') || s.includes('bird')) return '🐦'
+  return '🐾'
 }
 
 function StatCard({ label, value, meta }) {
@@ -123,7 +74,7 @@ function StatusPill({ status }) {
   return (
     <span className="status-pill" style={{ color: tone.fg, background: tone.bg }}>
       <span className="status-dot" style={{ background: tone.dot }} />
-      {status}
+      {statusLabel(status)}
     </span>
   )
 }
@@ -132,19 +83,16 @@ function MissionRow({ mission, active, onSelect }) {
   return (
     <button type="button" className={`mission-row ${active ? 'active' : ''}`} onClick={() => onSelect(mission.id)}>
       <div className={`mission-thumb ${mission.theme}`}>{mission.emoji}</div>
-
       <div className="mission-copy">
         <div className="mission-topline">
-          <h3>Case #{mission.id}: {mission.name}</h3>
+          <h3>{mission.name}</h3>
           <StatusPill status={mission.status} />
         </div>
-
-        <p>{mission.location}</p>
-
+        <p>{mission.species} · {mission.age} р.</p>
         <div className="mission-meta">
-          <span>{mission.distance}</span>
+          <span>{mission.temperament}</span>
+          {mission.city && <span>📍 {mission.city}</span>}
           <span>{mission.updated}</span>
-          <span>{mission.team}</span>
         </div>
       </div>
     </button>
@@ -166,76 +114,94 @@ function SectionCard({ title, subtitle, children }) {
 }
 
 export default function HomePage() {
-  const [missions, setMissions] = useState(missionsSeed)
+  const [missions, setMissions] = useState([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeSection, setActiveSection] = useState('rescues')
-  const [selectedId, setSelectedId] = useState(missionsSeed[0].id)
+  const [selectedId, setSelectedId] = useState(null)
   const [filter, setFilter] = useState('All')
   const [query, setQuery] = useState('')
-  const [sort, setSort] = useState('Priority')
+  const [sort, setSort] = useState('Name')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [form, setForm] = useState({
     name: '',
-    emoji: '🐕',
-    status: 'Watch',
-    priority: '2',
-    distance: '',
-    location: '',
-    summary: '',
-    team: '',
-    heartRate: '',
+    species: 'собака',
+    age: '',
+    description: '',
+    status: 'needs rescue',
+    temperament: 'лагідний',
+    city: '',
+    weight: '',
   })
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`${API}/api/animals`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data)) return
+        const mapped = data.map((a) => ({
+          id:          a._id,
+          name:        a.name,
+          species:     a.species ?? 'невідомо',
+          age:         a.age ?? '?',
+          description: a.description ?? '',
+          temperament: a.temperament ?? '',
+          status:      a.status ?? 'needs rescue',
+          city:        a.city ?? '',
+          weight:      a.weight ?? null,
+          lat:         a.lat ?? null,
+          lng:         a.lng ?? null,
+          emoji:       emojiFromSpecies(a.species),
+          theme:       themeFromStatus(a.status),
+          updated:     new Date(a.updatedAt).toLocaleDateString('uk-UA'),
+        }))
+        setMissions(mapped)
+        if (mapped.length > 0) setSelectedId(mapped[0].id)
+      })
+      .catch((err) => console.error('❌ Помилка завантаження тварин:', err))
+      .finally(() => setLoading(false))
+  }, [])
 
   const visibleMissions = useMemo(() => {
     let items = [...missions]
-
     if (query.trim()) {
       const q = query.toLowerCase()
-      items = items.filter((mission) =>
-        [mission.name, mission.location, mission.status, mission.summary, mission.team]
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
+      items = items.filter((m) =>
+        [m.name, m.species, m.status, m.description, m.temperament, m.city]
+          .join(' ').toLowerCase().includes(q)
       )
     }
-
-    if (filter !== 'All') {
-      items = items.filter((mission) => mission.status === filter)
-    }
-
-    if (sort === 'Priority') {
-      items.sort((a, b) => a.priority - b.priority)
-    } else if (sort === 'Distance') {
-      items.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
-    } else {
-      items.sort((a, b) => a.name.localeCompare(b.name))
-    }
-
+    if (filter !== 'All') items = items.filter((m) => m.status === filter)
+    if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+    else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
+    else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
     return items
   }, [missions, filter, query, sort])
 
   const selectedMission =
-    visibleMissions.find((mission) => mission.id === selectedId) ||
-    missions.find((mission) => mission.id === selectedId) ||
+    visibleMissions.find((m) => m.id === selectedId) ||
+    missions.find((m) => m.id === selectedId) ||
     missions[0]
 
-  const criticalCount = missions.filter((item) => item.status === 'Critical').length
-  const stableCount = missions.filter((item) => item.status === 'Stable').length
-  const watchCount = missions.filter((item) => item.status === 'Watch').length
-  const inTransitCount = missions.length + 8
+  const needsRescueCount = missions.filter((m) => m.status === 'needs rescue').length
+  const rescuedCount = missions.filter((m) => m.status === 'rescued').length
+  const totalCount = missions.length
+  const dogsCount = missions.filter((m) =>
+    m.species?.toLowerCase().includes('собак') || m.species?.toLowerCase().includes('пес')
+  ).length
 
   function resetForm() {
     setForm({
       name: '',
-      emoji: '🐕',
-      status: 'Watch',
-      priority: '2',
-      distance: '',
-      location: '',
-      summary: '',
-      team: '',
-      heartRate: '',
+      species: 'собака',
+      age: '',
+      description: '',
+      status: 'needs rescue',
+      temperament: 'лагідний',
+      city: '',
+      weight: '',
     })
   }
 
@@ -244,61 +210,79 @@ export default function HomePage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  async function handleCreateMission(e) {
-  e.preventDefault()
+  async function handleCreateAnimal(e) {
+    e.preventDefault()
+    if (!form.name.trim() || !form.description.trim()) return
 
-  if (!form.name.trim() || !form.location.trim() || !form.summary.trim()) {
-    return
-  }
-
-  const payload = {
-    name:         form.name.trim(),
-    status:       form.status,
-    priority:     Number(form.priority),
-    distance:     form.distance.trim() || '0.0 km',
-    heartRate:    form.heartRate.trim() || 'N/A',
-    location:     form.location.trim(),
-    assignedTeam: form.team.trim() || 'Unassigned',
-    summary:      form.summary.trim(),
-  }
-
-  try {
-    const res = await fetch('https://safetails-production-8790.up.railway.app/api/missions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-
-    if (!res.ok) throw new Error('Server error')
-    const saved = await res.json()
-
-    const newMission = {
-      id:        String(saved._id).slice(-4),
-      name:      saved.name,
-      emoji:     form.emoji,
-      status:    saved.status,
-      priority:  saved.priority,
-      distance:  saved.distance,
-      location:  saved.location,
-      summary:   saved.summary,
-      team:      saved.assignedTeam,
-      updated:   'Just now',
-      heartRate: saved.heartRate,
-      action:    actionFromStatus(saved.status),
-      theme:     themeFromStatus(saved.status),
+    let lat = null, lng = null
+    if (form.city.trim()) {
+      try {
+        const geo = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(form.city)}&format=json&limit=1&countrycodes=ua`,
+          { headers: { 'Accept-Language': 'uk' } }
+        )
+        const geoData = await geo.json()
+        if (geoData.length > 0) {
+          lat = parseFloat(geoData[0].lat)
+          lng = parseFloat(geoData[0].lon)
+        }
+      } catch (err) {
+        console.warn('⚠️ Геокодинг не вдався:', err)
+      }
     }
 
-    setMissions((prev) => [newMission, ...prev])
-    setSelectedId(newMission.id)
-    setActiveSection('rescues')
-    setIsCreateOpen(false)
-    resetForm()
+    const payload = {
+      name:        form.name.trim(),
+      species:     form.species,
+      age:         Number(form.age) || 0,
+      description: form.description.trim(),
+      status:      form.status,
+      temperament: form.temperament,
+      city:        form.city.trim(),
+      weight:      form.weight ? Number(form.weight) : null,
+      lat,
+      lng,
+    }
 
-  } catch (err) {
-    console.error('❌ Помилка збереження місії:', err)
-    alert("Не вдалось зберегти місію. Перевір з'єднання з сервером.")
+    try {
+      const res = await fetch(`${API}/api/animals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET,
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Server error')
+      const saved = await res.json()
+
+      const newAnimal = {
+        id:          saved._id,
+        name:        saved.name,
+        species:     saved.species,
+        age:         saved.age,
+        description: saved.description,
+        temperament: saved.temperament,
+        status:      saved.status,
+        city:        saved.city ?? '',
+        weight:      saved.weight ?? null,
+        lat:         saved.lat ?? null,
+        lng:         saved.lng ?? null,
+        emoji:       emojiFromSpecies(saved.species),
+        theme:       themeFromStatus(saved.status),
+        updated:     new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
+      }
+
+      setMissions((prev) => [newAnimal, ...prev])
+      setSelectedId(newAnimal.id)
+      setActiveSection('rescues')
+      setIsCreateOpen(false)
+      resetForm()
+    } catch (err) {
+      console.error('❌ Помилка збереження:', err)
+      alert("Не вдалось зберегти. Перевір з'єднання з сервером.")
+    }
   }
-}
 
   function renderContent() {
     if (activeSection === 'dashboard') {
@@ -309,39 +293,37 @@ export default function HomePage() {
               <h2>Dashboard</h2>
               <p>Overview of rescue activity, critical alerts, logistics load, and current medical flow.</p>
             </div>
-
             <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
                 {sidebarOpen ? 'Hide menu' : 'Show menu'}
               </button>
             </div>
           </section>
 
           <section className="stats-grid">
-            <StatCard label="Critical alerts" value={String(criticalCount).padStart(2, '0')} meta="Immediate response required" />
-            <StatCard label="Stable cases" value={String(stableCount).padStart(2, '0')} meta="Animals under controlled care" />
-            <StatCard label="Watch list" value={String(watchCount).padStart(2, '0')} meta="Observation and follow-up needed" />
-            <StatCard label="In transit" value={String(inTransitCount).padStart(2, '0')} meta="Teams and vehicles moving now" />
+            <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
+            <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
+            <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
+            <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
           </section>
 
           <section className="workspace">
-            <SectionCard title="Priority board" subtitle="Quick overview of urgent assignments">
+            <SectionCard title="Priority board" subtitle="Quick overview of animals needing rescue">
               <div className="simple-list">
-                {missions.slice(0, 3).map((item) => (
+                {missions.filter((m) => m.status === 'needs rescue').slice(0, 3).map((item) => (
                   <div className="simple-row" key={item.id}>
                     <div>
-                      <strong>#{item.id} — {item.name}</strong>
-                      <p>{item.location}</p>
+                      <strong>{item.emoji} {item.name}</strong>
+                      <p>{item.species} · {item.city || item.description}</p>
                     </div>
                     <StatusPill status={item.status} />
                   </div>
                 ))}
               </div>
             </SectionCard>
-
             <SectionCard title="Operations note" subtitle="Live command summary">
               <div className="detail-note">
-                <p>Two critical field missions require immediate transport coordination, while stable cases continue under controlled observation and support staff review.</p>
+                <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
               </div>
             </SectionCard>
           </section>
@@ -357,14 +339,12 @@ export default function HomePage() {
               <h2>Dispatch</h2>
               <p>Coordinate teams, assign routes, and track outgoing rescue transport requests.</p>
             </div>
-
             <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
                 {sidebarOpen ? 'Hide menu' : 'Show menu'}
               </button>
             </div>
           </section>
-
           <section className="logistics" aria-label="Dispatch queue">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
@@ -392,14 +372,12 @@ export default function HomePage() {
               <h2>Medical Log</h2>
               <p>Review treatment progress, assigned staff, and recovery updates for each patient.</p>
             </div>
-
             <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
                 {sidebarOpen ? 'Hide menu' : 'Show menu'}
               </button>
             </div>
           </section>
-
           <SectionCard title="Medical records" subtitle="Latest care actions">
             <div className="simple-list">
               {medicalSeed.map((item) => (
@@ -425,14 +403,12 @@ export default function HomePage() {
               <h2>Archive</h2>
               <p>Browse completed rescue missions, recovery outcomes, and shelter transfer history.</p>
             </div>
-
             <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
                 {sidebarOpen ? 'Hide menu' : 'Show menu'}
               </button>
             </div>
           </section>
-
           <SectionCard title="Completed cases" subtitle="Resolved and archived missions">
             <div className="simple-list">
               {archiveSeed.map((item) => (
@@ -450,6 +426,7 @@ export default function HomePage() {
       )
     }
 
+    // rescues (default)
     return (
       <>
         <section className="hero-block">
@@ -457,51 +434,47 @@ export default function HomePage() {
             <h2>Active Rescues</h2>
             <p>Track active rescue cases, dispatch teams, and review field details in one place.</p>
           </div>
-
           <div className="topbar-actions">
-            <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+            <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
               {sidebarOpen ? 'Hide menu' : 'Show menu'}
             </button>
           </div>
         </section>
 
         <section className="stats-grid" aria-label="Mission statistics">
-          <StatCard label="Critical alerts" value={String(criticalCount).padStart(2, '0')} meta="Rescues needing immediate action" />
-          <StatCard label="In transit" value={String(inTransitCount).padStart(2, '0')} meta="Teams currently moving" />
-          <StatCard label="Safe today" value={String(stableCount + 28).padStart(2, '0')} meta="Successful extractions today" />
-          <StatCard label="Capacity" value="84%" meta="Available shelter and transport load" />
+          <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
+          <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Successfully helped" />
+          <StatCard label="Total" value={String(totalCount).padStart(2, '0')} meta="All animals in system" />
+          <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
         </section>
 
         <section className="workspace">
           <div className="panel">
             <div className="panel-header">
               <div>
-                <h3>Active mission stream</h3>
-                <p>Pick a mission to review the current status and dispatch notes.</p>
+                <h3>Animal stream</h3>
+                <p>Pick an animal to review details.</p>
               </div>
-
               <div className="controls">
                 <input
                   className="search"
                   type="text"
-                  placeholder="Search missions"
+                  placeholder="Search animals"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   autoComplete="off"
                 />
-
-                {['All', 'Critical', 'Stable', 'Watch'].map((value) => (
+                {['All', 'needs rescue', 'rescued'].map((value) => (
                   <button
                     key={value}
                     type="button"
                     className={`toolbar-btn ${filter === value ? 'active' : ''}`}
                     onClick={() => setFilter(value)}
                   >
-                    {value}
+                    {value === 'All' ? 'All' : statusLabel(value)}
                   </button>
                 ))}
-
-                {['Priority', 'Distance', 'Name'].map((value) => (
+                {['Name', 'Age', 'Status'].map((value) => (
                   <button
                     key={value}
                     type="button"
@@ -513,9 +486,10 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-
             <div className="mission-list">
-              {visibleMissions.length > 0 ? (
+              {loading ? (
+                <div className="detail-note"><p>Завантаження тварин...</p></div>
+              ) : visibleMissions.length > 0 ? (
                 visibleMissions.map((mission) => (
                   <MissionRow
                     key={mission.id}
@@ -526,7 +500,7 @@ export default function HomePage() {
                 ))
               ) : (
                 <div className="detail-note">
-                  <p>No missions match the current search or filters.</p>
+                  <p>No animals match the current search or filters.</p>
                 </div>
               )}
             </div>
@@ -535,36 +509,41 @@ export default function HomePage() {
           {selectedMission && (
             <aside className="panel detail-card">
               <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
-
               <div className="detail-body">
                 <div className="detail-head">
                   <div>
                     <StatusPill status={selectedMission.status} />
-                    <h3 style={{ marginTop: 12 }}>Case #{selectedMission.id}: {selectedMission.name}</h3>
-                    <p>{selectedMission.location}</p>
+                    <h3 style={{ marginTop: 12 }}>{selectedMission.name}</h3>
+                    <p>{selectedMission.species} · {selectedMission.age} р.</p>
                   </div>
-
-                  <span className="distance-chip">{selectedMission.distance}</span>
                 </div>
-
                 <div className="detail-grid">
                   <div className="mini-card">
-                    <span>Assigned team</span>
-                    <strong>{selectedMission.team}</strong>
+                    <span>Темперамент</span>
+                    <strong>{selectedMission.temperament}</strong>
                   </div>
-
                   <div className="mini-card">
-                    <span>Heart rate</span>
-                    <strong>{selectedMission.heartRate}</strong>
+                    <span>Вік</span>
+                    <strong>{selectedMission.age} р.</strong>
                   </div>
+                  {selectedMission.city && (
+                    <div className="mini-card">
+                      <span>Місто</span>
+                      <strong>{selectedMission.city}</strong>
+                    </div>
+                  )}
+                  {selectedMission.weight && (
+                    <div className="mini-card">
+                      <span>Вага</span>
+                      <strong>{selectedMission.weight} кг</strong>
+                    </div>
+                  )}
                 </div>
-
                 <div className="detail-note">
-                  <p>{selectedMission.summary}</p>
+                  <p>{selectedMission.description}</p>
                 </div>
-
                 <div className="detail-actions">
-                  <button className="detail-primary-btn" type="button">{selectedMission.action}</button>
+                  <button className="detail-primary-btn" type="button">Dispatch now</button>
                   <button className="detail-ghost-btn" type="button">Open case</button>
                 </div>
               </div>
@@ -577,7 +556,6 @@ export default function HomePage() {
             <h3>Secondary logistics</h3>
             <span className="eyebrow small-no-margin">Support queue</span>
           </div>
-
           {logisticsSeed.map((item) => (
             <button key={item.id} className="logistics-item" type="button">
               <div className="logistics-icon">{item.icon}</div>
@@ -615,9 +593,7 @@ export default function HomePage() {
           --radius: 22px;
         }
 
-        * {
-          box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         .missions-shell {
           min-height: calc(100vh - 60px);
@@ -860,9 +836,7 @@ export default function HomePage() {
           box-shadow: var(--shadow);
         }
 
-        .stat-card {
-          padding: 18px;
-        }
+        .stat-card { padding: 18px; }
 
         .eyebrow {
           display: block;
@@ -874,9 +848,7 @@ export default function HomePage() {
           text-transform: uppercase;
         }
 
-        .small-no-margin {
-          margin-bottom: 0;
-        }
+        .small-no-margin { margin-bottom: 0; }
 
         .stat-card strong {
           display: block;
@@ -919,9 +891,7 @@ export default function HomePage() {
           font-size: 18px;
         }
 
-        .panel-pad {
-          padding: 16px;
-        }
+        .panel-pad { padding: 16px; }
 
         .controls {
           display: flex;
@@ -953,9 +923,7 @@ export default function HomePage() {
           resize: vertical;
         }
 
-        .toolbar-btn.active {
-          background: rgba(255,255,255,0.08);
-        }
+        .toolbar-btn.active { background: rgba(255,255,255,0.08); }
 
         .mission-list,
         .logistics,
@@ -964,9 +932,7 @@ export default function HomePage() {
           gap: 12px;
         }
 
-        .mission-list {
-          padding: 16px;
-        }
+        .mission-list { padding: 16px; }
 
         .mission-row,
         .logistics-item,
@@ -1001,9 +967,17 @@ export default function HomePage() {
           font-size: 34px;
         }
 
-        .mission-thumb.danger { background: linear-gradient(180deg, #4a201f, #2b1212); }
-        .mission-thumb.calm { background: linear-gradient(180deg, #12312b, #10201d); }
-        .mission-thumb.watch { background: linear-gradient(180deg, #3f3217, #241c0f); }
+        .mission-thumb.danger {
+          background: linear-gradient(180deg, #4a201f, #2b1212);
+        }
+
+        .mission-thumb.calm {
+          background: linear-gradient(180deg, #12312b, #10201d);
+        }
+
+        .mission-thumb.watch {
+          background: linear-gradient(180deg, #3f3217, #241c0f);
+        }
 
         .mission-topline,
         .detail-head,
@@ -1048,9 +1022,7 @@ export default function HomePage() {
           border-radius: 50%;
         }
 
-        .detail-card {
-          overflow: hidden;
-        }
+        .detail-card { overflow: hidden; }
 
         .hero {
           min-height: 220px;
@@ -1060,9 +1032,17 @@ export default function HomePage() {
           border-bottom: 1px solid var(--border);
         }
 
-        .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
-        .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
-        .hero.watch { background: linear-gradient(180deg, #55451e 0%, #20180b 100%); }
+        .hero.danger {
+          background: linear-gradient(180deg, #5c2622 0%, #241110 100%);
+        }
+
+        .hero.calm {
+          background: linear-gradient(180deg, #173830 0%, #0d1514 100%);
+        }
+
+        .hero.watch {
+          background: linear-gradient(180deg, #55451e 0%, #20180b 100%);
+        }
 
         .detail-body {
           padding: 20px;
@@ -1105,9 +1085,7 @@ export default function HomePage() {
           margin-bottom: 8px;
         }
 
-        .mini-card strong {
-          font-size: 18px;
-        }
+        .mini-card strong { font-size: 18px; }
 
         .detail-note p {
           margin: 0;
@@ -1164,9 +1142,7 @@ export default function HomePage() {
           font-size: 15px;
         }
 
-        .logistics-meta {
-          text-align: right;
-        }
+        .logistics-meta { text-align: right; }
 
         .logistics-meta strong {
           display: block;
@@ -1238,14 +1214,9 @@ export default function HomePage() {
           -ms-overflow-style: none;
         }
 
-        .modal-scroll::-webkit-scrollbar {
-          display: none;
-        }
+        .modal-scroll::-webkit-scrollbar { display: none; }
 
-        .form-field {
-          display: grid;
-          gap: 8px;
-        }
+        .form-field { display: grid; gap: 8px; }
 
         .form-field label {
           font-size: 13px;
@@ -1261,24 +1232,16 @@ export default function HomePage() {
         }
 
         @media (max-width: 1180px) {
-          .workspace {
-            grid-template-columns: 1fr;
-          }
+          .workspace { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 980px) {
-          .layout {
-            grid-template-columns: 1fr;
-          }
-
+          .layout { grid-template-columns: 1fr; }
           .sidebar {
             display: ${sidebarOpen ? 'block' : 'none'};
             min-height: auto;
           }
-
-          .content {
-            padding: 20px 16px 24px;
-          }
+          .content { padding: 20px 16px 24px; }
         }
 
         @media (max-width: 780px) {
@@ -1289,12 +1252,7 @@ export default function HomePage() {
           .logistics-item {
             grid-template-columns: 1fr;
           }
-
-          .mission-thumb {
-            width: 100%;
-            height: 120px;
-          }
-
+          .mission-thumb { width: 100%; height: 120px; }
           .detail-head,
           .simple-row,
           .logistics-head,
@@ -1305,19 +1263,9 @@ export default function HomePage() {
             flex-direction: column;
             align-items: stretch;
           }
-
-          .hero-copy h2 {
-            font-size: 34px;
-          }
-
-          .modal-card {
-            height: min(92vh, 760px);
-            width: 100%;
-          }
-
-          .modal-backdrop {
-            padding: 12px;
-          }
+          .hero-copy h2 { font-size: 34px; }
+          .modal-card { height: min(92vh, 760px); width: 100%; }
+          .modal-backdrop { padding: 12px; }
         }
       `}</style>
 
@@ -1348,7 +1296,7 @@ export default function HomePage() {
 
             <div className="sidebar-footer-ref">
               <button className="new-mission-btn" type="button" onClick={() => setIsCreateOpen(true)}>
-                New Mission
+                + Add Animal
               </button>
               <button className="footer-link-btn" type="button">Support</button>
               <button className="footer-link-btn" type="button">Sign Out</button>
@@ -1365,139 +1313,86 @@ export default function HomePage() {
         <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
-              <h3>Create new mission</h3>
-              <p>Add a rescue case and place it directly into the active mission stream.</p>
+              <h3>Add new animal</h3>
+              <p>Додай тварину — вона збережеться в базі та з'явиться на мапі.</p>
             </div>
 
-            <form className="modal-form" onSubmit={handleCreateMission} autoComplete="off">
+            <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Animal name</label>
+                    <label htmlFor="name">Ім'я тварини</label>
                     <input
-                      id="name"
-                      name="name"
-                      className="form-input"
-                      value={form.name}
-                      onChange={handleFormChange}
-                      placeholder="Cooper"
-                      autoComplete="new-password"
+                      id="name" name="name" className="form-input"
+                      value={form.name} onChange={handleFormChange}
+                      placeholder="Барні" autoComplete="new-password"
                     />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="emoji">Emoji</label>
-                    <select
-                      id="emoji"
-                      name="emoji"
-                      className="form-select"
-                      value={form.emoji}
-                      onChange={handleFormChange}
-                      autoComplete="off"
-                    >
-                      <option value="🐕">🐕 Dog</option>
-                      <option value="🐈">🐈 Cat</option>
-                      <option value="🦊">🦊 Fox</option>
-                      <option value="🐺">🐺 Wolf</option>
-                      <option value="🐇">🐇 Rabbit</option>
+                    <label htmlFor="species">Вид</label>
+                    <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
+                      <option value="собака">🐕 Собака</option>
+                      <option value="кіт">🐈 Кіт</option>
+                      <option value="кролик">🐇 Кролик</option>
+                      <option value="птах">🐦 Птах</option>
+                      <option value="інше">🐾 Інше</option>
                     </select>
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="status">Status</label>
-                    <select
-                      id="status"
-                      name="status"
-                      className="form-select"
-                      value={form.status}
-                      onChange={handleFormChange}
-                      autoComplete="off"
-                    >
-                      <option value="Critical">Critical</option>
-                      <option value="Watch">Watch</option>
-                      <option value="Stable">Stable</option>
-                    </select>
-                  </div>
-
-                  <div className="form-field">
-                    <label htmlFor="priority">Priority</label>
-                    <select
-                      id="priority"
-                      name="priority"
-                      className="form-select"
-                      value={form.priority}
-                      onChange={handleFormChange}
-                      autoComplete="off"
-                    >
-                      <option value="1">1 — High</option>
-                      <option value="2">2 — Medium</option>
-                      <option value="3">3 — Low</option>
-                    </select>
-                  </div>
-
-                  <div className="form-field">
-                    <label htmlFor="distance">Distance</label>
+                    <label htmlFor="age">Вік (років)</label>
                     <input
-                      id="distance"
-                      name="distance"
-                      className="form-input"
-                      value={form.distance}
-                      onChange={handleFormChange}
-                      placeholder="2.4 km"
-                      autoComplete="off"
+                      id="age" name="age" type="number" min="0" max="30"
+                      className="form-input" value={form.age}
+                      onChange={handleFormChange} placeholder="3"
                     />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="heartRate">Heart rate</label>
+                    <label htmlFor="weight">Вага (кг)</label>
                     <input
-                      id="heartRate"
-                      name="heartRate"
-                      className="form-input"
-                      value={form.heartRate}
-                      onChange={handleFormChange}
-                      placeholder="128 BPM"
-                      autoComplete="off"
+                      id="weight" name="weight" type="number" min="0" max="200" step="0.1"
+                      className="form-input" value={form.weight}
+                      onChange={handleFormChange} placeholder="5"
                     />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="status">Статус</label>
+                    <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
+                      <option value="needs rescue">Needs Rescue</option>
+                      <option value="rescued">Rescued</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="temperament">Темперамент</label>
+                    <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
+                      <option value="лагідний">Лагідний</option>
+                      <option value="активний">Активний</option>
+                      <option value="спокійний">Спокійний</option>
+                      <option value="грайливий">Грайливий</option>
+                      <option value="незалежний">Незалежний</option>
+                    </select>
                   </div>
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="location">Location</label>
+                  <label htmlFor="city">Місто знаходження</label>
                   <input
-                    id="location"
-                    name="location"
-                    className="form-input"
-                    value={form.location}
-                    onChange={handleFormChange}
-                    placeholder="Industrial Zone — Terminal B"
-                    autoComplete="new-password"
+                    id="city" name="city" className="form-input"
+                    value={form.city} onChange={handleFormChange}
+                    placeholder="Львів" autoComplete="new-password"
                   />
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="team">Assigned team</label>
-                  <input
-                    id="team"
-                    name="team"
-                    className="form-input"
-                    value={form.team}
-                    onChange={handleFormChange}
-                    placeholder="Dr. Aris + 2"
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="summary">Summary</label>
+                  <label htmlFor="description">Опис</label>
                   <textarea
-                    id="summary"
-                    name="summary"
-                    className="form-textarea"
-                    value={form.summary}
-                    onChange={handleFormChange}
-                    placeholder="Short case description..."
-                    autoComplete="off"
+                    id="description" name="description" className="form-textarea"
+                    value={form.description} onChange={handleFormChange}
+                    placeholder="Короткий опис тварини..."
                   />
                 </div>
               </div>
@@ -1507,7 +1402,7 @@ export default function HomePage() {
                   Cancel
                 </button>
                 <button type="submit" className="modal-submit-btn">
-                  Create mission
+                  Save animal
                 </button>
               </div>
             </form>
