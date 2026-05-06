@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const API = 'https://safetails-production-8790.up.railway.app'
 
@@ -14,12 +15,6 @@ const medicalSeed = [
   { id: 3, patient: 'Рекс', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
 ]
 
-const archiveSeed = [
-  { id: 'A-102', name: 'Міа', result: 'Adopted', date: 'Apr 28' },
-  { id: 'A-097', name: 'Сніжка', result: 'Transferred to shelter', date: 'Apr 25' },
-  { id: 'A-091', name: 'Зевс', result: 'Recovered', date: 'Apr 21' },
-]
-
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '▦' },
   { id: 'rescues', label: 'Active Rescues', icon: '✦' },
@@ -30,8 +25,8 @@ const navItems = [
 
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
-  if (status === 'in rescue') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
   if (status === 'rescued') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
+  if (status === 'archived') return { fg: '#e5e7eb', bg: '#374151', dot: '#9ca3af' }
   if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Urgent') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
@@ -40,15 +35,15 @@ function statusTone(status) {
 
 function statusLabel(status) {
   if (status === 'needs rescue') return 'Needs Rescue'
-  if (status === 'in rescue') return 'In Rescue'
   if (status === 'rescued') return 'Rescued'
+  if (status === 'archived') return 'Archived'
   return status
 }
 
 function themeFromStatus(status) {
   if (status === 'needs rescue' || status === 'Critical') return 'danger'
-  if (status === 'in rescue' || status === 'Urgent') return 'watch'
   if (status === 'rescued' || status === 'Stable') return 'calm'
+  if (status === 'archived') return 'archive'
   return 'watch'
 }
 
@@ -84,7 +79,11 @@ function StatusPill({ status }) {
 
 function MissionRow({ mission, active, onSelect }) {
   return (
-    <button type="button" className={`mission-row ${active ? 'active' : ''}`} onClick={() => onSelect(mission.id)}>
+    <button
+      type="button"
+      className={`mission-row ${active ? 'active' : ''}`}
+      onClick={() => onSelect(mission.id)}
+    >
       <div className={`mission-thumb ${mission.theme}`}>{mission.emoji}</div>
       <div className="mission-copy">
         <div className="mission-topline">
@@ -117,7 +116,10 @@ function SectionCard({ title, subtitle, children }) {
 }
 
 export default function HomePage() {
+  const navigate = useNavigate()
+
   const [missions, setMissions] = useState([])
+  const [archivedMissions, setArchivedMissions] = useState([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeSection, setActiveSection] = useState('rescues')
   const [selectedId, setSelectedId] = useState(null)
@@ -125,9 +127,7 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('Name')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [formError, setFormError] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -146,6 +146,7 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((data) => {
         if (!Array.isArray(data)) return
+
         const mapped = data.map((a) => ({
           id: a._id,
           name: a.name,
@@ -160,10 +161,20 @@ export default function HomePage() {
           lng: a.lng ?? null,
           emoji: emojiFromSpecies(a.species),
           theme: themeFromStatus(a.status),
-          updated: new Date(a.updatedAt).toLocaleDateString('uk-UA'),
+          updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
         }))
-        setMissions(mapped)
-        if (mapped.length > 0) setSelectedId(mapped[0].id)
+
+        const active = mapped.filter((item) => item.status !== 'archived')
+        const archived = mapped.filter((item) => item.status === 'archived')
+
+        setMissions(active)
+        setArchivedMissions(archived)
+
+        if (active.length > 0) {
+          setSelectedId(active[0].id)
+        } else {
+          setSelectedId(null)
+        }
       })
       .catch((err) => console.error('❌ Помилка завантаження тварин:', err))
       .finally(() => setLoading(false))
@@ -194,18 +205,18 @@ export default function HomePage() {
   const selectedMission =
     visibleMissions.find((m) => m.id === selectedId) ||
     missions.find((m) => m.id === selectedId) ||
-    missions[0]
+    missions[0] ||
+    null
 
   const needsRescueCount = missions.filter((m) => m.status === 'needs rescue').length
-  const inRescueCount = missions.filter((m) => m.status === 'in rescue').length
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
-  const totalCount = missions.length
+  const archivedCount = archivedMissions.length
+  const totalCount = missions.length + archivedMissions.length
   const dogsCount = missions.filter((m) =>
     m.species?.toLowerCase().includes('собак') || m.species?.toLowerCase().includes('пес')
   ).length
 
   function resetForm() {
-    setFormError(false)
     setForm({
       name: '',
       species: 'собака',
@@ -221,18 +232,11 @@ export default function HomePage() {
   function handleFormChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
-    if (formError) setFormError(false)
   }
 
   async function handleCreateAnimal(e) {
     e.preventDefault()
-
-    if (!form.name.trim() || !form.age || !form.city.trim() || !form.description.trim()) {
-      setFormError(true)
-      return
-    }
-
-    setFormError(false)
+    if (!form.name.trim() || !form.description.trim()) return
 
     let lat = null
     let lng = null
@@ -297,16 +301,51 @@ export default function HomePage() {
         updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
       }
 
-      setMissions((prev) => [newAnimal, ...prev])
-      setSelectedId(newAnimal.id)
-      setActiveSection('rescues')
+      if (newAnimal.status === 'archived') {
+        setArchivedMissions((prev) => [newAnimal, ...prev])
+        setActiveSection('archive')
+      } else {
+        setMissions((prev) => [newAnimal, ...prev])
+        setSelectedId(newAnimal.id)
+        setActiveSection('rescues')
+      }
+
       setIsCreateOpen(false)
       resetForm()
-      setIsSuccessOpen(true)
     } catch (err) {
       console.error('❌ Помилка збереження:', err)
       alert("Не вдалось зберегти. Перевір з'єднання з сервером.")
     }
+  }
+
+  function handleOpenCase() {
+    if (!selectedMission) return
+    navigate(`/animals/${selectedMission.id}`)
+  }
+
+  function handleArchive() {
+    if (!selectedMission) return
+
+    const archivedAnimal = {
+      ...selectedMission,
+      status: 'archived',
+      theme: 'archive',
+      updated: new Date().toLocaleDateString('uk-UA'),
+      archivedAt: new Date().toLocaleDateString('uk-UA'),
+    }
+
+    setArchivedMissions((prev) => [archivedAnimal, ...prev])
+
+    const updatedMissions = missions.filter((m) => m.id !== selectedMission.id)
+    setMissions(updatedMissions)
+
+    if (updatedMissions.length > 0) {
+      setSelectedId(updatedMissions[0].id)
+    } else {
+      setSelectedId(null)
+    }
+
+    setActiveSection('archive')
   }
 
   function renderContent() {
@@ -327,8 +366,8 @@ export default function HomePage() {
 
           <section className="stats-grid">
             <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
-            <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are on the way" />
             <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
+            <StatCard label="Archived" value={String(archivedCount).padStart(2, '0')} meta="Moved to archive" />
             <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
           </section>
 
@@ -349,9 +388,7 @@ export default function HomePage() {
 
             <SectionCard title="Operations note" subtitle="Live command summary">
               <div className="detail-note">
-                <p>
-                  Наразі {needsRescueCount} тварин потребують термінової допомоги. {inRescueCount} уже в процесі порятунку. {rescuedCount} вже врятовано та перебувають під наглядом.
-                </p>
+                <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
               </div>
             </SectionCard>
           </section>
@@ -431,7 +468,7 @@ export default function HomePage() {
           <section className="hero-block">
             <div className="hero-copy">
               <h2>Archive</h2>
-              <p>Browse completed rescue missions, recovery outcomes, and shelter transfer history.</p>
+              <p>Browse completed rescue missions, recovery outcomes, and archived animal cases.</p>
             </div>
             <div className="topbar-actions">
               <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
@@ -440,17 +477,23 @@ export default function HomePage() {
             </div>
           </section>
 
-          <SectionCard title="Completed cases" subtitle="Resolved and archived missions">
+          <SectionCard title="Archived animals" subtitle="Cases moved from active rescue flow">
             <div className="simple-list">
-              {archiveSeed.map((item) => (
-                <div className="simple-row" key={item.id}>
-                  <div>
-                    <strong>{item.name}</strong>
-                    <p>Case {item.id} · {item.date}</p>
+              {archivedMissions.length > 0 ? (
+                archivedMissions.map((item) => (
+                  <div className="simple-row" key={item.id}>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <p>{item.species} · Archived {item.archivedAt || item.updated}</p>
+                    </div>
+                    <span className="archive-tag">Archived</span>
                   </div>
-                  <span className="archive-tag">{item.result}</span>
+                ))
+              ) : (
+                <div className="detail-note">
+                  <p>No archived animals yet.</p>
                 </div>
-              ))}
+              )}
             </div>
           </SectionCard>
         </>
@@ -473,9 +516,9 @@ export default function HomePage() {
 
         <section className="stats-grid" aria-label="Mission statistics">
           <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
-          <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are already responding" />
           <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Successfully helped" />
-          <StatCard label="Total" value={String(totalCount).padStart(2, '0')} meta="All animals in system" />
+          <StatCard label="Archived" value={String(archivedCount).padStart(2, '0')} meta="Moved out of active list" />
+          <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
         </section>
 
         <section className="workspace">
@@ -496,7 +539,7 @@ export default function HomePage() {
                   autoComplete="off"
                 />
 
-                {['All', 'needs rescue', 'in rescue', 'rescued'].map((value) => (
+                {['All', 'needs rescue', 'rescued'].map((value) => (
                   <button
                     key={value}
                     type="button"
@@ -522,7 +565,9 @@ export default function HomePage() {
 
             <div className="mission-list">
               {loading ? (
-                <div className="detail-note"><p>Завантаження тварин...</p></div>
+                <div className="detail-note">
+                  <p>Завантаження тварин...</p>
+                </div>
               ) : visibleMissions.length > 0 ? (
                 visibleMissions.map((mission) => (
                   <MissionRow
@@ -543,6 +588,7 @@ export default function HomePage() {
           {selectedMission && (
             <aside className="panel detail-card">
               <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
+
               <div className="detail-body">
                 <div className="detail-head">
                   <div>
@@ -555,7 +601,7 @@ export default function HomePage() {
                 <div className="detail-grid">
                   <div className="mini-card">
                     <span>Темперамент</span>
-                    <strong>{selectedMission.temperament}</strong>
+                    <strong>{selectedMission.temperament || 'Невідомо'}</strong>
                   </div>
 
                   <div className="mini-card">
@@ -583,8 +629,13 @@ export default function HomePage() {
                 </div>
 
                 <div className="detail-actions">
-                  <button className="detail-primary-btn" type="button">Dispatch now</button>
-                  <button className="detail-ghost-btn" type="button">Open case</button>
+                  <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>
+                    Open case
+                  </button>
+
+                  <button className="detail-ghost-btn" type="button" onClick={handleArchive}>
+                    Archive
+                  </button>
                 </div>
               </div>
             </aside>
@@ -646,17 +697,20 @@ export default function HomePage() {
         }
 
         .layout {
-          display: grid;
-          grid-template-columns: ${sidebarOpen ? '188px 1fr' : '1fr'};
-          gap: 24px;
           min-height: calc(100vh - 60px);
         }
 
         .sidebar {
+          position: fixed;
+          top: 60px;
+          left: 0;
+          width: 188px;
+          height: calc(100vh - 60px);
+          overflow-y: auto;
           min-width: 0;
-          min-height: calc(100vh - 60px);
           background: linear-gradient(180deg, #05070b 0%, #070912 100%);
           border-right: 1px solid rgba(255,255,255,0.05);
+          z-index: 30;
         }
 
         .command-card {
@@ -758,7 +812,6 @@ export default function HomePage() {
         }
 
         .new-mission-btn,
-        .footer-link-btn,
         .collapse-btn,
         .toolbar-btn,
         .mission-row,
@@ -771,7 +824,6 @@ export default function HomePage() {
         }
 
         .new-mission-btn:hover,
-        .footer-link-btn:hover,
         .collapse-btn:hover,
         .toolbar-btn:hover,
         .mission-row:hover,
@@ -795,22 +847,21 @@ export default function HomePage() {
           cursor: pointer;
         }
 
-        .footer-link-btn {
-          width: 100%;
-          text-align: left;
-          background: transparent;
-          border: 0;
-          color: #6f7385;
-          padding: 6px 0;
-          font-size: 12px;
-          cursor: pointer;
-        }
-
         .content {
           min-width: 0;
+          width: 100%;
+          max-width: 100%;
           display: grid;
           gap: 24px;
-          padding: 28px 28px 28px 0;
+          transition: padding 0.25s ease;
+        }
+
+        .content.with-sidebar {
+          padding: 28px 28px 28px 212px;
+        }
+
+        .content.full-width {
+          padding: 28px;
         }
 
         .hero-block {
@@ -1020,6 +1071,10 @@ export default function HomePage() {
           background: linear-gradient(180deg, #3f3217, #241c0f);
         }
 
+        .mission-thumb.archive {
+          background: linear-gradient(180deg, #374151, #1f2937);
+        }
+
         .mission-topline,
         .detail-head,
         .simple-row,
@@ -1045,8 +1100,7 @@ export default function HomePage() {
         }
 
         .status-pill,
-        .archive-tag,
-        .distance-chip {
+        .archive-tag {
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -1085,6 +1139,10 @@ export default function HomePage() {
           background: linear-gradient(180deg, #55451e 0%, #20180b 100%);
         }
 
+        .hero.archive {
+          background: linear-gradient(180deg, #374151 0%, #111827 100%);
+        }
+
         .detail-body {
           padding: 20px;
           display: grid;
@@ -1097,7 +1155,6 @@ export default function HomePage() {
           font-size: 14px;
         }
 
-        .distance-chip,
         .archive-tag {
           border: 1px solid var(--border);
           background: var(--panel-3);
@@ -1219,41 +1276,6 @@ export default function HomePage() {
           margin: auto;
         }
 
-        .success-card {
-          width: min(560px, 100%);
-          height: auto;
-          min-height: 320px;
-        }
-
-        .success-hero {
-          min-height: 140px;
-          display: grid;
-          place-items: center;
-          font-size: 54px;
-          background: linear-gradient(180deg, rgba(255,107,43,0.18), rgba(255,255,255,0.03));
-          border-bottom: 1px solid var(--border);
-        }
-
-        .success-copy {
-          padding: 20px;
-          display: grid;
-          gap: 14px;
-        }
-
-        .success-copy h3 {
-          margin: 0;
-          font-size: 24px;
-          text-align: center;
-        }
-
-        .success-copy p {
-          margin: 0;
-          color: #d0d5dd;
-          font-size: 15px;
-          line-height: 1.7;
-          text-align: center;
-        }
-
         .modal-head {
           padding: 20px 20px 16px;
           border-bottom: 1px solid var(--border);
@@ -1300,21 +1322,6 @@ export default function HomePage() {
           font-weight: 600;
         }
 
-        .form-error-banner {
-          background: #3d1212;
-          border: 1px solid #7f1d1d;
-          color: #fca5a5;
-          border-radius: 14px;
-          padding: 12px 16px;
-          font-size: 13px;
-          line-height: 1.5;
-        }
-
-        .required {
-          color: #ff6b6b;
-          margin-left: 2px;
-        }
-
         .modal-actions {
           padding: 16px 20px 20px;
           border-top: 1px solid var(--border);
@@ -1327,12 +1334,17 @@ export default function HomePage() {
         }
 
         @media (max-width: 980px) {
-          .layout { grid-template-columns: 1fr; }
           .sidebar {
-            display: ${sidebarOpen ? 'block' : 'none'};
-            min-height: auto;
+            position: static;
+            width: 100%;
+            height: auto;
+            display: block;
           }
-          .content { padding: 20px 16px 24px; }
+
+          .content.with-sidebar,
+          .content.full-width {
+            padding: 20px 16px 24px;
+          }
         }
 
         @media (max-width: 780px) {
@@ -1359,7 +1371,6 @@ export default function HomePage() {
 
           .hero-copy h2 { font-size: 34px; }
           .modal-card { height: min(92vh, 760px); width: 100%; }
-          .success-card { min-height: auto; }
           .modal-backdrop { padding: 12px; }
         }
       `}</style>
@@ -1393,25 +1404,17 @@ export default function HomePage() {
               <button className="new-mission-btn" type="button" onClick={() => setIsCreateOpen(true)}>
                 + Add Animal
               </button>
-              <button className="footer-link-btn" type="button">Support</button>
-              <button className="footer-link-btn" type="button">Sign Out</button>
             </div>
           </aside>
         )}
 
-        <main className="content">
+        <main className={`content ${sidebarOpen ? 'with-sidebar' : 'full-width'}`}>
           {renderContent()}
         </main>
       </div>
 
       {isCreateOpen && (
-        <div
-          className="modal-backdrop"
-          onClick={() => {
-            setIsCreateOpen(false)
-            setFormError(false)
-          }}
-        >
+        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <h3>Add new animal</h3>
@@ -1420,15 +1423,9 @@ export default function HomePage() {
 
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
-                {formError && (
-                  <div className="form-error-banner">
-                    ⚠️ Будь ласка, заповни всі обов'язкові поля: ім'я, вік, місто та опис.
-                  </div>
-                )}
-
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Ім'я тварини <span className="required">*</span></label>
+                    <label htmlFor="name">Ім'я тварини</label>
                     <input
                       id="name"
                       name="name"
@@ -1442,7 +1439,13 @@ export default function HomePage() {
 
                   <div className="form-field">
                     <label htmlFor="species">Вид</label>
-                    <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
+                    <select
+                      id="species"
+                      name="species"
+                      className="form-select"
+                      value={form.species}
+                      onChange={handleFormChange}
+                    >
                       <option value="собака">🐕 Собака</option>
                       <option value="кіт">🐈 Кіт</option>
                       <option value="інше">🐾 Інше</option>
@@ -1450,7 +1453,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="age">Вік (років) <span className="required">*</span></label>
+                    <label htmlFor="age">Вік (років)</label>
                     <input
                       id="age"
                       name="age"
@@ -1482,16 +1485,28 @@ export default function HomePage() {
 
                   <div className="form-field">
                     <label htmlFor="status">Статус</label>
-                    <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
+                    <select
+                      id="status"
+                      name="status"
+                      className="form-select"
+                      value={form.status}
+                      onChange={handleFormChange}
+                    >
                       <option value="needs rescue">Needs Rescue</option>
-                      <option value="in rescue">In Rescue</option>
                       <option value="rescued">Rescued</option>
+                      <option value="archived">Archived</option>
                     </select>
                   </div>
 
                   <div className="form-field">
                     <label htmlFor="temperament">Темперамент</label>
-                    <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
+                    <select
+                      id="temperament"
+                      name="temperament"
+                      className="form-select"
+                      value={form.temperament}
+                      onChange={handleFormChange}
+                    >
                       <option value="лагідний">Лагідний</option>
                       <option value="активний">Активний</option>
                       <option value="спокійний">Спокійний</option>
@@ -1502,7 +1517,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="city">Місто знаходження <span className="required">*</span></label>
+                  <label htmlFor="city">Місто знаходження</label>
                   <input
                     id="city"
                     name="city"
@@ -1515,7 +1530,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="description">Опис <span className="required">*</span></label>
+                  <label htmlFor="description">Опис</label>
                   <textarea
                     id="description"
                     name="description"
@@ -1528,14 +1543,7 @@ export default function HomePage() {
               </div>
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="modal-close-btn"
-                  onClick={() => {
-                    setIsCreateOpen(false)
-                    setFormError(false)
-                  }}
-                >
+                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>
                   Cancel
                 </button>
                 <button type="submit" className="modal-submit-btn">
@@ -1543,32 +1551,6 @@ export default function HomePage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {isSuccessOpen && (
-        <div className="modal-backdrop" onClick={() => setIsSuccessOpen(false)}>
-          <div className="modal-card success-card" onClick={(e) => e.stopPropagation()}>
-            <div className="success-hero">💛🐾</div>
-
-            <div className="success-copy">
-              <h3>Дякуємо за твою турботу</h3>
-              <p>
-                Тварину успішно додано до системи. Твій крок — це не просто запис у базі,
-                а ще один шанс на безпеку, тепло та дбайливий прихисток для того,
-                хто зараз цього дуже потребує.
-              </p>
-              <p>
-                Кожна заповнена заявка допомагає нам швидше помітити, підтримати й урятувати.
-              </p>
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" className="modal-submit-btn" onClick={() => setIsSuccessOpen(false)}>
-                Добре
-              </button>
-            </div>
           </div>
         </div>
       )}
