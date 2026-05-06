@@ -1,14 +1,27 @@
 const express = require('express')
 const router = express.Router()
+const auth = require('../middleware/auth')
 const Volunteer = require('../models/Volunteer')
 
-router.post('/', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const volunteer = new Volunteer(req.body)
-    await volunteer.save()
-    res.status(201).json({ message: 'Заявку прийнято!' })
+    const volunteers = await Volunteer.find().sort({ createdAt: -1 })
+    res.json(volunteers)
   } catch (err) {
-    res.status(400).json({ message: err.message })
+    res.status(500).json({ message: err.message })
+  }
+})
+
+router.post('/', auth, async (req, res) => {
+  try {
+    const volunteer = await Volunteer.create({
+      ...req.body,
+      user: req.user.id,
+    })
+
+    res.status(201).json(volunteer)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
   }
 })
 

@@ -1,15 +1,15 @@
 const font = "'DM Sans', 'Inter', sans-serif"
 
-export default function LoginPromptModal({ onClose, onLogin }) {
+export default function LoginPromptModal({ open, onClose, onLogin, onContinueWithoutAccount }) {
+  if (!open) return null
+
   return (
     <>
-      {/* Overlay */}
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
         zIndex: 500, backdropFilter: 'blur(6px)',
       }} />
 
-      {/* Modal */}
       <div style={{
         position: 'fixed', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -18,7 +18,6 @@ export default function LoginPromptModal({ onClose, onLogin }) {
         border: '1px solid #2a2a2a', padding: '44px 36px',
         fontFamily: font, textAlign: 'center',
       }}>
-        {/* Close */}
         <button onClick={onClose} style={{
           position: 'absolute', top: 14, right: 14,
           background: '#222', border: 'none', color: '#888',
@@ -27,7 +26,6 @@ export default function LoginPromptModal({ onClose, onLogin }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>×</button>
 
-        {/* Icon */}
         <div style={{
           width: 64, height: 64, borderRadius: '50%',
           background: 'linear-gradient(135deg,#ff6b2b22,#ff450011)',
@@ -36,7 +34,6 @@ export default function LoginPromptModal({ onClose, onLogin }) {
           margin: '0 auto 20px', fontSize: 28,
         }}>🐾</div>
 
-        {/* Title */}
         <h2 style={{
           color: '#fff', fontSize: 22, fontWeight: 700,
           margin: '0 0 12px', lineHeight: 1.3,
@@ -48,15 +45,13 @@ export default function LoginPromptModal({ onClose, onLogin }) {
           }}>увійдіть в акаунт</span>
         </h2>
 
-        {/* Subtitle */}
         <p style={{
           color: '#666', fontSize: 14, lineHeight: 1.7,
           margin: '0 0 32px',
         }}>
-          Тільки зареєстровані користувачі можуть подавати заявки на адопцію та стежити за їх статусом.
+          Тільки зареєстровані користувачі можуть додавати місії та керувати тваринами.
         </p>
 
-        {/* Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button onClick={onLogin} style={{
             background: 'linear-gradient(90deg,#ff6b2b,#ff4500)',
@@ -66,7 +61,7 @@ export default function LoginPromptModal({ onClose, onLogin }) {
           }}>
             Увійти або зареєструватися
           </button>
-          <button onClick={onClose} style={{
+          <button onClick={onContinueWithoutAccount || onClose} style={{
             background: 'transparent', border: '1px solid #2a2a2a',
             borderRadius: 12, padding: '13px 0',
             color: '#666', fontSize: 14,

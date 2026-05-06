@@ -1,36 +1,37 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import LoginPromptModal from '../components/LoginPromptModal'
+import AuthModal from '../components/AuthModal'
 
 const API = 'https://safetails-production-8790.up.railway.app'
 
 const logisticsSeed = [
-  { id: 1, icon: '📋', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
-  { id: 2, icon: '🏠', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
+  { id: 1, icon: '📦', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
+  { id: 2, icon: '🧼', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
   { id: 3, icon: '🚑', title: 'Transport pickup', detail: 'Crate and ambulance required at Dock 2', eta: '15 min', type: 'High' },
 ]
 
 const medicalSeed = [
-  { id: 1, patient: 'Барні', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
-  { id: 2, patient: 'Луна', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
-  { id: 3, patient: 'Рекс', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
+  { id: 1, patient: '🐕 Bruno', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
+  { id: 2, patient: '🐈 Mila', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
+  { id: 3, patient: '🐇 Snow', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
 ]
 
 const archiveSeed = [
-  { id: 'A-102', name: 'Міа', result: 'Adopted', date: 'Apr 28' },
-  { id: 'A-097', name: 'Сніжка', result: 'Transferred to shelter', date: 'Apr 25' },
-  { id: 'A-091', name: 'Зевс', result: 'Recovered', date: 'Apr 21' },
+  { id: 'A-102', name: '🐕 Rex', result: 'Adopted', date: 'Apr 28' },
+  { id: 'A-097', name: '🐈 Nori', result: 'Transferred to shelter', date: 'Apr 25' },
+  { id: 'A-091', name: '🐇 Cloud', result: 'Recovered', date: 'Apr 21' },
 ]
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '▦' },
-  { id: 'rescues', label: 'Active Rescues', icon: '✦' },
-  { id: 'dispatch', label: 'Dispatch', icon: '⊹' },
-  { id: 'medical', label: 'Medical Log', icon: '♥' },
-  { id: 'archive', label: 'Archive', icon: '▤' },
+  { id: 'dashboard', label: 'Dashboard', icon: '◌' },
+  { id: 'rescues', label: 'Active Rescues', icon: '◌' },
+  { id: 'dispatch', label: 'Dispatch', icon: '◌' },
+  { id: 'medical', label: 'Medical Log', icon: '◌' },
+  { id: 'archive', label: 'Archive', icon: '◌' },
 ]
 
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
-  if (status === 'in rescue') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
   if (status === 'rescued') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
@@ -40,14 +41,12 @@ function statusTone(status) {
 
 function statusLabel(status) {
   if (status === 'needs rescue') return 'Needs Rescue'
-  if (status === 'in rescue') return 'In Rescue'
   if (status === 'rescued') return 'Rescued'
   return status
 }
 
 function themeFromStatus(status) {
   if (status === 'needs rescue' || status === 'Critical') return 'danger'
-  if (status === 'in rescue' || status === 'Urgent') return 'watch'
   if (status === 'rescued' || status === 'Stable') return 'calm'
   return 'watch'
 }
@@ -55,10 +54,10 @@ function themeFromStatus(status) {
 function emojiFromSpecies(species) {
   if (!species) return '🐾'
   const s = species.toLowerCase()
-  if (s.includes('кіт') || s.includes('кішк') || s.includes('cat')) return '🐈'
-  if (s.includes('собак') || s.includes('пес') || s.includes('dog')) return '🐕'
-  if (s.includes('кролик') || s.includes('rabbit')) return '🐇'
-  if (s.includes('птах') || s.includes('bird')) return '🐦'
+  if (s.includes('cat') || s.includes('кіш')) return '🐈'
+  if (s.includes('dog') || s.includes('пес') || s.includes('соб')) return '🐕'
+  if (s.includes('rabbit') || s.includes('крол')) return '🐇'
+  if (s.includes('bird') || s.includes('птах')) return '🕊️'
   return '🐾'
 }
 
@@ -91,10 +90,10 @@ function MissionRow({ mission, active, onSelect }) {
           <h3>{mission.name}</h3>
           <StatusPill status={mission.status} />
         </div>
-        <p>{mission.species} · {mission.age} р.</p>
+        <p>{mission.species} · {mission.age} y.o.</p>
         <div className="mission-meta">
           <span>{mission.temperament}</span>
-          {mission.city && <span>📍 {mission.city}</span>}
+          {mission.city ? <span>{mission.city}</span> : null}
           <span>{mission.updated}</span>
         </div>
       </div>
@@ -108,7 +107,7 @@ function SectionCard({ title, subtitle, children }) {
       <div className="panel-header">
         <div>
           <h3>{title}</h3>
-          {subtitle && <p>{subtitle}</p>}
+          {subtitle ? <p>{subtitle}</p> : null}
         </div>
       </div>
       <div className="panel-pad">{children}</div>
@@ -125,20 +124,23 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('Name')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [formError, setFormError] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
-    species: 'собака',
+    species: '',
     age: '',
     description: '',
     status: 'needs rescue',
-    temperament: 'лагідний',
+    temperament: '',
     city: '',
     weight: '',
   })
+
+  const token = localStorage.getItem('token')
+  const isAuthenticated = Boolean(token)
 
   useEffect(() => {
     setLoading(true)
@@ -147,9 +149,9 @@ export default function HomePage() {
       .then((data) => {
         if (!Array.isArray(data)) return
         const mapped = data.map((a) => ({
-          id: a._id,
+          id: a.id,
           name: a.name,
-          species: a.species ?? 'невідомо',
+          species: a.species ?? '',
           age: a.age ?? '?',
           description: a.description ?? '',
           temperament: a.temperament ?? '',
@@ -165,13 +167,18 @@ export default function HomePage() {
         setMissions(mapped)
         if (mapped.length > 0) setSelectedId(mapped[0].id)
       })
-      .catch((err) => console.error('❌ Помилка завантаження тварин:', err))
+      .catch((err) => console.error('Fetch animals error:', err))
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setShowAuthModal(true)
+    window.addEventListener('open-auth-modal', handler)
+    return () => window.removeEventListener('open-auth-modal', handler)
   }, [])
 
   const visibleMissions = useMemo(() => {
     let items = [...missions]
-
     if (query.trim()) {
       const q = query.toLowerCase()
       items = items.filter((m) =>
@@ -181,13 +188,10 @@ export default function HomePage() {
           .includes(q)
       )
     }
-
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
-
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
-
     return items
   }, [missions, filter, query, sort])
 
@@ -197,42 +201,37 @@ export default function HomePage() {
     missions[0]
 
   const needsRescueCount = missions.filter((m) => m.status === 'needs rescue').length
-  const inRescueCount = missions.filter((m) => m.status === 'in rescue').length
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
   const totalCount = missions.length
-  const dogsCount = missions.filter((m) =>
-    m.species?.toLowerCase().includes('собак') || m.species?.toLowerCase().includes('пес')
+  const dogsCount = missions.filter(
+    (m) => m.species?.toLowerCase().includes('dog') || m.species?.toLowerCase().includes('соб')
   ).length
 
   function resetForm() {
-    setFormError(false)
-    setForm({
-      name: '',
-      species: 'собака',
-      age: '',
-      description: '',
-      status: 'needs rescue',
-      temperament: 'лагідний',
-      city: '',
-      weight: '',
-    })
+    setForm({ name: '', species: '', age: '', description: '', status: 'needs rescue', temperament: '', city: '', weight: '' })
   }
 
   function handleFormChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
-    if (formError) setFormError(false)
+  }
+
+  function handleOpenCreateModal() {
+    if (!isAuthenticated) {
+      setIsLoginPromptOpen(true)
+      return
+    }
+    setIsCreateOpen(true)
   }
 
   async function handleCreateAnimal(e) {
     e.preventDefault()
-
-    if (!form.name.trim() || !form.age || !form.city.trim() || !form.description.trim()) {
-      setFormError(true)
+    if (!isAuthenticated) {
+      setIsCreateOpen(false)
+      setIsLoginPromptOpen(true)
       return
     }
-
-    setFormError(false)
+    if (!form.name.trim() || !form.description.trim()) return
 
     let lat = null
     let lng = null
@@ -249,7 +248,7 @@ export default function HomePage() {
           lng = parseFloat(geoData[0].lon)
         }
       } catch (err) {
-        console.warn('⚠️ Геокодинг не вдався:', err)
+        console.warn('Geocoding failed:', err)
       }
     }
 
@@ -275,13 +274,10 @@ export default function HomePage() {
         },
         body: JSON.stringify(payload),
       })
-
       if (!res.ok) throw new Error('Server error')
-
       const saved = await res.json()
-
       const newAnimal = {
-        id: saved._id,
+        id: saved.id,
         name: saved.name,
         species: saved.species,
         age: saved.age,
@@ -296,16 +292,14 @@ export default function HomePage() {
         theme: themeFromStatus(saved.status),
         updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
       }
-
       setMissions((prev) => [newAnimal, ...prev])
       setSelectedId(newAnimal.id)
       setActiveSection('rescues')
       setIsCreateOpen(false)
       resetForm()
-      setIsSuccessOpen(true)
     } catch (err) {
-      console.error('❌ Помилка збереження:', err)
-      alert("Не вдалось зберегти. Перевір з'єднання з сервером.")
+      console.error(err)
+      alert('Не вдалося створити місію.')
     }
   }
 
@@ -324,14 +318,12 @@ export default function HomePage() {
               </button>
             </div>
           </section>
-
           <section className="stats-grid">
             <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
-            <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are on the way" />
             <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
             <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
+            <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
           </section>
-
           <section className="workspace">
             <SectionCard title="Priority board" subtitle="Quick overview of animals needing rescue">
               <div className="simple-list">
@@ -339,19 +331,16 @@ export default function HomePage() {
                   <div className="simple-row" key={item.id}>
                     <div>
                       <strong>{item.emoji} {item.name}</strong>
-                      <p>{item.species} · {item.city || item.description}</p>
+                      <p>{item.species} · {item.city} · {item.description}</p>
                     </div>
                     <StatusPill status={item.status} />
                   </div>
                 ))}
               </div>
             </SectionCard>
-
             <SectionCard title="Operations note" subtitle="Live command summary">
               <div className="detail-note">
-                <p>
-                  Наразі {needsRescueCount} тварин потребують термінової допомоги. {inRescueCount} уже в процесі порятунку. {rescuedCount} вже врятовано та перебувають під наглядом.
-                </p>
+                <p>{needsRescueCount} animals currently need rescue. {rescuedCount} are already under controlled care.</p>
               </div>
             </SectionCard>
           </section>
@@ -373,19 +362,12 @@ export default function HomePage() {
               </button>
             </div>
           </section>
-
           <section className="logistics" aria-label="Dispatch queue">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
                 <div className="logistics-icon">{item.icon}</div>
-                <div>
-                  <h4>{item.title}</h4>
-                  <p>{item.detail}</p>
-                </div>
-                <div className="logistics-meta">
-                  <strong>{item.eta}</strong>
-                  <span>{item.type}</span>
-                </div>
+                <div><h4>{item.title}</h4><p>{item.detail}</p></div>
+                <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
               </button>
             ))}
           </section>
@@ -407,15 +389,11 @@ export default function HomePage() {
               </button>
             </div>
           </section>
-
           <SectionCard title="Medical records" subtitle="Latest care actions">
             <div className="simple-list">
               {medicalSeed.map((item) => (
                 <div className="simple-row" key={item.id}>
-                  <div>
-                    <strong>{item.patient}</strong>
-                    <p>{item.treatment} · {item.doctor}</p>
-                  </div>
+                  <div><strong>{item.patient}</strong><p>{item.treatment} · {item.doctor}</p></div>
                   <StatusPill status={item.status} />
                 </div>
               ))}
@@ -439,15 +417,11 @@ export default function HomePage() {
               </button>
             </div>
           </section>
-
           <SectionCard title="Completed cases" subtitle="Resolved and archived missions">
             <div className="simple-list">
               {archiveSeed.map((item) => (
                 <div className="simple-row" key={item.id}>
-                  <div>
-                    <strong>{item.name}</strong>
-                    <p>Case {item.id} · {item.date}</p>
-                  </div>
+                  <div><strong>{item.name}</strong><p>Case {item.id} · {item.date}</p></div>
                   <span className="archive-tag">{item.result}</span>
                 </div>
               ))}
@@ -473,9 +447,9 @@ export default function HomePage() {
 
         <section className="stats-grid" aria-label="Mission statistics">
           <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
-          <StatCard label="In rescue" value={String(inRescueCount).padStart(2, '0')} meta="Teams are already responding" />
           <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Successfully helped" />
           <StatCard label="Total" value={String(totalCount).padStart(2, '0')} meta="All animals in system" />
+          <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
         </section>
 
         <section className="workspace">
@@ -485,7 +459,6 @@ export default function HomePage() {
                 <h3>Animal stream</h3>
                 <p>Pick an animal to review details.</p>
               </div>
-
               <div className="controls">
                 <input
                   className="search"
@@ -495,52 +468,32 @@ export default function HomePage() {
                   onChange={(e) => setQuery(e.target.value)}
                   autoComplete="off"
                 />
-
-                {['All', 'needs rescue', 'in rescue', 'rescued'].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`toolbar-btn ${filter === value ? 'active' : ''}`}
-                    onClick={() => setFilter(value)}
-                  >
+                {['All', 'needs rescue', 'rescued'].map((value) => (
+                  <button key={value} type="button" className={`toolbar-btn ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>
                     {value === 'All' ? 'All' : statusLabel(value)}
                   </button>
                 ))}
-
                 {['Name', 'Age', 'Status'].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`toolbar-btn ${sort === value ? 'active' : ''}`}
-                    onClick={() => setSort(value)}
-                  >
+                  <button key={value} type="button" className={`toolbar-btn ${sort === value ? 'active' : ''}`} onClick={() => setSort(value)}>
                     {value}
                   </button>
                 ))}
               </div>
             </div>
-
             <div className="mission-list">
               {loading ? (
-                <div className="detail-note"><p>Завантаження тварин...</p></div>
+                <div className="detail-note"><p>Loading animals...</p></div>
               ) : visibleMissions.length > 0 ? (
                 visibleMissions.map((mission) => (
-                  <MissionRow
-                    key={mission.id}
-                    mission={mission}
-                    active={selectedMission?.id === mission.id}
-                    onSelect={setSelectedId}
-                  />
+                  <MissionRow key={mission.id} mission={mission} active={selectedMission?.id === mission.id} onSelect={setSelectedId} />
                 ))
               ) : (
-                <div className="detail-note">
-                  <p>No animals match the current search or filters.</p>
-                </div>
+                <div className="detail-note"><p>No animals match the current search or filters.</p></div>
               )}
             </div>
           </div>
 
-          {selectedMission && (
+          {selectedMission ? (
             <aside className="panel detail-card">
               <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
               <div className="detail-body">
@@ -548,47 +501,23 @@ export default function HomePage() {
                   <div>
                     <StatusPill status={selectedMission.status} />
                     <h3 style={{ marginTop: 12 }}>{selectedMission.name}</h3>
-                    <p>{selectedMission.species} · {selectedMission.age} р.</p>
+                    <p>{selectedMission.species} · {selectedMission.age} y.o.</p>
                   </div>
                 </div>
-
                 <div className="detail-grid">
-                  <div className="mini-card">
-                    <span>Темперамент</span>
-                    <strong>{selectedMission.temperament}</strong>
-                  </div>
-
-                  <div className="mini-card">
-                    <span>Вік</span>
-                    <strong>{selectedMission.age} р.</strong>
-                  </div>
-
-                  {selectedMission.city && (
-                    <div className="mini-card">
-                      <span>Місто</span>
-                      <strong>{selectedMission.city}</strong>
-                    </div>
-                  )}
-
-                  {selectedMission.weight && (
-                    <div className="mini-card">
-                      <span>Вага</span>
-                      <strong>{selectedMission.weight} кг</strong>
-                    </div>
-                  )}
+                  <div className="mini-card"><span>Temperament</span><strong>{selectedMission.temperament || 'Unknown'}</strong></div>
+                  <div className="mini-card"><span>Age</span><strong>{selectedMission.age} y.o.</strong></div>
+                  {selectedMission.city ? <div className="mini-card"><span>City</span><strong>{selectedMission.city}</strong></div> : null}
+                  {selectedMission.weight ? <div className="mini-card"><span>Weight</span><strong>{selectedMission.weight} kg</strong></div> : null}
                 </div>
-
-                <div className="detail-note">
-                  <p>{selectedMission.description}</p>
-                </div>
-
+                <div className="detail-note"><p>{selectedMission.description}</p></div>
                 <div className="detail-actions">
                   <button className="detail-primary-btn" type="button">Dispatch now</button>
                   <button className="detail-ghost-btn" type="button">Open case</button>
                 </div>
               </div>
             </aside>
-          )}
+          ) : null}
         </section>
 
         <section className="logistics" aria-label="Secondary logistics">
@@ -596,18 +525,11 @@ export default function HomePage() {
             <h3>Secondary logistics</h3>
             <span className="eyebrow small-no-margin">Support queue</span>
           </div>
-
           {logisticsSeed.map((item) => (
             <button key={item.id} className="logistics-item" type="button">
               <div className="logistics-icon">{item.icon}</div>
-              <div>
-                <h4>{item.title}</h4>
-                <p>{item.detail}</p>
-              </div>
-              <div className="logistics-meta">
-                <strong>{item.eta}</strong>
-                <span>{item.type}</span>
-              </div>
+              <div><h4>{item.title}</h4><p>{item.detail}</p></div>
+              <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
             </button>
           ))}
         </section>
@@ -635,14 +557,13 @@ export default function HomePage() {
         }
 
         * { box-sizing: border-box; }
-
         .missions-shell {
           min-height: calc(100vh - 60px);
           background:
             radial-gradient(circle at top right, rgba(255,107,43,0.12), transparent 26%),
             linear-gradient(180deg, #07090d 0%, #090c11 100%);
           color: var(--text);
-          font-family: 'Inter', sans-serif;
+          font-family: Inter, sans-serif;
         }
 
         .layout {
@@ -671,906 +592,298 @@ export default function HomePage() {
         }
 
         .command-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          display: grid;
-          place-items: center;
+          width: 36px; height: 36px; border-radius: 11px;
+          display: grid; place-items: center;
           background: linear-gradient(135deg, #ff7b32, #ff5a1f);
-          color: white;
-          font-size: 13px;
-          font-weight: 700;
-          flex-shrink: 0;
+          color: white; font-size: 13px; font-weight: 700; flex-shrink: 0;
         }
 
-        .command-card h3 {
-          margin: 0;
-          font-size: 10px;
-          font-weight: 700;
-          color: #f4f4f8;
-          line-height: 1.15;
-        }
+        .command-card h3 { margin: 0; font-size: 10px; font-weight: 700; color: #f4f4f8; line-height: 1.15; }
+        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.16em; color: #73778a; line-height: 1.1; }
 
-        .command-card p {
-          margin: 3px 0 0;
-          font-size: 8px;
-          letter-spacing: 0.16em;
-          color: #73778a;
-          line-height: 1.1;
-        }
-
-        .nav-list {
-          display: grid;
-          padding: 0 0 8px;
-          border-top: 1px solid rgba(255,255,255,0.04);
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
+        .nav-list { display: grid; padding: 0 0 8px; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
 
         .ref-nav-link {
-          position: relative;
-          min-height: 42px;
-          border-radius: 0;
-          padding: 0 13px;
-          color: #6f7385;
-          border: 0;
-          background: transparent;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          width: 100%;
-          cursor: pointer;
-          text-align: left;
+          position: relative; min-height: 42px; border-radius: 0; padding: 0 13px;
+          color: #6f7385; border: 0; background: transparent;
+          display: flex; align-items: center; gap: 8px;
+          font-size: 12px; width: 100%; cursor: pointer; text-align: left;
         }
+        .ref-nav-link:hover { background: rgba(255,255,255,0.02); color: #d5d8e3; }
+        .ref-nav-link.active { background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04)); color: #ff6b2b; }
+        .ref-nav-link.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #ff6b2b; }
 
-        .ref-nav-link:hover {
-          background: rgba(255,255,255,0.02);
-          color: #d5d8e3;
-        }
+        .nav-icon { width: 12px; display: inline-flex; justify-content: center; font-size: 10px; }
 
-        .ref-nav-link.active {
-          background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04));
-          color: #ff6b2b;
-        }
+        .sidebar-footer-ref { padding: 12px 8px 14px; display: grid; gap: 6px; }
 
-        .ref-nav-link.active::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 8px;
-          bottom: 8px;
-          width: 3px;
-          border-radius: 0 3px 3px 0;
-          background: #ff6b2b;
-        }
-
-        .nav-icon {
-          width: 12px;
-          display: inline-flex;
-          justify-content: center;
-          font-size: 10px;
-        }
-
-        .sidebar-footer-ref {
-          padding: 12px 8px 14px;
-          display: grid;
-          gap: 6px;
-        }
-
-        .new-mission-btn,
-        .footer-link-btn,
-        .collapse-btn,
-        .toolbar-btn,
-        .mission-row,
-        .detail-primary-btn,
-        .detail-ghost-btn,
-        .logistics-item,
-        .modal-close-btn,
-        .modal-submit-btn {
+        .new-mission-btn, .footer-link-btn, .collapse-btn, .toolbar-btn, .mission-row,
+        .detail-primary-btn, .detail-ghost-btn, .logistics-item, .modal-close-btn, .modal-submit-btn {
           transition: transform .18s ease, background .18s ease, border-color .18s ease;
         }
+        .new-mission-btn:hover, .footer-link-btn:hover, .collapse-btn:hover, .toolbar-btn:hover,
+        .mission-row:hover, .detail-primary-btn:hover, .detail-ghost-btn:hover,
+        .logistics-item:hover, .modal-close-btn:hover, .modal-submit-btn:hover { transform: translateY(-1px); }
 
-        .new-mission-btn:hover,
-        .footer-link-btn:hover,
-        .collapse-btn:hover,
-        .toolbar-btn:hover,
-        .mission-row:hover,
-        .detail-primary-btn:hover,
-        .detail-ghost-btn:hover,
-        .logistics-item:hover,
-        .modal-close-btn:hover,
-        .modal-submit-btn:hover {
-          transform: translateY(-1px);
+        .new-mission-btn { width: 100%; min-height: 40px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #ff7c32, #f35a19); color: white; font-size: 13px; font-weight: 800; cursor: pointer; }
+        .footer-link-btn { width: 100%; text-align: left; background: transparent; border: 0; color: #6f7385; padding: 6px 0; font-size: 12px; cursor: pointer; }
+
+        .content { min-width: 0; display: grid; gap: 24px; padding: 28px 28px 28px 0; }
+
+        .hero-block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+        .hero-copy h2 { margin: 0; font-size: 42px; line-height: 1.05; }
+        .hero-copy p { margin: 12px 0 0; max-width: 620px; color: var(--muted); font-size: 16px; line-height: 1.6; }
+
+        .topbar-actions { display: flex; justify-content: flex-end; }
+
+        .collapse-btn, .toolbar-btn, .modal-close-btn {
+          border: 1px solid var(--border); background: var(--panel); color: var(--text);
+          border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer;
         }
 
-        .new-mission-btn {
-          width: 100%;
-          min-height: 40px;
-          border: 0;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #ff7c32, #f35a19);
-          color: white;
-          font-size: 13px;
-          font-weight: 800;
-          cursor: pointer;
+        .modal-submit-btn, .detail-primary-btn {
+          border: 0; background: linear-gradient(135deg, #ff7f47 0, #ff6b2b 100%);
+          color: white; border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-weight: 700;
         }
 
-        .footer-link-btn {
-          width: 100%;
-          text-align: left;
-          background: transparent;
-          border: 0;
-          color: #6f7385;
-          padding: 6px 0;
-          font-size: 12px;
-          cursor: pointer;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 
-        .content {
-          min-width: 0;
-          display: grid;
-          gap: 24px;
-          padding: 28px 28px 28px 0;
-        }
-
-        .hero-block {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 16px;
-          align-items: start;
-        }
-
-        .hero-copy h2 {
-          margin: 0;
-          font-size: 42px;
-          line-height: 1.05;
-        }
-
-        .hero-copy p {
-          margin: 12px 0 0;
-          max-width: 620px;
-          color: var(--muted);
-          font-size: 16px;
-          line-height: 1.6;
-        }
-
-        .topbar-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .collapse-btn,
-        .toolbar-btn,
-        .modal-close-btn {
-          border: 1px solid var(--border);
-          background: var(--panel);
-          color: var(--text);
-          border-radius: 14px;
-          min-height: 46px;
-          padding: 0 16px;
-          cursor: pointer;
-        }
-
-        .modal-submit-btn,
-        .detail-primary-btn {
-          border: 0;
-          background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%);
-          color: white;
-          border-radius: 14px;
-          min-height: 46px;
-          padding: 0 16px;
-          cursor: pointer;
-          font-weight: 700;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 16px;
-        }
-
-        .stat-card,
-        .panel {
-          background: rgba(17,21,28,0.94);
-          border: 1px solid var(--border);
-          border-radius: 24px;
-          box-shadow: var(--shadow);
-        }
-
+        .stat-card, .panel { background: rgba(17,21,28,0.94); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); }
         .stat-card { padding: 18px; }
 
-        .eyebrow {
-          display: block;
-          margin-bottom: 10px;
-          color: var(--muted);
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-        }
-
+        .eyebrow { display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
         .small-no-margin { margin-bottom: 0; }
+        .stat-card strong { display: block; font-size: 28px; line-height: 1; margin-bottom: 8px; }
 
-        .stat-card strong {
-          display: block;
-          font-size: 28px;
-          line-height: 1;
-          margin-bottom: 8px;
+        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p {
+          margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5;
         }
 
-        .stat-card p,
-        .panel-header p,
-        .mission-copy > p,
-        .logistics-item p,
-        .simple-row p {
-          margin: 0;
-          color: var(--muted);
-          font-size: 14px;
-          line-height: 1.5;
-        }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: 20px; align-items: start; }
 
-        .workspace {
-          display: grid;
-          grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px);
-          gap: 20px;
-          align-items: start;
-        }
-
-        .panel-header {
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          gap: 12px;
-          align-items: center;
-        }
-
-        .panel-header h3,
-        .logistics-head h3 {
-          margin: 0;
-          font-size: 18px;
-        }
-
+        .panel-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+        .panel-header h3, .logistics-head h3 { margin: 0; font-size: 18px; }
         .panel-pad { padding: 16px; }
 
-        .controls {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; }
 
-        .search,
-        .form-input,
-        .form-select,
-        .form-textarea {
-          width: 100%;
-          border-radius: 14px;
-          border: 1px solid var(--border);
-          background: var(--panel-3);
-          color: var(--text);
-          padding: 12px 14px;
-          outline: none;
-          font: inherit;
+        .search, .form-input, .form-select, .form-textarea {
+          width: 100%; border-radius: 14px; border: 1px solid var(--border);
+          background: var(--panel-3); color: var(--text); padding: 12px 14px; outline: none; font: inherit;
         }
-
-        .search {
-          min-width: 220px;
-          border-radius: 999px;
-        }
-
-        .form-textarea {
-          min-height: 110px;
-          resize: vertical;
-        }
-
+        .search { min-width: 220px; border-radius: 999px; }
+        .form-textarea { min-height: 110px; resize: vertical; }
         .toolbar-btn.active { background: rgba(255,255,255,0.08); }
 
-        .mission-list,
-        .logistics,
-        .simple-list {
-          display: grid;
-          gap: 12px;
-        }
-
+        .mission-list, .logistics, .simple-list { display: grid; gap: 12px; }
         .mission-list { padding: 16px; }
 
-        .mission-row,
-        .logistics-item,
-        .simple-row {
-          width: 100%;
-          border: 1px solid var(--border);
-          background: var(--panel-2);
-          color: inherit;
-          border-radius: 18px;
-          padding: 14px;
-        }
+        .mission-row, .logistics-item, .simple-row { width: 100%; border: 1px solid var(--border); background: var(--panel-2); color: inherit; border-radius: 18px; padding: 14px; }
+        .mission-row { display: grid; grid-template-columns: 70px 1fr; gap: 14px; text-align: left; cursor: pointer; }
+        .mission-row.active { border-color: rgba(255,107,43,0.6); background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02)); }
 
-        .mission-row {
-          display: grid;
-          grid-template-columns: 70px 1fr;
-          gap: 14px;
-          text-align: left;
-          cursor: pointer;
-        }
+        .mission-thumb { width: 70px; height: 70px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; }
+        .mission-thumb.danger { background: linear-gradient(180deg, #4a201f, #2b1212); }
+        .mission-thumb.calm { background: linear-gradient(180deg, #12312b, #10201d); }
+        .mission-thumb.watch { background: linear-gradient(180deg, #3f3217, #241c0f); }
 
-        .mission-row.active {
-          border-color: rgba(255,107,43,0.6);
-          background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02));
-        }
+        .mission-topline, .detail-head, .simple-row, .logistics-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .mission-topline h3, .detail-head h3 { margin: 0; font-size: 16px; }
+        .mission-meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--soft); font-size: 12px; }
 
-        .mission-thumb {
-          width: 70px;
-          height: 70px;
-          border-radius: 18px;
-          display: grid;
-          place-items: center;
-          font-size: 34px;
-        }
-
-        .mission-thumb.danger {
-          background: linear-gradient(180deg, #4a201f, #2b1212);
-        }
-
-        .mission-thumb.calm {
-          background: linear-gradient(180deg, #12312b, #10201d);
-        }
-
-        .mission-thumb.watch {
-          background: linear-gradient(180deg, #3f3217, #241c0f);
-        }
-
-        .mission-topline,
-        .detail-head,
-        .simple-row,
-        .logistics-head {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .mission-topline h3,
-        .detail-head h3 {
-          margin: 0;
-          font-size: 16px;
-        }
-
-        .mission-meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          color: var(--soft);
-          font-size: 12px;
-        }
-
-        .status-pill,
-        .archive-tag,
-        .distance-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          border-radius: 999px;
-          padding: 7px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          white-space: nowrap;
-        }
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
+        .status-pill, .archive-tag, .distance-chip { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .detail-card { overflow: hidden; }
+        .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); }
+        .hero.danger { background: linear-gradient(180deg, #5c2622 0, #241110 100%); }
+        .hero.calm { background: linear-gradient(180deg, #173830 0, #0d1514 100%); }
+        .hero.watch { background: linear-gradient(180deg, #55451e 0, #20180b 100%); }
 
-        .hero {
-          min-height: 220px;
-          display: grid;
-          place-items: center;
-          font-size: 96px;
-          border-bottom: 1px solid var(--border);
-        }
+        .detail-body { padding: 20px; display: grid; gap: 18px; }
+        .detail-head p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 
-        .hero.danger {
-          background: linear-gradient(180deg, #5c2622 0%, #241110 100%);
-        }
+        .archive-tag, .distance-chip { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
 
-        .hero.calm {
-          background: linear-gradient(180deg, #173830 0%, #0d1514 100%);
-        }
+        .detail-grid, .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        .hero.watch {
-          background: linear-gradient(180deg, #55451e 0%, #20180b 100%);
-        }
-
-        .detail-body {
-          padding: 20px;
-          display: grid;
-          gap: 18px;
-        }
-
-        .detail-head p {
-          margin: 6px 0 0;
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .distance-chip,
-        .archive-tag {
-          border: 1px solid var(--border);
-          background: var(--panel-3);
-          color: var(--text);
-        }
-
-        .detail-grid,
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-
-        .mini-card,
-        .detail-note {
-          border-radius: 18px;
-          background: var(--panel-3);
-          border: 1px solid var(--border);
-          padding: 16px;
-        }
-
-        .mini-card span {
-          display: block;
-          color: var(--muted);
-          font-size: 12px;
-          margin-bottom: 8px;
-        }
-
+        .mini-card, .detail-note { border-radius: 18px; background: var(--panel-3); border: 1px solid var(--border); padding: 16px; }
+        .mini-card span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
         .mini-card strong { font-size: 18px; }
+        .detail-note p { margin: 0; color: #d0d5dd; line-height: 1.6; font-size: 14px; }
 
-        .detail-note p {
-          margin: 0;
-          color: #d0d5dd;
-          line-height: 1.6;
-          font-size: 14px;
-        }
+        .detail-actions, .modal-actions { display: flex; gap: 12px; }
+        .detail-primary-btn, .detail-ghost-btn, .modal-close-btn, .modal-submit-btn { flex: 1; min-height: 46px; font-weight: 700; }
+        .detail-ghost-btn { border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 14px; cursor: pointer; }
 
-        .detail-actions,
-        .modal-actions {
-          display: flex;
-          gap: 12px;
-        }
-
-        .detail-primary-btn,
-        .detail-ghost-btn,
-        .modal-close-btn,
-        .modal-submit-btn {
-          flex: 1;
-          min-height: 46px;
-          font-weight: 700;
-        }
-
-        .detail-ghost-btn {
-          border: 1px solid var(--border);
-          background: var(--panel);
-          color: var(--text);
-          border-radius: 14px;
-          cursor: pointer;
-        }
-
-        .logistics-item {
-          text-align: left;
-          display: grid;
-          grid-template-columns: 44px 1fr auto;
-          gap: 14px;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .logistics-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
-          display: grid;
-          place-items: center;
-          background: var(--panel-2);
-          font-size: 20px;
-        }
-
-        .logistics-item h4,
-        .simple-row strong {
-          margin: 0 0 4px;
-          font-size: 15px;
-        }
-
+        .logistics-item { text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; cursor: pointer; }
+        .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); font-size: 20px; }
+        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-size: 15px; }
         .logistics-meta { text-align: right; }
+        .logistics-meta strong { display: block; font-size: 14px; }
+        .logistics-meta span { color: var(--muted); font-size: 12px; }
 
-        .logistics-meta strong {
-          display: block;
-          font-size: 14px;
-        }
-
-        .logistics-meta span {
-          color: var(--muted);
-          font-size: 12px;
-        }
-
-        .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.62);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          z-index: 1000;
-        }
-
-        .modal-card {
-          width: min(680px, 100%);
-          height: min(88vh, 760px);
-          background: #0f141b;
-          border: 1px solid var(--border);
-          border-radius: 24px;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.45);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          margin: auto;
-        }
-
-        .success-card {
-          width: min(560px, 100%);
-          height: auto;
-          min-height: 320px;
-        }
-
-        .success-hero {
-          min-height: 140px;
-          display: grid;
-          place-items: center;
-          font-size: 54px;
-          background: linear-gradient(180deg, rgba(255,107,43,0.18), rgba(255,255,255,0.03));
-          border-bottom: 1px solid var(--border);
-        }
-
-        .success-copy {
-          padding: 20px;
-          display: grid;
-          gap: 14px;
-        }
-
-        .success-copy h3 {
-          margin: 0;
-          font-size: 24px;
-          text-align: center;
-        }
-
-        .success-copy p {
-          margin: 0;
-          color: #d0d5dd;
-          font-size: 15px;
-          line-height: 1.7;
-          text-align: center;
-        }
-
-        .modal-head {
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-        }
-
-        .modal-head h3 {
-          margin: 0 0 6px;
-          font-size: 22px;
-        }
-
-        .modal-head p {
-          margin: 0;
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .modal-form {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          min-height: 0;
-        }
-
-        .modal-scroll {
-          flex: 1;
-          min-height: 0;
-          padding: 20px;
-          display: grid;
-          gap: 14px;
-          overflow-y: auto;
-          overflow-x: hidden;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .modal-card { width: min(680px, 100%); height: min(88vh, 760px); background: #0f141b; border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden; display: flex; flex-direction: column; margin: auto; }
+        .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .modal-head h3 { margin: 0 0 6px; font-size: 22px; }
+        .modal-head p { margin: 0; color: var(--muted); font-size: 14px; }
+        .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .modal-scroll { flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
         .modal-scroll::-webkit-scrollbar { display: none; }
-
         .form-field { display: grid; gap: 8px; }
+        .form-field label { font-size: 13px; color: #d7dde6; font-weight: 600; }
+        .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; }
 
-        .form-field label {
-          font-size: 13px;
-          color: #d7dde6;
-          font-weight: 600;
-        }
+        .login-prompt-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1200; }
+        .login-prompt-card { position: relative; width: 100%; max-width: 520px; background: #171717; border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 32px 24px 24px; text-align: center; box-shadow: 0 24px 70px rgba(0,0,0,0.45); }
+        .login-prompt-close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 999px; border: none; background: rgba(255,255,255,0.05); color: #9a9a9a; font-size: 28px; cursor: pointer; }
+        .login-prompt-icon-wrap { display: flex; justify-content: center; margin-bottom: 24px; }
+        .login-prompt-icon { width: 88px; height: 88px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: rgba(255,107,43,0.08); border: 1px solid rgba(255,107,43,0.28); font-size: 34px; }
+        .login-prompt-title { margin: 0 0 18px; color: #ffffff; font-size: 42px; line-height: 1.05; font-weight: 800; }
+        .login-prompt-title span { color: #ff6b2b; }
+        .login-prompt-text { margin: 0 auto 28px; max-width: 380px; color: #8f8f8f; font-size: 17px; line-height: 1.6; }
+        .login-prompt-actions { display: grid; gap: 14px; }
+        .login-prompt-primary, .login-prompt-secondary { min-height: 64px; width: 100%; border-radius: 20px; font-size: 18px; font-weight: 700; cursor: pointer; }
+        .login-prompt-primary { border: none; background: linear-gradient(135deg, #ff7a3d 0%, #ff5a14 100%); color: white; }
+        .login-prompt-secondary { border: 1px solid rgba(255,255,255,0.08); background: transparent; color: #6f6f6f; }
 
-        .form-error-banner {
-          background: #3d1212;
-          border: 1px solid #7f1d1d;
-          color: #fca5a5;
-          border-radius: 14px;
-          padding: 12px 16px;
-          font-size: 13px;
-          line-height: 1.5;
-        }
-
-        .required {
-          color: #ff6b6b;
-          margin-left: 2px;
-        }
-
-        .modal-actions {
-          padding: 16px 20px 20px;
-          border-top: 1px solid var(--border);
-          background: #0f141b;
-          flex-shrink: 0;
-        }
-
-        @media (max-width: 1180px) {
-          .workspace { grid-template-columns: 1fr; }
-        }
-
+        @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
         @media (max-width: 980px) {
           .layout { grid-template-columns: 1fr; }
-          .sidebar {
-            display: ${sidebarOpen ? 'block' : 'none'};
-            min-height: auto;
-          }
+          .sidebar { display: ${sidebarOpen ? 'block' : 'none'}; min-height: auto; }
           .content { padding: 20px 16px 24px; }
         }
-
         @media (max-width: 780px) {
-          .hero-block,
-          .mission-row,
-          .detail-grid,
-          .form-grid,
-          .logistics-item {
-            grid-template-columns: 1fr;
-          }
-
+          .hero-block, .mission-row, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
           .mission-thumb { width: 100%; height: 120px; }
-
-          .detail-head,
-          .simple-row,
-          .logistics-head,
-          .topbar-actions,
-          .controls,
-          .detail-actions,
-          .modal-actions {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
+          .detail-head, .simple-row, .logistics-head, .topbar-actions, .controls, .detail-actions, .modal-actions { flex-direction: column; align-items: stretch; }
           .hero-copy h2 { font-size: 34px; }
           .modal-card { height: min(92vh, 760px); width: 100%; }
-          .success-card { min-height: auto; }
           .modal-backdrop { padding: 12px; }
+        }
+        @media (max-width: 640px) {
+          .login-prompt-card { padding: 28px 18px 20px; border-radius: 24px; }
+          .login-prompt-title { font-size: 34px; }
+          .login-prompt-text { font-size: 15px; }
+          .login-prompt-primary, .login-prompt-secondary { min-height: 58px; font-size: 16px; }
         }
       `}</style>
 
       <div className="layout">
-        {sidebarOpen && (
+        {sidebarOpen ? (
           <aside className="sidebar">
             <div className="command-card">
               <div className="command-icon">✦</div>
-              <div>
-                <h3>Command Center</h3>
-                <p>SECTOR 7 DELTA</p>
-              </div>
+              <div><h3>Command Center</h3><p>SECTOR 7 DELTA</p></div>
             </div>
-
             <nav className="nav-list" aria-label="Main navigation">
               {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
-                  onClick={() => setActiveSection(item.id)}
-                >
+                <button key={item.id} type="button" className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`} onClick={() => setActiveSection(item.id)}>
                   <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
-
             <div className="sidebar-footer-ref">
-              <button className="new-mission-btn" type="button" onClick={() => setIsCreateOpen(true)}>
-                + Add Animal
-              </button>
+              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>Add Animal</button>
               <button className="footer-link-btn" type="button">Support</button>
               <button className="footer-link-btn" type="button">Sign Out</button>
             </div>
           </aside>
-        )}
+        ) : null}
 
-        <main className="content">
-          {renderContent()}
-        </main>
+        <main className="content">{renderContent()}</main>
       </div>
 
-      {isCreateOpen && (
-        <div
-          className="modal-backdrop"
-          onClick={() => {
-            setIsCreateOpen(false)
-            setFormError(false)
-          }}
-        >
+      {isCreateOpen ? (
+        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <h3>Add new animal</h3>
-              <p>Додай тварину — вона збережеться в базі та з'явиться на мапі.</p>
+              <p>Fill out the form to create a new rescue mission.</p>
             </div>
-
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
-                {formError && (
-                  <div className="form-error-banner">
-                    ⚠️ Будь ласка, заповни всі обов'язкові поля: ім'я, вік, місто та опис.
-                  </div>
-                )}
-
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Ім'я тварини <span className="required">*</span></label>
-                    <input
-                      id="name"
-                      name="name"
-                      className="form-input"
-                      value={form.name}
-                      onChange={handleFormChange}
-                      placeholder="Барні"
-                      autoComplete="new-password"
-                    />
+                    <label htmlFor="name">Name</label>
+                    <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} placeholder="Animal name" autoComplete="new-password" />
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="species">Вид</label>
+                    <label htmlFor="species">Species</label>
                     <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
-                      <option value="собака">🐕 Собака</option>
-                      <option value="кіт">🐈 Кіт</option>
-                      <option value="інше">🐾 Інше</option>
+                      <option value="">Choose species</option>
+                      <option value="Dog">Dog</option>
+                      <option value="Cat">Cat</option>
+                      <option value="Rabbit">Rabbit</option>
+                      <option value="Bird">Bird</option>
                     </select>
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="age">Вік (років) <span className="required">*</span></label>
-                    <input
-                      id="age"
-                      name="age"
-                      type="number"
-                      min="0"
-                      max="30"
-                      className="form-input"
-                      value={form.age}
-                      onChange={handleFormChange}
-                      placeholder="3"
-                    />
+                    <label htmlFor="age">Age</label>
+                    <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="weight">Вага (кг)</label>
-                    <input
-                      id="weight"
-                      name="weight"
-                      type="number"
-                      min="0"
-                      max="200"
-                      step="0.1"
-                      className="form-input"
-                      value={form.weight}
-                      onChange={handleFormChange}
-                      placeholder="5"
-                    />
+                    <label htmlFor="weight">Weight</label>
+                    <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="status">Статус</label>
+                    <label htmlFor="status">Status</label>
                     <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
                       <option value="needs rescue">Needs Rescue</option>
-                      <option value="in rescue">In Rescue</option>
                       <option value="rescued">Rescued</option>
                     </select>
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="temperament">Темперамент</label>
+                    <label htmlFor="temperament">Temperament</label>
                     <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
-                      <option value="лагідний">Лагідний</option>
-                      <option value="активний">Активний</option>
-                      <option value="спокійний">Спокійний</option>
-                      <option value="грайливий">Грайливий</option>
-                      <option value="незалежний">Незалежний</option>
+                      <option value="">Choose temperament</option>
+                      <option value="Calm">Calm</option>
+                      <option value="Friendly">Friendly</option>
+                      <option value="Shy">Shy</option>
+                      <option value="Anxious">Anxious</option>
+                      <option value="Aggressive">Aggressive</option>
                     </select>
                   </div>
                 </div>
-
                 <div className="form-field">
-                  <label htmlFor="city">Місто знаходження <span className="required">*</span></label>
-                  <input
-                    id="city"
-                    name="city"
-                    className="form-input"
-                    value={form.city}
-                    onChange={handleFormChange}
-                    placeholder="Львів"
-                    autoComplete="new-password"
-                  />
+                  <label htmlFor="city">City</label>
+                  <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} placeholder="Kyiv" autoComplete="new-password" />
                 </div>
-
                 <div className="form-field">
-                  <label htmlFor="description">Опис <span className="required">*</span></label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    className="form-textarea"
-                    value={form.description}
-                    onChange={handleFormChange}
-                    placeholder="Короткий опис тварини..."
-                  />
+                  <label htmlFor="description">Description</label>
+                  <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleFormChange} placeholder="Describe the situation..." />
                 </div>
               </div>
-
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="modal-close-btn"
-                  onClick={() => {
-                    setIsCreateOpen(false)
-                    setFormError(false)
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="modal-submit-btn">
-                  Save animal
-                </button>
+                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>Cancel</button>
+                <button type="submit" className="modal-submit-btn">Save animal</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {isSuccessOpen && (
-        <div className="modal-backdrop" onClick={() => setIsSuccessOpen(false)}>
-          <div className="modal-card success-card" onClick={(e) => e.stopPropagation()}>
-            <div className="success-hero">💛🐾</div>
+      <LoginPromptModal
+        open={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+        onLogin={() => {
+          setIsLoginPromptOpen(false)
+          window.dispatchEvent(new CustomEvent('open-auth-modal'))
+        }}
+        onContinueWithoutAccount={() => setIsLoginPromptOpen(false)}
+      />
 
-            <div className="success-copy">
-              <h3>Дякуємо за твою турботу</h3>
-              <p>
-                Тварину успішно додано до системи. Твій крок — це не просто запис у базі,
-                а ще один шанс на безпеку, тепло та дбайливий прихисток для того,
-                хто зараз цього дуже потребує.
-              </p>
-              <p>
-                Кожна заповнена заявка допомагає нам швидше помітити, підтримати й урятувати.
-              </p>
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" className="modal-submit-btn" onClick={() => setIsSuccessOpen(false)}>
-                Добре
-              </button>
-            </div>
-          </div>
-        </div>
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            setShowAuthModal(false)
+            setIsCreateOpen(true)
+          }}
+        />
       )}
     </div>
   )

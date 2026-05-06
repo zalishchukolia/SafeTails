@@ -8,7 +8,6 @@ import FindingNewBeginningsPage from './pages/FindingNewBeginningsPage'
 import SuccessStoriesPage from './pages/SuccessStoriesPage'
 import AdoptionFormPage from './pages/AdoptionFormPage'
 import AdoptionApplicationPage from './pages/AdoptionApplicationPage'
-import ProtectedRoute from './components/ProtectedRoute'
 import AuthPage from './pages/AuthPage'
 
 const font = "'DM Sans', 'Inter', sans-serif"
@@ -124,7 +123,6 @@ function FloatingChat() {
             }
           `}</style>
 
-          {/* Header */}
           <div style={{
             padding: '18px 18px 14px',
             borderBottom: '1px solid #222',
@@ -145,7 +143,6 @@ function FloatingChat() {
             }}>×</button>
           </div>
 
-          {/* Messages */}
           <div style={{
             padding: '18px 16px',
             display: 'flex', flexDirection: 'column', gap: 16,
@@ -177,7 +174,6 @@ function FloatingChat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div style={{ padding: '14px 16px', background: '#161616', borderTop: '1px solid #1e1e1e' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
@@ -243,7 +239,7 @@ function AppInner() {
         <Route path="/finding-new-beginnings" element={<FindingNewBeginningsPage />} />
         <Route path="/success-stories" element={<SuccessStoriesPage />} />
         <Route path="/adoption-form" element={<AdoptionFormPage />} />
-        <Route path="/adoption-application" element={ <ProtectedRoute><AdoptionApplicationPage /></ProtectedRoute>} />
+        <Route path="/adoption-application" element={<AdoptionApplicationPage />} />
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
       <RightMiniSidebar />
