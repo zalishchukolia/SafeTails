@@ -155,7 +155,7 @@ export default function HomePage() {
         if (!Array.isArray(data)) return
 
         const mapped = data.map((a) => ({
-          id: a.id,
+          id: a._id,
           name: a.name,
           species: a.species ?? '',
           age: a.age ?? '?',
@@ -314,7 +314,7 @@ export default function HomePage() {
 
       const saved = await res.json()
       const newAnimal = {
-        id: saved.id,
+        id: saved._id,
         name: saved.name,
         species: saved.species,
         age: saved.age,
