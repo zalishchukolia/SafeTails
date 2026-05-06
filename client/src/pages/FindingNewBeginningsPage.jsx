@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import LoginPromptModal from '../components/LoginPromptModal'
+import AuthModal from '../components/AuthModal'
+
 
 const API = 'https://safetails-production-8790.up.railway.app'
 const font = "'Inter', sans-serif"
 const mono = "'Inter', monospace"
+
 
 const EMPTY_FORM = {
   fullName: '',
@@ -13,6 +17,7 @@ const EMPTY_FORM = {
   experience: '',
   note: '',
 }
+
 
 function SectionTag({ children }) {
   return (
@@ -33,6 +38,7 @@ function SectionTag({ children }) {
     </div>
   )
 }
+
 
 function StoryCard({ title, text, status, bg }) {
   return (
@@ -58,11 +64,13 @@ function StoryCard({ title, text, status, bg }) {
         🐾
       </div>
 
+
       <div style={{ padding: 22 }}>
         <h3 style={{ color: '#fff', fontSize: 22, margin: '0 0 10px' }}>{title}</h3>
         <p style={{ color: '#8e8e8e', fontSize: 14, lineHeight: 1.8, marginBottom: 16 }}>
           {text}
         </p>
+
 
         <div
           style={{
@@ -93,6 +101,7 @@ function StoryCard({ title, text, status, bg }) {
   )
 }
 
+
 function TeamCard({ name, role }) {
   return (
     <div
@@ -121,14 +130,17 @@ function TeamCard({ name, role }) {
         {name[0]}
       </div>
 
+
       <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
         {name}
       </div>
+
 
       <div style={{ color: '#8a8a8a', fontSize: 13, lineHeight: 1.7 }}>{role}</div>
     </div>
   )
 }
+
 
 function FooterColumn({ title, links }) {
   return (
@@ -144,6 +156,7 @@ function FooterColumn({ title, links }) {
       >
         {title}
       </div>
+
 
       {links.map((link) => (
         <div
@@ -161,6 +174,7 @@ function FooterColumn({ title, links }) {
     </div>
   )
 }
+
 
 function Footer() {
   return (
@@ -197,6 +211,7 @@ function Footer() {
               SafeTails
             </div>
 
+
             <p
               style={{
                 fontSize: 13,
@@ -211,11 +226,13 @@ function Footer() {
             </p>
           </div>
 
+
           <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
           <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
           <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
           <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
         </div>
+
 
         <div
           style={{
@@ -232,6 +249,7 @@ function Footer() {
             © 2024 SafeTails. Всі права захищені.
           </span>
 
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
@@ -242,36 +260,53 @@ function Footer() {
   )
 }
 
+
 const requiredFields = ['fullName', 'city', 'contact', 'availability', 'experience']
+
 
 export default function FindingNewBeginningsPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [touched, setTouched] = useState(false)
+
 
   const onChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
+
   const isInvalid = (field) => touched && requiredFields.includes(field) && !form[field].trim()
+
 
   const fieldStyle = (field) => ({
     ...inputStyle,
     border: isInvalid(field) ? '1px solid #ff4444' : '1px solid #262626',
   })
 
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setShowLoginPrompt(true)
+      return
+    }
+
     setTouched(true)
+
 
     const hasEmpty = requiredFields.some((f) => !form[f].trim())
     if (hasEmpty) {
       setError("Будь ласка, заповни всі обов'язкові поля!")
       return
     }
+
 
     setLoading(true)
     setError('')
@@ -292,17 +327,21 @@ export default function FindingNewBeginningsPage() {
     }
   }
 
+
   const closeModal = () => setSubmitted(false)
+
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
+
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { margin: 0; background: #0f0f0f; }
         input, textarea, select, button { outline: none; }
+
 
         @media (max-width: 1100px) {
           .hero-grid,
@@ -314,6 +353,7 @@ export default function FindingNewBeginningsPage() {
             grid-template-columns: 1fr !important;
           }
         }
+
 
         @media (max-width: 700px) {
           .page-wrap {
@@ -328,6 +368,7 @@ export default function FindingNewBeginningsPage() {
           }
         }
       `}</style>
+
 
       {/* МОДАЛКА */}
       {submitted && (
@@ -397,6 +438,7 @@ export default function FindingNewBeginningsPage() {
         </div>
       )}
 
+
       <div
         style={{
           minHeight: '100vh',
@@ -420,6 +462,7 @@ export default function FindingNewBeginningsPage() {
           {/* HERO */}
           <section style={{ padding: '18px 0 58px' }}>
             <SectionTag>ДОЛУЧИТИСЯ</SectionTag>
+
 
             <div
               className="hero-grid"
@@ -446,11 +489,13 @@ export default function FindingNewBeginningsPage() {
                   <span style={{ color: '#ff6b2b' }}>турботу, безпеку, дім</span>
                 </h1>
 
+
                 <p style={{ color: '#8d8d8d', fontSize: 16, lineHeight: 1.9, maxWidth: 650, marginBottom: 28 }}>
                   SafeTails — місцева ініціатива зі Львова, Україна. Ми об'єднуємо
                   волонтерів, прийомні сім'ї та небайдужих людей, які хочуть допомогти
                   врятованим тваринам одужати та розпочати нове життя.
                 </p>
+
 
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 26 }}>
                   <a
@@ -468,6 +513,7 @@ export default function FindingNewBeginningsPage() {
                     Стати волонтером
                   </a>
 
+
                   <a
                     href="#stories"
                     style={{
@@ -484,6 +530,7 @@ export default function FindingNewBeginningsPage() {
                     Історії успіху
                   </a>
                 </div>
+
 
                 <div
                   className="double-grid"
@@ -518,6 +565,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <div
                 style={{
                   background: 'linear-gradient(145deg,#1a1411,#2b1d17)',
@@ -533,6 +581,7 @@ export default function FindingNewBeginningsPage() {
                   <div style={{ fontSize: 11, color: '#9d8a80', letterSpacing: 2, fontFamily: mono, marginBottom: 18 }}>
                     ЯК ВИ МОЖЕТЕ ДОПОМОГТИ
                   </div>
+
 
                   <div style={{ display: 'grid', gap: 12 }}>
                     {[
@@ -558,6 +607,7 @@ export default function FindingNewBeginningsPage() {
                   </div>
                 </div>
 
+
                 <div
                   style={{
                     marginTop: 20,
@@ -579,9 +629,11 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
+
           {/* ФОРМА */}
           <section id="volunteer-form" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ВОЛОНТЕР / ПРИЙОМНА СІМ'Я</SectionTag>
+
 
             <div
               className="form-grid"
@@ -607,6 +659,7 @@ export default function FindingNewBeginningsPage() {
                   догляд, транспортування та комунікацію. Заповни форму та розкажи, як хочеш
                   долучитися.
                 </p>
+
 
                 <div style={{ display: 'grid', gap: 12 }}>
                   {[
@@ -635,6 +688,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <form
                 onSubmit={handleSubmit}
                 style={{
@@ -650,6 +704,7 @@ export default function FindingNewBeginningsPage() {
                 <p style={{ color: '#555', fontSize: 12, marginBottom: 18 }}>
                   * всі поля, крім коментаря, є обов'язковими
                 </p>
+
 
                 <div
                   className="double-grid"
@@ -675,6 +730,7 @@ export default function FindingNewBeginningsPage() {
                     style={fieldStyle('city')}
                   />
                 </div>
+
 
                 <div
                   className="double-grid"
@@ -705,6 +761,7 @@ export default function FindingNewBeginningsPage() {
                   </select>
                 </div>
 
+
                 <input
                   name="availability"
                   value={form.availability}
@@ -712,6 +769,7 @@ export default function FindingNewBeginningsPage() {
                   placeholder="Доступність *"
                   style={{ ...fieldStyle('availability'), marginBottom: 14 }}
                 />
+
 
                 <input
                   name="experience"
@@ -721,6 +779,7 @@ export default function FindingNewBeginningsPage() {
                   style={{ ...fieldStyle('experience'), marginBottom: 14 }}
                 />
 
+
                 <textarea
                   name="note"
                   value={form.note}
@@ -729,6 +788,7 @@ export default function FindingNewBeginningsPage() {
                   rows={6}
                   style={{ ...inputStyle, resize: 'vertical', paddingTop: 14, marginBottom: 18 }}
                 />
+
 
                 <button
                   type="submit"
@@ -749,6 +809,7 @@ export default function FindingNewBeginningsPage() {
                   {loading ? 'Надсилаємо...' : 'Надіслати заявку'}
                 </button>
 
+
                 {error && (
                   <p style={{ color: '#ff4444', marginTop: 10, fontSize: 13, textAlign: 'center' }}>
                     {error}
@@ -758,9 +819,11 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
+
           {/* STORIES */}
           <section id="stories" style={{ padding: '10px 0 70px' }}>
             <SectionTag>ІСТОРІЇ УСПІХУ</SectionTag>
+
 
             <div style={{ marginBottom: 22 }}>
               <h2 style={{ fontSize: 40, margin: '0 0 12px', fontFamily: "'Merriweather', serif" }}>
@@ -771,6 +834,7 @@ export default function FindingNewBeginningsPage() {
                 терпіння, довіру та людей, які допомагають тваринам перейти від страху до безпеки.
               </p>
             </div>
+
 
             <div
               className="stories-grid"
@@ -801,9 +865,11 @@ export default function FindingNewBeginningsPage() {
             </div>
           </section>
 
+
           {/* ABOUT / TEAM */}
           <section id="about-team" style={{ padding: '10px 0 84px' }}>
             <SectionTag>ПРО НАС / КОМАНДА</SectionTag>
+
 
             <div
               className="about-grid"
@@ -834,6 +900,7 @@ export default function FindingNewBeginningsPage() {
                   Наша команда невелика, але ми глибоко переймаємося створенням кращого
                   майбутнього для тварин, яким потрібна допомога.
                 </p>
+
 
                 <div
                   className="double-grid"
@@ -868,6 +935,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
 
+
               <div
                 style={{
                   background: '#141414',
@@ -884,6 +952,7 @@ export default function FindingNewBeginningsPage() {
                   прийомний догляд — зв'яжіться з нами напряму.
                 </p>
 
+
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>EMAIL</div>
@@ -891,9 +960,10 @@ export default function FindingNewBeginningsPage() {
                       href="mailto:safetails.rescue@gmail.com"
                       style={{ color: '#ff6b2b', textDecoration: 'none', fontSize: 15 }}
                     >
-                      safetails.rescue@gmail.com
+                      [safetails.rescue@gmail.com](mailto:safetails.rescue@gmail.com)
                     </a>
                   </div>
+
 
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>ТЕЛЕФОН</div>
@@ -905,6 +975,7 @@ export default function FindingNewBeginningsPage() {
                     </a>
                   </div>
 
+
                   <div style={contactCardStyle}>
                     <div style={contactLabelStyle}>АДРЕСА</div>
                     <div style={{ color: '#fff', fontSize: 15 }}>
@@ -914,6 +985,7 @@ export default function FindingNewBeginningsPage() {
                 </div>
               </div>
             </div>
+
 
             <div
               className="team-grid"
@@ -930,11 +1002,31 @@ export default function FindingNewBeginningsPage() {
           </section>
         </main>
 
+
         <Footer />
       </div>
+
+      <LoginPromptModal
+        open={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        onLogin={() => {
+          setShowLoginPrompt(false)
+          setShowAuthModal(true)
+        }}
+      />
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            setShowAuthModal(false)
+          }}
+        />
+      )}
     </>
   )
 }
+
 
 const inputStyle = {
   width: '100%',
@@ -947,12 +1039,14 @@ const inputStyle = {
   fontFamily: font,
 }
 
+
 const contactCardStyle = {
   background: '#181818',
   border: '1px solid #262626',
   borderRadius: 16,
   padding: '16px 18px',
 }
+
 
 const contactLabelStyle = {
   color: '#6f6f6f',

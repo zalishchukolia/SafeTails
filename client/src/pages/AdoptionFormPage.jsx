@@ -4,13 +4,16 @@ import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
 
 
+
 const font = "'Inter', sans-serif"
+
 
 
 const FILTERS = {
   age: ['Будь-який вік', 'Цуценя/Кошеня', 'Молодий', 'Дорослий', 'Старший'],
   temperament: ['Будь-який характер', 'Спокійний', 'Грайливий', 'Захисний', 'Незалежний'],
 }
+
 
 
 const AGE_MAP = {
@@ -22,6 +25,7 @@ const AGE_MAP = {
 }
 
 
+
 const BADGE_COLORS = {
   URGENT: { bg: '#ff3b30', text: '#fff' },
   SPONSORED: { bg: '#ff6b2b', text: '#fff' },
@@ -30,8 +34,10 @@ const BADGE_COLORS = {
 }
 
 
+
 export default function AdoptionFormPage() {
   const navigate = useNavigate()
+
 
 
   const [animals, setAnimals] = useState([])
@@ -45,6 +51,7 @@ export default function AdoptionFormPage() {
   const [pendingAnimal, setPendingAnimal] = useState(null)
 
 
+
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
       .then(res => res.json())
@@ -54,6 +61,7 @@ export default function AdoptionFormPage() {
       })
       .catch(() => setLoading(false))
   }, [])
+
 
 
   const getAgeCategory = age => {
@@ -66,6 +74,7 @@ export default function AdoptionFormPage() {
   }
 
 
+
   const TEMP_MAP = {
     'Будь-який характер': 'any temperament',
     'Спокійний': 'calm',
@@ -73,6 +82,7 @@ export default function AdoptionFormPage() {
     'Захисний': 'protective',
     'Незалежний': 'independent',
   }
+
 
 
   const filtered = animals.filter(animal => {
@@ -84,6 +94,7 @@ export default function AdoptionFormPage() {
     const temperament = (animal.temperament || '').toLowerCase()
 
 
+
     const matchesSearch =
       q === '' ||
       name.includes(q) ||
@@ -92,8 +103,10 @@ export default function AdoptionFormPage() {
       description.includes(q)
 
 
+
     const animalAgeCategory = getAgeCategory(animal.age)
     const matchesAge = ageFilter === 'Будь-який вік' || animalAgeCategory === ageFilter
+
 
 
     const tempEn = TEMP_MAP[tempFilter] || ''
@@ -101,11 +114,14 @@ export default function AdoptionFormPage() {
       tempFilter === 'Будь-який характер' || temperament.includes(tempEn)
 
 
+
     return matchesSearch && matchesAge && matchesTemperament
   })
 
 
+
   const displayed = filtered.slice(0, visible)
+
 
 
   const handleApply = (animalName) => {
@@ -119,6 +135,7 @@ export default function AdoptionFormPage() {
   }
 
 
+
   const handleLoginSuccess = () => {
     setShowAuthModal(false)
     setShowLoginPrompt(false)
@@ -126,6 +143,7 @@ export default function AdoptionFormPage() {
       navigate('/adoption-application', { state: { animalName: pendingAnimal } })
     }
   }
+
 
 
   return (
@@ -141,11 +159,13 @@ export default function AdoptionFormPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
+
         @keyframes pulse {
           0%, 100% { opacity: 0.4; }
           50% { opacity: 0.8; }
         }
       `}</style>
+
 
       <div style={{ padding: '56px 48px 0', maxWidth: 1200, margin: '0 auto' }}>
         <div
@@ -173,6 +193,7 @@ export default function AdoptionFormPage() {
             </h1>
 
 
+
             <p
               style={{
                 color: '#666',
@@ -186,6 +207,7 @@ export default function AdoptionFormPage() {
               вони чекають на свій останній крок: постійний дім.
             </p>
           </div>
+
 
 
           <div
@@ -216,6 +238,7 @@ export default function AdoptionFormPage() {
       </div>
 
 
+
       <div style={{ padding: '28px 48px', maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
@@ -231,6 +254,7 @@ export default function AdoptionFormPage() {
             >
               🔍
             </span>
+
 
 
             <input
@@ -254,6 +278,7 @@ export default function AdoptionFormPage() {
               }}
             />
           </div>
+
 
 
           <select
@@ -280,6 +305,7 @@ export default function AdoptionFormPage() {
           </select>
 
 
+
           <select
             value={tempFilter}
             onChange={e => {
@@ -302,6 +328,7 @@ export default function AdoptionFormPage() {
               <option key={option}>{option}</option>
             ))}
           </select>
+
 
 
           <button
@@ -329,6 +356,7 @@ export default function AdoptionFormPage() {
           </button>
         </div>
       </div>
+
 
 
       <div style={{ padding: '0 48px', maxWidth: 1200, margin: '0 auto' }}>
@@ -372,11 +400,13 @@ export default function AdoptionFormPage() {
         )}
 
 
+
         {!loading && visible < filtered.length && (
           <div style={{ textAlign: 'center', marginTop: 48 }}>
             <p style={{ color: '#555', fontSize: 13, marginBottom: 16 }}>
               Нові тварини з'являються щодня.
             </p>
+
 
 
             <button
@@ -408,8 +438,10 @@ export default function AdoptionFormPage() {
       </div>
 
 
+
       {showLoginPrompt && (
         <LoginPromptModal
+          open={showLoginPrompt}
           onClose={() => setShowLoginPrompt(false)}
           onLogin={() => {
             setShowLoginPrompt(false)
@@ -417,6 +449,7 @@ export default function AdoptionFormPage() {
           }}
         />
       )}
+
 
 
       {showAuthModal && (
@@ -430,12 +463,15 @@ export default function AdoptionFormPage() {
 }
 
 
+
 function AnimalCard({ animal, onApply, onClick }) {
   const [hovered, setHovered] = useState(false)
 
 
+
   const badge = animal.status?.toUpperCase() || animal.badge?.toUpperCase()
   const badgeStyle = BADGE_COLORS[badge] || BADGE_COLORS.READY
+
 
 
   const age = animal.age
@@ -443,8 +479,10 @@ function AnimalCard({ animal, onApply, onClick }) {
     : ''
 
 
+
   const breed = animal.breed || animal.species || 'Змішана порода'
   const imgUrl = animal.imageUrl || animal.image || animal.photo || null
+
 
 
   return (
@@ -502,6 +540,7 @@ function AnimalCard({ animal, onApply, onClick }) {
         )}
 
 
+
         {badge && (
           <div
             style={{
@@ -524,6 +563,7 @@ function AnimalCard({ animal, onApply, onClick }) {
       </div>
 
 
+
       <div
         style={{
           padding: '14px 16px 16px',
@@ -538,11 +578,13 @@ function AnimalCard({ animal, onApply, onClick }) {
           </h3>
 
 
+
           <p style={{ margin: '3px 0 0', fontSize: 12, color: '#666' }}>
             {breed}
             {age ? ` · ${age}` : ''}
           </p>
         </div>
+
 
 
         {animal.description && (
@@ -562,6 +604,7 @@ function AnimalCard({ animal, onApply, onClick }) {
             {animal.description}
           </p>
         )}
+
 
 
         <button
