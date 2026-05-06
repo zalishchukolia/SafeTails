@@ -1,25 +1,30 @@
-const express = require('express');
-const router = express.Router();
-const Adoption = require('../models/Adoption');
-const requireAuth = require('../middleware/auth');
+const express = require('express')
+const router = express.Router()
+const auth = require('../middleware/auth')
+const Adoption = require('../models/Adoption')
 
-router.post('/', requireAuth, async (req, res) => {
-  try {
-    const adoption = new Adoption({ ...req.body, userId: req.user.id });
-    await adoption.save();
-    res.status(201).json(adoption);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
+// Отримати всі заявки, якщо треба
 router.get('/', async (req, res) => {
   try {
-    const adoptions = await Adoption.find().populate('animalId');
-    res.json(adoptions);
+    const adoptions = await Adoption.find().sort({ createdAt: -1 })
+    res.json(adoptions)
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message })
   }
-});
+})
 
-module.exports = router;
+// Створити заявку — тільки для авторизованого користувача
+router.post('/', auth, async (req, res) => {
+  try {
+    const adoption = await Adoption.create({
+      ...req.body,
+      user: req.user.id,
+    })
+
+    res.status(201).json(adoption)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+module.exports = router

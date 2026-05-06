@@ -1,26 +1,28 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LoginPromptModal from '../components/LoginPromptModal'
+import AuthModal from '../components/AuthModal'
 
 const API = 'https://safetails-production-8790.up.railway.app'
 
 const logisticsSeed = [
-  { id: 1, icon: '📋', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
-  { id: 2, icon: '🏠', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
+  { id: 1, icon: '📦', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
+  { id: 2, icon: '🧼', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
   { id: 3, icon: '🚑', title: 'Transport pickup', detail: 'Crate and ambulance required at Dock 2', eta: '15 min', type: 'High' },
 ]
 
 const medicalSeed = [
-  { id: 1, patient: 'Барні', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
-  { id: 2, patient: 'Луна', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
-  { id: 3, patient: 'Рекс', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
+  { id: 1, patient: '🐕 Bruno', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
+  { id: 2, patient: '🐈 Mila', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
+  { id: 3, patient: '🐇 Snow', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
 ]
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '▦' },
-  { id: 'rescues', label: 'Active Rescues', icon: '✦' },
-  { id: 'dispatch', label: 'Dispatch', icon: '⊹' },
-  { id: 'medical', label: 'Medical Log', icon: '♥' },
-  { id: 'archive', label: 'Archive', icon: '▤' },
+  { id: 'dashboard', label: 'Dashboard', icon: '◌' },
+  { id: 'rescues', label: 'Active Rescues', icon: '◌' },
+  { id: 'dispatch', label: 'Dispatch', icon: '◌' },
+  { id: 'medical', label: 'Medical Log', icon: '◌' },
+  { id: 'archive', label: 'Archive', icon: '◌' },
 ]
 
 function statusTone(status) {
@@ -50,10 +52,10 @@ function themeFromStatus(status) {
 function emojiFromSpecies(species) {
   if (!species) return '🐾'
   const s = species.toLowerCase()
-  if (s.includes('кіт') || s.includes('кішк') || s.includes('cat')) return '🐈'
-  if (s.includes('собак') || s.includes('пес') || s.includes('dog')) return '🐕'
-  if (s.includes('кролик') || s.includes('rabbit')) return '🐇'
-  if (s.includes('птах') || s.includes('bird')) return '🐦'
+  if (s.includes('cat') || s.includes('кіш')) return '🐈'
+  if (s.includes('dog') || s.includes('пес') || s.includes('соб')) return '🐕'
+  if (s.includes('rabbit') || s.includes('крол')) return '🐇'
+  if (s.includes('bird') || s.includes('птах')) return '🕊️'
   return '🐾'
 }
 
@@ -90,10 +92,10 @@ function MissionRow({ mission, active, onSelect }) {
           <h3>{mission.name}</h3>
           <StatusPill status={mission.status} />
         </div>
-        <p>{mission.species} · {mission.age} р.</p>
+        <p>{mission.species} · {mission.age} y.o.</p>
         <div className="mission-meta">
           <span>{mission.temperament}</span>
-          {mission.city && <span>📍 {mission.city}</span>}
+          {mission.city ? <span>{mission.city}</span> : null}
           <span>{mission.updated}</span>
         </div>
       </div>
@@ -107,7 +109,7 @@ function SectionCard({ title, subtitle, children }) {
       <div className="panel-header">
         <div>
           <h3>{title}</h3>
-          {subtitle && <p>{subtitle}</p>}
+          {subtitle ? <p>{subtitle}</p> : null}
         </div>
       </div>
       <div className="panel-pad">{children}</div>
@@ -127,6 +129,8 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('Name')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const [form, setForm] = useState({
@@ -140,6 +144,9 @@ export default function HomePage() {
     weight: '',
   })
 
+  const token = localStorage.getItem('token')
+  const isAuthenticated = Boolean(token)
+
   useEffect(() => {
     setLoading(true)
     fetch(`${API}/api/animals`)
@@ -148,9 +155,9 @@ export default function HomePage() {
         if (!Array.isArray(data)) return
 
         const mapped = data.map((a) => ({
-          id: a._id,
+          id: a.id,
           name: a.name,
-          species: a.species ?? 'невідомо',
+          species: a.species ?? '',
           age: a.age ?? '?',
           description: a.description ?? '',
           temperament: a.temperament ?? '',
@@ -176,8 +183,14 @@ export default function HomePage() {
           setSelectedId(null)
         }
       })
-      .catch((err) => console.error('❌ Помилка завантаження тварин:', err))
+      .catch((err) => console.error('Fetch animals error:', err))
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setShowAuthModal(true)
+    window.addEventListener('open-auth-modal', handler)
+    return () => window.removeEventListener('open-auth-modal', handler)
   }, [])
 
   const visibleMissions = useMemo(() => {
@@ -194,7 +207,6 @@ export default function HomePage() {
     }
 
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
-
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
@@ -212,8 +224,11 @@ export default function HomePage() {
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
   const archivedCount = archivedMissions.length
   const totalCount = missions.length + archivedMissions.length
-  const dogsCount = missions.filter((m) =>
-    m.species?.toLowerCase().includes('собак') || m.species?.toLowerCase().includes('пес')
+  const dogsCount = missions.filter(
+    (m) =>
+      m.species?.toLowerCase().includes('dog') ||
+      m.species?.toLowerCase().includes('соб') ||
+      m.species?.toLowerCase().includes('пес')
   ).length
 
   function resetForm() {
@@ -234,8 +249,23 @@ export default function HomePage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
+  function handleOpenCreateModal() {
+    if (!isAuthenticated) {
+      setIsLoginPromptOpen(true)
+      return
+    }
+    setIsCreateOpen(true)
+  }
+
   async function handleCreateAnimal(e) {
     e.preventDefault()
+
+    if (!isAuthenticated) {
+      setIsCreateOpen(false)
+      setIsLoginPromptOpen(true)
+      return
+    }
+
     if (!form.name.trim() || !form.description.trim()) return
 
     let lat = null
@@ -253,7 +283,7 @@ export default function HomePage() {
           lng = parseFloat(geoData[0].lon)
         }
       } catch (err) {
-        console.warn('⚠️ Геокодинг не вдався:', err)
+        console.warn('Geocoding failed:', err)
       }
     }
 
@@ -283,9 +313,8 @@ export default function HomePage() {
       if (!res.ok) throw new Error('Server error')
 
       const saved = await res.json()
-
       const newAnimal = {
-        id: saved._id,
+        id: saved.id,
         name: saved.name,
         species: saved.species,
         age: saved.age,
@@ -313,8 +342,8 @@ export default function HomePage() {
       setIsCreateOpen(false)
       resetForm()
     } catch (err) {
-      console.error('❌ Помилка збереження:', err)
-      alert("Не вдалось зберегти. Перевір з'єднання з сервером.")
+      console.error(err)
+      alert('Не вдалося створити місію.')
     }
   }
 
@@ -369,6 +398,7 @@ export default function HomePage() {
             <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
             <StatCard label="Archived" value={String(archivedCount).padStart(2, '0')} meta="Moved to archive" />
             <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
+            <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
           </section>
 
           <section className="workspace">
@@ -378,7 +408,7 @@ export default function HomePage() {
                   <div className="simple-row" key={item.id}>
                     <div>
                       <strong>{item.emoji} {item.name}</strong>
-                      <p>{item.species} · {item.city || item.description}</p>
+                      <p>{item.species} · {item.city} · {item.description}</p>
                     </div>
                     <StatusPill status={item.status} />
                   </div>
@@ -585,7 +615,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {selectedMission && (
+          {selectedMission ? (
             <aside className="panel detail-card">
               <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
 
@@ -594,7 +624,7 @@ export default function HomePage() {
                   <div>
                     <StatusPill status={selectedMission.status} />
                     <h3 style={{ marginTop: 12 }}>{selectedMission.name}</h3>
-                    <p>{selectedMission.species} · {selectedMission.age} р.</p>
+                    <p>{selectedMission.species} · {selectedMission.age} y.o.</p>
                   </div>
                 </div>
 
@@ -639,7 +669,7 @@ export default function HomePage() {
                 </div>
               </div>
             </aside>
-          )}
+          ) : null}
         </section>
 
         <section className="logistics" aria-label="Secondary logistics">
@@ -693,7 +723,7 @@ export default function HomePage() {
             radial-gradient(circle at top right, rgba(255,107,43,0.12), transparent 26%),
             linear-gradient(180deg, #07090d 0%, #090c11 100%);
           color: var(--text);
-          font-family: 'Inter', sans-serif;
+          font-family: Inter, sans-serif;
         }
 
         .layout {
@@ -812,6 +842,7 @@ export default function HomePage() {
         }
 
         .new-mission-btn,
+        .footer-link-btn,
         .collapse-btn,
         .toolbar-btn,
         .mission-row,
@@ -824,6 +855,7 @@ export default function HomePage() {
         }
 
         .new-mission-btn:hover,
+        .footer-link-btn:hover,
         .collapse-btn:hover,
         .toolbar-btn:hover,
         .mission-row:hover,
@@ -844,6 +876,17 @@ export default function HomePage() {
           color: white;
           font-size: 13px;
           font-weight: 800;
+          cursor: pointer;
+        }
+
+        .footer-link-btn {
+          width: 100%;
+          text-align: left;
+          background: transparent;
+          border: 0;
+          color: #6f7385;
+          padding: 6px 0;
+          font-size: 12px;
           cursor: pointer;
         }
 
@@ -928,7 +971,9 @@ export default function HomePage() {
           box-shadow: var(--shadow);
         }
 
-        .stat-card { padding: 18px; }
+        .stat-card {
+          padding: 18px;
+        }
 
         .eyebrow {
           display: block;
@@ -940,7 +985,9 @@ export default function HomePage() {
           text-transform: uppercase;
         }
 
-        .small-no-margin { margin-bottom: 0; }
+        .small-no-margin {
+          margin-bottom: 0;
+        }
 
         .stat-card strong {
           display: block;
@@ -951,7 +998,7 @@ export default function HomePage() {
 
         .stat-card p,
         .panel-header p,
-        .mission-copy > p,
+        .mission-copy p,
         .logistics-item p,
         .simple-row p {
           margin: 0;
@@ -983,7 +1030,9 @@ export default function HomePage() {
           font-size: 18px;
         }
 
-        .panel-pad { padding: 16px; }
+        .panel-pad {
+          padding: 16px;
+        }
 
         .controls {
           display: flex;
@@ -1015,7 +1064,9 @@ export default function HomePage() {
           resize: vertical;
         }
 
-        .toolbar-btn.active { background: rgba(255,255,255,0.08); }
+        .toolbar-btn.active {
+          background: rgba(255,255,255,0.08);
+        }
 
         .mission-list,
         .logistics,
@@ -1024,7 +1075,9 @@ export default function HomePage() {
           gap: 12px;
         }
 
-        .mission-list { padding: 16px; }
+        .mission-list {
+          padding: 16px;
+        }
 
         .mission-row,
         .logistics-item,
@@ -1100,7 +1153,8 @@ export default function HomePage() {
         }
 
         .status-pill,
-        .archive-tag {
+        .archive-tag,
+        .distance-chip {
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -1117,7 +1171,9 @@ export default function HomePage() {
           border-radius: 50%;
         }
 
-        .detail-card { overflow: hidden; }
+        .detail-card {
+          overflow: hidden;
+        }
 
         .hero {
           min-height: 220px;
@@ -1155,7 +1211,8 @@ export default function HomePage() {
           font-size: 14px;
         }
 
-        .archive-tag {
+        .archive-tag,
+        .distance-chip {
           border: 1px solid var(--border);
           background: var(--panel-3);
           color: var(--text);
@@ -1183,7 +1240,9 @@ export default function HomePage() {
           margin-bottom: 8px;
         }
 
-        .mini-card strong { font-size: 18px; }
+        .mini-card strong {
+          font-size: 18px;
+        }
 
         .detail-note p {
           margin: 0;
@@ -1240,7 +1299,9 @@ export default function HomePage() {
           font-size: 15px;
         }
 
-        .logistics-meta { text-align: right; }
+        .logistics-meta {
+          text-align: right;
+        }
 
         .logistics-meta strong {
           display: block;
@@ -1312,9 +1373,14 @@ export default function HomePage() {
           -ms-overflow-style: none;
         }
 
-        .modal-scroll::-webkit-scrollbar { display: none; }
+        .modal-scroll::-webkit-scrollbar {
+          display: none;
+        }
 
-        .form-field { display: grid; gap: 8px; }
+        .form-field {
+          display: grid;
+          gap: 8px;
+        }
 
         .form-field label {
           font-size: 13px;
@@ -1356,7 +1422,10 @@ export default function HomePage() {
             grid-template-columns: 1fr;
           }
 
-          .mission-thumb { width: 100%; height: 120px; }
+          .mission-thumb {
+            width: 100%;
+            height: 120px;
+          }
 
           .detail-head,
           .simple-row,
@@ -1369,14 +1438,23 @@ export default function HomePage() {
             align-items: stretch;
           }
 
-          .hero-copy h2 { font-size: 34px; }
-          .modal-card { height: min(92vh, 760px); width: 100%; }
-          .modal-backdrop { padding: 12px; }
+          .hero-copy h2 {
+            font-size: 34px;
+          }
+
+          .modal-card {
+            height: min(92vh, 760px);
+            width: 100%;
+          }
+
+          .modal-backdrop {
+            padding: 12px;
+          }
         }
       `}</style>
 
       <div className="layout">
-        {sidebarOpen && (
+        {sidebarOpen ? (
           <aside className="sidebar">
             <div className="command-card">
               <div className="command-icon">✦</div>
@@ -1401,12 +1479,12 @@ export default function HomePage() {
             </nav>
 
             <div className="sidebar-footer-ref">
-              <button className="new-mission-btn" type="button" onClick={() => setIsCreateOpen(true)}>
+              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>
                 + Add Animal
               </button>
             </div>
           </aside>
-        )}
+        ) : null}
 
         <main className={`content ${sidebarOpen ? 'with-sidebar' : 'full-width'}`}>
           {renderContent()}
@@ -1418,7 +1496,7 @@ export default function HomePage() {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <h3>Add new animal</h3>
-              <p>Додай тварину — вона збережеться в базі та з'явиться на мапі.</p>
+              <p>Fill out the form to create a new rescue mission.</p>
             </div>
 
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
@@ -1468,7 +1546,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="weight">Вага (кг)</label>
+                    <label htmlFor="weight">Weight</label>
                     <input
                       id="weight"
                       name="weight"
@@ -1553,6 +1631,27 @@ export default function HomePage() {
             </form>
           </div>
         </div>
+      )}
+
+      <LoginPromptModal
+        open={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+        onLogin={() => {
+          setIsLoginPromptOpen(false)
+          window.dispatchEvent(new CustomEvent('open-auth-modal'))
+        }}
+        onContinueWithoutAccount={() => setIsLoginPromptOpen(false)}
+      />
+
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => {
+            setShowAuthModal(false)
+            setIsCreateOpen(true)
+          }}
+        />
       )}
     </div>
   )
