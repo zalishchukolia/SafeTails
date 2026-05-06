@@ -7,9 +7,11 @@ function AnimalDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+
     fetch(`${import.meta.env.VITE_API_URL}/api/animals/${id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setAnimal(data)
         setLoading(false)
       })
