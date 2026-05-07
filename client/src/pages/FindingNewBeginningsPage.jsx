@@ -246,7 +246,7 @@ function Footer() {
           }}
         >
           <span style={{ fontSize: 12, color: '#4d4d4d' }}>
-            © 2024 SafeTails. Всі права захищені.
+            © 2026 SafeTails. Всі права захищені.
           </span>
 
 
