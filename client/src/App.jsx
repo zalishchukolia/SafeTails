@@ -242,7 +242,7 @@ function AppInner() {
         <Route path="/adoption-application" element={<AdoptionApplicationPage />} />
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
-      <RightMiniSidebar />
+      {/* {<RightMiniSidebar /> }*/}
       <FloatingChat />
     </div>
   )

@@ -147,43 +147,43 @@ export default function HomePage() {
   const token = localStorage.getItem('token')
   const isAuthenticated = Boolean(token)
 
+  // ✅ ВИПРАВЛЕНО: завантажуємо активних і архівованих паралельно
   useEffect(() => {
     setLoading(true)
-    fetch(`${API}/api/animals`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!Array.isArray(data)) return
 
-        const mapped = data.map((a) => ({
-          id: a._id,
-          name: a.name,
-          species: a.species ?? '',
-          age: a.age ?? '?',
-          description: a.description ?? '',
-          temperament: a.temperament ?? '',
-          status: a.status ?? 'needs rescue',
-          city: a.city ?? '',
-          weight: a.weight ?? null,
-          lat: a.lat ?? null,
-          lng: a.lng ?? null,
-          emoji: emojiFromSpecies(a.species),
-          theme: themeFromStatus(a.status),
-          updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
-        }))
+    const mapAnimal = (a) => ({
+      id: a._id,
+      name: a.name,
+      species: a.species ?? '',
+      age: a.age ?? '?',
+      description: a.description ?? '',
+      temperament: a.temperament ?? '',
+      status: a.status ?? 'needs rescue',
+      city: a.city ?? '',
+      weight: a.weight ?? null,
+      lat: a.lat ?? null,
+      lng: a.lng ?? null,
+      emoji: emojiFromSpecies(a.species),
+      theme: themeFromStatus(a.status),
+      updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
+      archivedAt: a.status === 'archived'
+        ? new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA')
+        : null,
+    })
 
-        const active = mapped.filter((item) => item.status !== 'archived')
-        const archived = mapped.filter((item) => item.status === 'archived')
+    Promise.all([
+      fetch(`${API}/api/animals`).then((r) => r.json()),
+      fetch(`${API}/api/animals/archived`).then((r) => r.json()),
+    ])
+      .then(([active, archived]) => {
+        const mappedActive = Array.isArray(active) ? active.map(mapAnimal) : []
+        const mappedArchived = Array.isArray(archived) ? archived.map(mapAnimal) : []
 
-        setMissions(active)
-        setArchivedMissions(archived)
-
-        if (active.length > 0) {
-          setSelectedId(active[0].id)
-        } else {
-          setSelectedId(null)
-        }
+        setMissions(mappedActive)
+        setArchivedMissions(mappedArchived)
+        setSelectedId(mappedActive[0]?.id ?? null)
       })
-      .catch((err) => console.error('Fetch animals error:', err))
+      .catch((err) => console.error('Fetch error:', err))
       .finally(() => setLoading(false))
   }, [])
 
@@ -352,8 +352,22 @@ export default function HomePage() {
     navigate(`/animals/${selectedMission.id}`)
   }
 
-  function handleArchive() {
+  // ✅ ВИПРАВЛЕНО: спочатку викликає API, потім оновлює стейт
+  async function handleArchive() {
     if (!selectedMission) return
+
+    try {
+      await fetch(`${API}/api/animals/${selectedMission.id}/archive`, {
+        method: 'PATCH',
+        headers: {
+          'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET,
+        },
+      })
+    } catch (err) {
+      console.error('Archive error:', err)
+      alert('Не вдалося заархівувати тварину.')
+      return
+    }
 
     const archivedAnimal = {
       ...selectedMission,
@@ -726,9 +740,7 @@ export default function HomePage() {
           font-family: Inter, sans-serif;
         }
 
-        .layout {
-          min-height: calc(100vh - 60px);
-        }
+        .layout { min-height: calc(100vh - 60px); }
 
         .sidebar {
           position: fixed;
@@ -755,701 +767,225 @@ export default function HomePage() {
         }
 
         .command-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 11px;
-          display: grid;
-          place-items: center;
+          width: 36px; height: 36px; border-radius: 11px;
+          display: grid; place-items: center;
           background: linear-gradient(135deg, #ff7b32, #ff5a1f);
-          color: white;
-          font-size: 13px;
-          font-weight: 700;
-          flex-shrink: 0;
+          color: white; font-size: 13px; font-weight: 700; flex-shrink: 0;
         }
 
-        .command-card h3 {
-          margin: 0;
-          font-size: 10px;
-          font-weight: 700;
-          color: #f4f4f8;
-          line-height: 1.15;
-        }
-
-        .command-card p {
-          margin: 3px 0 0;
-          font-size: 8px;
-          letter-spacing: 0.16em;
-          color: #73778a;
-          line-height: 1.1;
-        }
+        .command-card h3 { margin: 0; font-size: 10px; font-weight: 700; color: #f4f4f8; line-height: 1.15; }
+        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.16em; color: #73778a; line-height: 1.1; }
 
         .nav-list {
-          display: grid;
-          padding: 0 0 8px;
+          display: grid; padding: 0 0 8px;
           border-top: 1px solid rgba(255,255,255,0.04);
           border-bottom: 1px solid rgba(255,255,255,0.04);
         }
 
         .ref-nav-link {
-          position: relative;
-          min-height: 42px;
-          border-radius: 0;
-          padding: 0 13px;
-          color: #6f7385;
-          border: 0;
-          background: transparent;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          width: 100%;
-          cursor: pointer;
-          text-align: left;
+          position: relative; min-height: 42px; border-radius: 0;
+          padding: 0 13px; color: #6f7385; border: 0; background: transparent;
+          display: flex; align-items: center; gap: 8px;
+          font-size: 12px; width: 100%; cursor: pointer; text-align: left;
         }
-
-        .ref-nav-link:hover {
-          background: rgba(255,255,255,0.02);
-          color: #d5d8e3;
-        }
-
+        .ref-nav-link:hover { background: rgba(255,255,255,0.02); color: #d5d8e3; }
         .ref-nav-link.active {
           background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04));
           color: #ff6b2b;
         }
-
         .ref-nav-link.active::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 8px;
-          bottom: 8px;
-          width: 3px;
-          border-radius: 0 3px 3px 0;
-          background: #ff6b2b;
+          content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+          width: 3px; border-radius: 0 3px 3px 0; background: #ff6b2b;
         }
 
-        .nav-icon {
-          width: 12px;
-          display: inline-flex;
-          justify-content: center;
-          font-size: 10px;
-        }
+        .nav-icon { width: 12px; display: inline-flex; justify-content: center; font-size: 10px; }
 
-        .sidebar-footer-ref {
-          padding: 12px 8px 14px;
-          display: grid;
-          gap: 6px;
-        }
+        .sidebar-footer-ref { padding: 12px 8px 14px; display: grid; gap: 6px; }
 
-        .new-mission-btn,
-        .footer-link-btn,
-        .collapse-btn,
-        .toolbar-btn,
-        .mission-row,
-        .detail-primary-btn,
-        .detail-ghost-btn,
-        .logistics-item,
-        .modal-close-btn,
-        .modal-submit-btn {
+        .new-mission-btn, .footer-link-btn, .collapse-btn, .toolbar-btn,
+        .mission-row, .detail-primary-btn, .detail-ghost-btn,
+        .logistics-item, .modal-close-btn, .modal-submit-btn {
           transition: transform .18s ease, background .18s ease, border-color .18s ease;
         }
-
-        .new-mission-btn:hover,
-        .footer-link-btn:hover,
-        .collapse-btn:hover,
-        .toolbar-btn:hover,
-        .mission-row:hover,
-        .detail-primary-btn:hover,
-        .detail-ghost-btn:hover,
-        .logistics-item:hover,
-        .modal-close-btn:hover,
-        .modal-submit-btn:hover {
-          transform: translateY(-1px);
-        }
+        .new-mission-btn:hover, .footer-link-btn:hover, .collapse-btn:hover,
+        .toolbar-btn:hover, .mission-row:hover, .detail-primary-btn:hover,
+        .detail-ghost-btn:hover, .logistics-item:hover,
+        .modal-close-btn:hover, .modal-submit-btn:hover { transform: translateY(-1px); }
 
         .new-mission-btn {
-          width: 100%;
-          min-height: 40px;
-          border: 0;
-          border-radius: 999px;
+          width: 100%; min-height: 40px; border: 0; border-radius: 999px;
           background: linear-gradient(135deg, #ff7c32, #f35a19);
-          color: white;
-          font-size: 13px;
-          font-weight: 800;
-          cursor: pointer;
+          color: white; font-size: 13px; font-weight: 800; cursor: pointer;
         }
 
         .footer-link-btn {
-          width: 100%;
-          text-align: left;
-          background: transparent;
-          border: 0;
-          color: #6f7385;
-          padding: 6px 0;
-          font-size: 12px;
-          cursor: pointer;
+          width: 100%; text-align: left; background: transparent; border: 0;
+          color: #6f7385; padding: 6px 0; font-size: 12px; cursor: pointer;
         }
 
-        .content {
-          min-width: 0;
-          width: 100%;
-          max-width: 100%;
-          display: grid;
-          gap: 24px;
-          transition: padding 0.25s ease;
+        .content { min-width: 0; width: 100%; max-width: 100%; display: grid; gap: 24px; transition: padding 0.25s ease; }
+        .content.with-sidebar { padding: 28px 28px 28px 212px; }
+        .content.full-width { padding: 28px; }
+
+        .hero-block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+        .hero-copy h2 { margin: 0; font-size: 42px; line-height: 1.05; }
+        .hero-copy p { margin: 12px 0 0; max-width: 620px; color: var(--muted); font-size: 16px; line-height: 1.6; }
+        .topbar-actions { display: flex; justify-content: flex-end; }
+
+        .collapse-btn, .toolbar-btn, .modal-close-btn {
+          border: 1px solid var(--border); background: var(--panel); color: var(--text);
+          border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer;
         }
 
-        .content.with-sidebar {
-          padding: 28px 28px 28px 212px;
+        .modal-submit-btn, .detail-primary-btn {
+          border: 0; background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%);
+          color: white; border-radius: 14px; min-height: 46px; padding: 0 16px;
+          cursor: pointer; font-weight: 700;
         }
 
-        .content.full-width {
-          padding: 28px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 
-        .hero-block {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 16px;
-          align-items: start;
+        .stat-card, .panel {
+          background: rgba(17,21,28,0.94); border: 1px solid var(--border);
+          border-radius: 24px; box-shadow: var(--shadow);
         }
-
-        .hero-copy h2 {
-          margin: 0;
-          font-size: 42px;
-          line-height: 1.05;
-        }
-
-        .hero-copy p {
-          margin: 12px 0 0;
-          max-width: 620px;
-          color: var(--muted);
-          font-size: 16px;
-          line-height: 1.6;
-        }
-
-        .topbar-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .collapse-btn,
-        .toolbar-btn,
-        .modal-close-btn {
-          border: 1px solid var(--border);
-          background: var(--panel);
-          color: var(--text);
-          border-radius: 14px;
-          min-height: 46px;
-          padding: 0 16px;
-          cursor: pointer;
-        }
-
-        .modal-submit-btn,
-        .detail-primary-btn {
-          border: 0;
-          background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%);
-          color: white;
-          border-radius: 14px;
-          min-height: 46px;
-          padding: 0 16px;
-          cursor: pointer;
-          font-weight: 700;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 16px;
-        }
-
-        .stat-card,
-        .panel {
-          background: rgba(17,21,28,0.94);
-          border: 1px solid var(--border);
-          border-radius: 24px;
-          box-shadow: var(--shadow);
-        }
-
-        .stat-card {
-          padding: 18px;
-        }
+        .stat-card { padding: 18px; }
 
         .eyebrow {
-          display: block;
-          margin-bottom: 10px;
-          color: var(--muted);
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: .08em;
-          text-transform: uppercase;
+          display: block; margin-bottom: 10px; color: var(--muted);
+          font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+        }
+        .small-no-margin { margin-bottom: 0; }
+        .stat-card strong { display: block; font-size: 28px; line-height: 1; margin-bottom: 8px; }
+
+        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p {
+          margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5;
         }
 
-        .small-no-margin {
-          margin-bottom: 0;
-        }
-
-        .stat-card strong {
-          display: block;
-          font-size: 28px;
-          line-height: 1;
-          margin-bottom: 8px;
-        }
-
-        .stat-card p,
-        .panel-header p,
-        .mission-copy p,
-        .logistics-item p,
-        .simple-row p {
-          margin: 0;
-          color: var(--muted);
-          font-size: 14px;
-          line-height: 1.5;
-        }
-
-        .workspace {
-          display: grid;
-          grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px);
-          gap: 20px;
-          align-items: start;
-        }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: 20px; align-items: start; }
 
         .panel-header {
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          gap: 12px;
-          align-items: center;
+          padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+          display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center;
         }
+        .panel-header h3, .logistics-head h3 { margin: 0; font-size: 18px; }
+        .panel-pad { padding: 16px; }
 
-        .panel-header h3,
-        .logistics-head h3 {
-          margin: 0;
-          font-size: 18px;
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .search, .form-input, .form-select, .form-textarea {
+          width: 100%; border-radius: 14px; border: 1px solid var(--border);
+          background: var(--panel-3); color: var(--text); padding: 12px 14px; outline: none; font: inherit;
         }
+        .search { min-width: 220px; border-radius: 999px; }
+        .form-textarea { min-height: 110px; resize: vertical; }
+        .toolbar-btn.active { background: rgba(255,255,255,0.08); }
 
-        .panel-pad {
-          padding: 16px;
+        .mission-list, .logistics, .simple-list { display: grid; gap: 12px; }
+        .mission-list { padding: 16px; }
+
+        .mission-row, .logistics-item, .simple-row {
+          width: 100%; border: 1px solid var(--border);
+          background: var(--panel-2); color: inherit; border-radius: 18px; padding: 14px;
         }
-
-        .controls {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-
-        .search,
-        .form-input,
-        .form-select,
-        .form-textarea {
-          width: 100%;
-          border-radius: 14px;
-          border: 1px solid var(--border);
-          background: var(--panel-3);
-          color: var(--text);
-          padding: 12px 14px;
-          outline: none;
-          font: inherit;
-        }
-
-        .search {
-          min-width: 220px;
-          border-radius: 999px;
-        }
-
-        .form-textarea {
-          min-height: 110px;
-          resize: vertical;
-        }
-
-        .toolbar-btn.active {
-          background: rgba(255,255,255,0.08);
-        }
-
-        .mission-list,
-        .logistics,
-        .simple-list {
-          display: grid;
-          gap: 12px;
-        }
-
-        .mission-list {
-          padding: 16px;
-        }
-
-        .mission-row,
-        .logistics-item,
-        .simple-row {
-          width: 100%;
-          border: 1px solid var(--border);
-          background: var(--panel-2);
-          color: inherit;
-          border-radius: 18px;
-          padding: 14px;
-        }
-
-        .mission-row {
-          display: grid;
-          grid-template-columns: 70px 1fr;
-          gap: 14px;
-          text-align: left;
-          cursor: pointer;
-        }
-
+        .mission-row { display: grid; grid-template-columns: 70px 1fr; gap: 14px; text-align: left; cursor: pointer; }
         .mission-row.active {
           border-color: rgba(255,107,43,0.6);
           background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02));
         }
 
-        .mission-thumb {
-          width: 70px;
-          height: 70px;
-          border-radius: 18px;
-          display: grid;
-          place-items: center;
-          font-size: 34px;
-        }
+        .mission-thumb { width: 70px; height: 70px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; }
+        .mission-thumb.danger { background: linear-gradient(180deg, #4a201f, #2b1212); }
+        .mission-thumb.calm { background: linear-gradient(180deg, #12312b, #10201d); }
+        .mission-thumb.watch { background: linear-gradient(180deg, #3f3217, #241c0f); }
+        .mission-thumb.archive { background: linear-gradient(180deg, #374151, #1f2937); }
 
-        .mission-thumb.danger {
-          background: linear-gradient(180deg, #4a201f, #2b1212);
+        .mission-topline, .detail-head, .simple-row, .logistics-head {
+          display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
         }
+        .mission-topline h3, .detail-head h3 { margin: 0; font-size: 16px; }
+        .mission-meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--soft); font-size: 12px; }
 
-        .mission-thumb.calm {
-          background: linear-gradient(180deg, #12312b, #10201d);
+        .status-pill, .archive-tag, .distance-chip {
+          display: inline-flex; align-items: center; gap: 8px;
+          border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; white-space: nowrap;
         }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        .mission-thumb.watch {
-          background: linear-gradient(180deg, #3f3217, #241c0f);
-        }
+        .detail-card { overflow: hidden; }
 
-        .mission-thumb.archive {
-          background: linear-gradient(180deg, #374151, #1f2937);
-        }
+        .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); }
+        .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
+        .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
+        .hero.watch { background: linear-gradient(180deg, #55451e 0%, #20180b 100%); }
+        .hero.archive { background: linear-gradient(180deg, #374151 0%, #111827 100%); }
 
-        .mission-topline,
-        .detail-head,
-        .simple-row,
-        .logistics-head {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
+        .detail-body { padding: 20px; display: grid; gap: 18px; }
+        .detail-head p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 
-        .mission-topline h3,
-        .detail-head h3 {
-          margin: 0;
-          font-size: 16px;
-        }
+        .archive-tag, .distance-chip { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
 
-        .mission-meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          color: var(--soft);
-          font-size: 12px;
-        }
+        .detail-grid, .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        .status-pill,
-        .archive-tag,
-        .distance-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          border-radius: 999px;
-          padding: 7px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          white-space: nowrap;
-        }
+        .mini-card, .detail-note { border-radius: 18px; background: var(--panel-3); border: 1px solid var(--border); padding: 16px; }
+        .mini-card span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+        .mini-card strong { font-size: 18px; }
+        .detail-note p { margin: 0; color: #d0d5dd; line-height: 1.6; font-size: 14px; }
 
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
+        .detail-actions, .modal-actions { display: flex; gap: 12px; }
 
-        .detail-card {
-          overflow: hidden;
-        }
-
-        .hero {
-          min-height: 220px;
-          display: grid;
-          place-items: center;
-          font-size: 96px;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .hero.danger {
-          background: linear-gradient(180deg, #5c2622 0%, #241110 100%);
-        }
-
-        .hero.calm {
-          background: linear-gradient(180deg, #173830 0%, #0d1514 100%);
-        }
-
-        .hero.watch {
-          background: linear-gradient(180deg, #55451e 0%, #20180b 100%);
-        }
-
-        .hero.archive {
-          background: linear-gradient(180deg, #374151 0%, #111827 100%);
-        }
-
-        .detail-body {
-          padding: 20px;
-          display: grid;
-          gap: 18px;
-        }
-
-        .detail-head p {
-          margin: 6px 0 0;
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .archive-tag,
-        .distance-chip {
-          border: 1px solid var(--border);
-          background: var(--panel-3);
-          color: var(--text);
-        }
-
-        .detail-grid,
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-
-        .mini-card,
-        .detail-note {
-          border-radius: 18px;
-          background: var(--panel-3);
-          border: 1px solid var(--border);
-          padding: 16px;
-        }
-
-        .mini-card span {
-          display: block;
-          color: var(--muted);
-          font-size: 12px;
-          margin-bottom: 8px;
-        }
-
-        .mini-card strong {
-          font-size: 18px;
-        }
-
-        .detail-note p {
-          margin: 0;
-          color: #d0d5dd;
-          line-height: 1.6;
-          font-size: 14px;
-        }
-
-        .detail-actions,
-        .modal-actions {
-          display: flex;
-          gap: 12px;
-        }
-
-        .detail-primary-btn,
-        .detail-ghost-btn,
-        .modal-close-btn,
-        .modal-submit-btn {
-          flex: 1;
-          min-height: 46px;
-          font-weight: 700;
-        }
+        .detail-primary-btn, .detail-ghost-btn, .modal-close-btn, .modal-submit-btn { flex: 1; min-height: 46px; font-weight: 700; }
 
         .detail-ghost-btn {
-          border: 1px solid var(--border);
-          background: var(--panel);
-          color: var(--text);
-          border-radius: 14px;
-          cursor: pointer;
+          border: 1px solid var(--border); background: var(--panel);
+          color: var(--text); border-radius: 14px; cursor: pointer;
         }
 
-        .logistics-item {
-          text-align: left;
-          display: grid;
-          grid-template-columns: 44px 1fr auto;
-          gap: 14px;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .logistics-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
-          display: grid;
-          place-items: center;
-          background: var(--panel-2);
-          font-size: 20px;
-        }
-
-        .logistics-item h4,
-        .simple-row strong {
-          margin: 0 0 4px;
-          font-size: 15px;
-        }
-
-        .logistics-meta {
-          text-align: right;
-        }
-
-        .logistics-meta strong {
-          display: block;
-          font-size: 14px;
-        }
-
-        .logistics-meta span {
-          color: var(--muted);
-          font-size: 12px;
-        }
+        .logistics-item { text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; cursor: pointer; }
+        .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); font-size: 20px; }
+        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-size: 15px; }
+        .logistics-meta { text-align: right; }
+        .logistics-meta strong { display: block; font-size: 14px; }
+        .logistics-meta span { color: var(--muted); font-size: 12px; }
 
         .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.62);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          z-index: 1000;
+          position: fixed; inset: 0; background: rgba(0,0,0,0.62);
+          display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000;
         }
-
         .modal-card {
-          width: min(680px, 100%);
-          height: min(88vh, 760px);
-          background: #0f141b;
-          border: 1px solid var(--border);
-          border-radius: 24px;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.45);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          margin: auto;
+          width: min(680px, 100%); height: min(88vh, 760px); background: #0f141b;
+          border: 1px solid var(--border); border-radius: 24px;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden;
+          display: flex; flex-direction: column; margin: auto;
         }
-
-        .modal-head {
-          padding: 20px 20px 16px;
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-        }
-
-        .modal-head h3 {
-          margin: 0 0 6px;
-          font-size: 22px;
-        }
-
-        .modal-head p {
-          margin: 0;
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .modal-form {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          min-height: 0;
-        }
-
+        .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .modal-head h3 { margin: 0 0 6px; font-size: 22px; }
+        .modal-head p { margin: 0; color: var(--muted); font-size: 14px; }
+        .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
         .modal-scroll {
-          flex: 1;
-          min-height: 0;
-          padding: 20px;
-          display: grid;
-          gap: 14px;
-          overflow-y: auto;
-          overflow-x: hidden;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
+          flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px;
+          overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none;
         }
+        .modal-scroll::-webkit-scrollbar { display: none; }
+        .form-field { display: grid; gap: 8px; }
+        .form-field label { font-size: 13px; color: #d7dde6; font-weight: 600; }
+        .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; }
 
-        .modal-scroll::-webkit-scrollbar {
-          display: none;
-        }
-
-        .form-field {
-          display: grid;
-          gap: 8px;
-        }
-
-        .form-field label {
-          font-size: 13px;
-          color: #d7dde6;
-          font-weight: 600;
-        }
-
-        .modal-actions {
-          padding: 16px 20px 20px;
-          border-top: 1px solid var(--border);
-          background: #0f141b;
-          flex-shrink: 0;
-        }
-
-        @media (max-width: 1180px) {
-          .workspace { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
 
         @media (max-width: 980px) {
-          .sidebar {
-            position: static;
-            width: 100%;
-            height: auto;
-            display: block;
-          }
-
-          .content.with-sidebar,
-          .content.full-width {
-            padding: 20px 16px 24px;
-          }
+          .sidebar { position: static; width: 100%; height: auto; display: block; }
+          .content.with-sidebar, .content.full-width { padding: 20px 16px 24px; }
         }
 
         @media (max-width: 780px) {
-          .hero-block,
-          .mission-row,
-          .detail-grid,
-          .form-grid,
-          .logistics-item {
-            grid-template-columns: 1fr;
-          }
-
-          .mission-thumb {
-            width: 100%;
-            height: 120px;
-          }
-
-          .detail-head,
-          .simple-row,
-          .logistics-head,
-          .topbar-actions,
-          .controls,
-          .detail-actions,
-          .modal-actions {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .hero-copy h2 {
-            font-size: 34px;
-          }
-
-          .modal-card {
-            height: min(92vh, 760px);
-            width: 100%;
-          }
-
-          .modal-backdrop {
-            padding: 12px;
-          }
+          .hero-block, .mission-row, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
+          .mission-thumb { width: 100%; height: 120px; }
+          .detail-head, .simple-row, .logistics-head, .topbar-actions,
+          .controls, .detail-actions, .modal-actions { flex-direction: column; align-items: stretch; }
+          .hero-copy h2 { font-size: 34px; }
+          .modal-card { height: min(92vh, 760px); width: 100%; }
+          .modal-backdrop { padding: 12px; }
         }
       `}</style>
 
@@ -1504,26 +1040,12 @@ export default function HomePage() {
                 <div className="form-grid">
                   <div className="form-field">
                     <label htmlFor="name">Ім'я тварини</label>
-                    <input
-                      id="name"
-                      name="name"
-                      className="form-input"
-                      value={form.name}
-                      onChange={handleFormChange}
-                      placeholder="Барні"
-                      autoComplete="new-password"
-                    />
+                    <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} placeholder="Барні" autoComplete="new-password" />
                   </div>
 
                   <div className="form-field">
                     <label htmlFor="species">Вид</label>
-                    <select
-                      id="species"
-                      name="species"
-                      className="form-select"
-                      value={form.species}
-                      onChange={handleFormChange}
-                    >
+                    <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
                       <option value="собака">🐕 Собака</option>
                       <option value="кіт">🐈 Кіт</option>
                       <option value="інше">🐾 Інше</option>
@@ -1532,44 +1054,17 @@ export default function HomePage() {
 
                   <div className="form-field">
                     <label htmlFor="age">Вік (років)</label>
-                    <input
-                      id="age"
-                      name="age"
-                      type="number"
-                      min="0"
-                      max="30"
-                      className="form-input"
-                      value={form.age}
-                      onChange={handleFormChange}
-                      placeholder="3"
-                    />
+                    <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="weight">Weight</label>
-                    <input
-                      id="weight"
-                      name="weight"
-                      type="number"
-                      min="0"
-                      max="200"
-                      step="0.1"
-                      className="form-input"
-                      value={form.weight}
-                      onChange={handleFormChange}
-                      placeholder="5"
-                    />
+                    <label htmlFor="weight">Вага (кг)</label>
+                    <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
                   </div>
 
                   <div className="form-field">
                     <label htmlFor="status">Статус</label>
-                    <select
-                      id="status"
-                      name="status"
-                      className="form-select"
-                      value={form.status}
-                      onChange={handleFormChange}
-                    >
+                    <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
                       <option value="needs rescue">Needs Rescue</option>
                       <option value="rescued">Rescued</option>
                       <option value="archived">Archived</option>
@@ -1578,13 +1073,7 @@ export default function HomePage() {
 
                   <div className="form-field">
                     <label htmlFor="temperament">Темперамент</label>
-                    <select
-                      id="temperament"
-                      name="temperament"
-                      className="form-select"
-                      value={form.temperament}
-                      onChange={handleFormChange}
-                    >
+                    <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
                       <option value="лагідний">Лагідний</option>
                       <option value="активний">Активний</option>
                       <option value="спокійний">Спокійний</option>
@@ -1596,37 +1085,18 @@ export default function HomePage() {
 
                 <div className="form-field">
                   <label htmlFor="city">Місто знаходження</label>
-                  <input
-                    id="city"
-                    name="city"
-                    className="form-input"
-                    value={form.city}
-                    onChange={handleFormChange}
-                    placeholder="Львів"
-                    autoComplete="new-password"
-                  />
+                  <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} placeholder="Львів" autoComplete="new-password" />
                 </div>
 
                 <div className="form-field">
                   <label htmlFor="description">Опис</label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    className="form-textarea"
-                    value={form.description}
-                    onChange={handleFormChange}
-                    placeholder="Короткий опис тварини..."
-                  />
+                  <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleFormChange} placeholder="Короткий опис тварини..." />
                 </div>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="modal-submit-btn">
-                  Save animal
-                </button>
+                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>Cancel</button>
+                <button type="submit" className="modal-submit-btn">Save animal</button>
               </div>
             </form>
           </div>
