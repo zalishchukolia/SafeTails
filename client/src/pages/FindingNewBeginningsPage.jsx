@@ -3,6 +3,7 @@ import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
 
 
+
 const API = 'https://safetails-production-8790.up.railway.app'
 const font = "'Inter', sans-serif"
 const mono = "'Inter', monospace"
