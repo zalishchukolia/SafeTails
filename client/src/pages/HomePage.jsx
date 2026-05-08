@@ -686,7 +686,12 @@ export default function HomePage() {
 
     return (
       <>
-        {renderTopBar('Активні порятунки', 'Відстежуйте активні справи порятунку, відправляйте команди та переглядайте деталі в одному місці.')}
+        <section className="hero-block">
+          <div className="hero-copy">
+            <h2>Активні <span style={{ color: '#ff6b2b', fontFamily: 'inherit', fontWeight: 'inherit' }}>порятунки</span></h2>
+            <p>Відстежуйте активні справи порятунку, відправляйте команди та переглядайте деталі в одному місці.</p>
+          </div>
+        </section>
 
         <section className="stats-grid" aria-label="Статистика місій">
           <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Тварини, що потребують негайних дій" />
