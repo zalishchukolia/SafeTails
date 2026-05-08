@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
@@ -7,7 +7,15 @@ const font = "'Inter', sans-serif"
 
 const FILTERS = {
   age: ['Будь-який вік', 'Цуценя/Кошеня', 'Молодий', 'Дорослий', 'Старший'],
-  temperament: ['Будь-який характер', 'Спокійний', 'Грайливий', 'Захисний', 'Незалежний'],
+  temperament: [
+    'Будь-який характер',
+    'Спокійний',
+    'Активний',
+    'Грайливий',
+    'Лагідний',
+    'Незалежний',
+    'Захисний',
+  ],
 }
 
 const BADGE_COLORS = {
@@ -16,6 +24,8 @@ const BADGE_COLORS = {
   NEW: { bg: '#22c55e', text: '#fff' },
   READY: { bg: '#3b82f6', text: '#fff' },
 }
+
+const normalizeText = value => String(value || '').trim().toLowerCase()
 
 export default function AdoptionFormPage() {
   const navigate = useNavigate()
@@ -34,7 +44,8 @@ export default function AdoptionFormPage() {
     fetch(`${import.meta.env.VITE_API_URL}/api/animals`)
       .then(res => res.json())
       .then(data => {
-        setAnimals(Array.isArray(data) ? data : data.animals || [])
+        const list = Array.isArray(data) ? data : data.animals || []
+        setAnimals(list)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -42,6 +53,7 @@ export default function AdoptionFormPage() {
 
   const getAgeCategory = age => {
     const numericAge = Number(age)
+
     if (Number.isNaN(numericAge)) return 'Невідомо'
     if (numericAge < 1) return 'Цуценя/Кошеня'
     if (numericAge >= 1 && numericAge < 3) return 'Молодий'
@@ -49,43 +61,40 @@ export default function AdoptionFormPage() {
     return 'Старший'
   }
 
-  const TEMP_MAP = {
-    'Будь-який характер': 'any temperament',
-    'Спокійний': 'calm',
-    'Грайливий': 'playful',
-    'Захисний': 'protective',
-    'Незалежний': 'independent',
-  }
+  const filtered = useMemo(() => {
+    return animals.filter(animal => {
+      const q = normalizeText(search)
 
-  const filtered = animals.filter(animal => {
-    const q = search.toLowerCase().trim()
-    const name = (animal.name || '').toLowerCase()
-    const breed = (animal.breed || '').toLowerCase()
-    const species = (animal.species || '').toLowerCase()
-    const description = (animal.description || '').toLowerCase()
-    const temperament = (animal.temperament || '').toLowerCase()
+      const name = normalizeText(animal.name)
+      const breed = normalizeText(animal.breed)
+      const species = normalizeText(animal.species)
+      const description = normalizeText(animal.description)
+      const temperament = normalizeText(animal.temperament)
 
-    const matchesSearch =
-      q === '' ||
-      name.includes(q) ||
-      breed.includes(q) ||
-      species.includes(q) ||
-      description.includes(q)
+      const matchesSearch =
+        q === '' ||
+        name.includes(q) ||
+        breed.includes(q) ||
+        species.includes(q) ||
+        description.includes(q)
 
-    const animalAgeCategory = getAgeCategory(animal.age)
-    const matchesAge = ageFilter === 'Будь-який вік' || animalAgeCategory === ageFilter
+      const animalAgeCategory = getAgeCategory(animal.age)
+      const matchesAge =
+        ageFilter === 'Будь-який вік' || animalAgeCategory === ageFilter
 
-    const tempEn = TEMP_MAP[tempFilter] || ''
-    const matchesTemperament =
-      tempFilter === 'Будь-який характер' || temperament.includes(tempEn)
+      const matchesTemperament =
+        tempFilter === 'Будь-який характер' ||
+        temperament === normalizeText(tempFilter)
 
-    return matchesSearch && matchesAge && matchesTemperament
-  })
+      return matchesSearch && matchesAge && matchesTemperament
+    })
+  }, [animals, search, ageFilter, tempFilter])
 
   const displayed = filtered.slice(0, visible)
 
-  const handleApply = (animalName) => {
+  const handleApply = animalName => {
     const token = localStorage.getItem('token')
+
     if (!token) {
       setPendingAnimal(animalName)
       setShowLoginPrompt(true)
@@ -97,8 +106,11 @@ export default function AdoptionFormPage() {
   const handleLoginSuccess = () => {
     setShowAuthModal(false)
     setShowLoginPrompt(false)
+
     if (pendingAnimal) {
-      navigate('/adoption-application', { state: { animalName: pendingAnimal } })
+      navigate('/adoption-application', {
+        state: { animalName: pendingAnimal },
+      })
     }
   }
 
@@ -122,7 +134,14 @@ export default function AdoptionFormPage() {
         }
       `}</style>
 
-      <div style={{ padding: '56px 48px 0', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+      <div
+        style={{
+          padding: '56px 48px 0',
+          maxWidth: 1200,
+          margin: '0 auto',
+          width: '100%',
+        }}
+      >
         <div
           style={{
             display: 'flex',
@@ -188,8 +207,22 @@ export default function AdoptionFormPage() {
         </div>
       </div>
 
-      <div style={{ padding: '28px 48px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div
+        style={{
+          padding: '28px 48px',
+          maxWidth: 1200,
+          margin: '0 auto',
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
           <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
             <span
               style={{
@@ -245,7 +278,9 @@ export default function AdoptionFormPage() {
             }}
           >
             {FILTERS.age.map(option => (
-              <option key={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
 
@@ -268,7 +303,9 @@ export default function AdoptionFormPage() {
             }}
           >
             {FILTERS.temperament.map(option => (
-              <option key={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
 
@@ -298,7 +335,15 @@ export default function AdoptionFormPage() {
         </div>
       </div>
 
-      <div style={{ padding: '0 48px 80px', maxWidth: 1200, margin: '0 auto', width: '100%', flex: 1 }}>
+      <div
+        style={{
+          padding: '0 48px 80px',
+          maxWidth: 1200,
+          margin: '0 auto',
+          width: '100%',
+          flex: 1,
+        }}
+      >
         {loading ? (
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {[...Array(4)].map((_, i) => (
@@ -402,11 +447,18 @@ function AnimalCard({ animal, onApply, onClick }) {
   const badgeStyle = BADGE_COLORS[badge] || BADGE_COLORS.READY
 
   const age = animal.age
-    ? `${animal.age} ${animal.age === 1 ? 'рік' : animal.age < 5 ? 'роки' : 'років'}`
+    ? `${animal.age} ${
+        animal.age === 1 ? 'рік' : animal.age < 5 ? 'роки' : 'років'
+      }`
     : ''
 
   const breed = animal.breed || animal.species || 'Змішана порода'
-  const imgUrl = animal.imageUrl || animal.image || animal.photo || null
+  const imgUrl =
+    animal.imageUrl ||
+    animal.image ||
+    animal.photo ||
+    animal.mainImage ||
+    null
 
   return (
     <div
@@ -582,45 +634,125 @@ function Footer() {
             >
               SafeTails
             </div>
-            <p style={{ fontSize: 13, color: '#717171', lineHeight: 1.8, maxWidth: 290, margin: 0 }}>
+            <p
+              style={{
+                fontSize: 13,
+                color: '#717171',
+                lineHeight: 1.8,
+                maxWidth: 290,
+                margin: 0,
+              }}
+            >
               Допомагаємо тваринам знайти безпеку, турботу та новий дім.
               Разом ми можемо змінити їхнє майбутнє.
             </p>
           </div>
 
           <div>
-            <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: "'Inter', monospace", marginBottom: 16 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: '#555',
+                letterSpacing: 2,
+                fontFamily: "'Inter', monospace",
+                marginBottom: 16,
+              }}
+            >
               НАВІГАЦІЯ
             </div>
             {['Панель', 'Тварини', 'Відправка'].map(link => (
-              <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+              <div
+                key={link}
+                style={{
+                  fontSize: 13,
+                  color: '#8a8a8a',
+                  marginBottom: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {link}
+              </div>
             ))}
           </div>
 
           <div>
-            <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: "'Inter', monospace", marginBottom: 16 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: '#555',
+                letterSpacing: 2,
+                fontFamily: "'Inter', monospace",
+                marginBottom: 16,
+              }}
+            >
               ДОПОМОГА
             </div>
             {['Прихисток', 'Медична карта', 'Архів'].map(link => (
-              <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+              <div
+                key={link}
+                style={{
+                  fontSize: 13,
+                  color: '#8a8a8a',
+                  marginBottom: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {link}
+              </div>
             ))}
           </div>
 
           <div>
-            <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: "'Inter', monospace", marginBottom: 16 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: '#555',
+                letterSpacing: 2,
+                fontFamily: "'Inter', monospace",
+                marginBottom: 16,
+              }}
+            >
               ПІДТРИМКА
             </div>
             {['Довідка', 'Донат', 'Волонтерство'].map(link => (
-              <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+              <div
+                key={link}
+                style={{
+                  fontSize: 13,
+                  color: '#8a8a8a',
+                  marginBottom: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {link}
+              </div>
             ))}
           </div>
 
           <div>
-            <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: "'Inter', monospace", marginBottom: 16 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: '#555',
+                letterSpacing: 2,
+                fontFamily: "'Inter', monospace",
+                marginBottom: 16,
+              }}
+            >
               ПРАВОВА
             </div>
             {['Конфіденційність', 'Умови'].map(link => (
-              <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+              <div
+                key={link}
+                style={{
+                  fontSize: 13,
+                  color: '#8a8a8a',
+                  marginBottom: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {link}
+              </div>
             ))}
           </div>
         </div>
@@ -639,6 +771,7 @@ function Footer() {
           <span style={{ fontSize: 12, color: '#4d4d4d' }}>
             © 2026 SafeTails. Всі права захищені.
           </span>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
             <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
