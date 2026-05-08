@@ -23,10 +23,10 @@ function Navbar() {
   }
 
   const links = [
-    { path: '/', label: 'Missions' },
-    { path: '/animals', label: 'Crisis Feed' },
-    { path: '/finding-new-beginnings', label: 'Volunteer Hub' },
-    { path: '/adoption-form', label: 'Adoptions' },
+    { path: '/', label: 'МІСІЇ' },
+    { path: '/animals', label: 'МАПА ПОРЯТУНКУ' },
+    { path: '/finding-new-beginnings', label: 'ВОЛОНТЕРУ' },
+    { path: '/adoption-form', label: 'ВСИНОВЛЕННЯ' },
   ]
 
   return (
@@ -37,23 +37,27 @@ function Navbar() {
         borderBottom: '1px solid #232323', fontFamily: font,
         position: 'sticky', top: 0, zIndex: 100,
       }}>
-        <span style={{
+        <Link to="/" style={{
           fontWeight: 700, fontSize: 20, fontStyle: 'italic',
           background: 'linear-gradient(90deg, #ff6b2b, #ff4500)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          letterSpacing: '-0.3px',
-        }}>SafeTails</span>
+          letterSpacing: '-0.3px', textDecoration: 'none',
+        }}>SafeTails</Link>
 
-        <div style={{ display: 'flex', gap: 36, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 64, alignItems: 'center' }}>
           {links.map(link => {
             const active = location.pathname === link.path
             return (
               <Link key={link.path} to={link.path} style={{
-                fontSize: 14, fontWeight: active ? 600 : 400,
+                fontSize: 13,
+                fontWeight: active ? 700 : 500,
                 color: active ? '#ffffff' : '#888',
-                textDecoration: 'none', paddingBottom: 4,
+                textDecoration: 'none',
+                paddingBottom: 4,
                 borderBottom: active ? '2px solid #ff6b2b' : '2px solid transparent',
                 transition: 'color 0.15s',
+                letterSpacing: '0.06em',
+                fontFamily: "'Merriweather', serif",
               }}>{link.label}</Link>
             )
           })}
@@ -73,7 +77,7 @@ function Navbar() {
                 background: 'linear-gradient(135deg, #ff6b2b, #c0392b)',
                 border: '2px solid #ff6b2b44',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 700, color: '#fff',
+                fontSize: 16, fontWeight: 700, color: '#fff',
               }}>
                 {user.name?.[0]?.toUpperCase() || 'U'}
               </div>
@@ -84,7 +88,7 @@ function Navbar() {
               background: 'linear-gradient(135deg, #ff6b2b, #c0392b)',
               border: '2px solid #ff6b2b44',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer',
+              fontSize: 20, fontWeight: 700, color: '#fff', cursor: 'pointer',
             }}>V</div>
           )}
         </div>

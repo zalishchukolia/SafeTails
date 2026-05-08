@@ -4,6 +4,48 @@ import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
 
 const API = 'https://safetails-production-8790.up.railway.app'
+const mono = "'Inter', monospace"
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 16 }}>{title}</div>
+      {links.map((link) => (
+        <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+      ))}
+    </div>
+  )
+}
+
+function Footer({ sidebarOpen }) {
+  return (
+    <footer style={{ background: '#0d0d0d', fontFamily: "'Inter', sans-serif", borderTop: '1px solid #1e1e1e', marginTop: 'auto', paddingLeft: sidebarOpen ? 188 : 0, transition: 'padding-left 0.25s ease' }}>
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '42px 40px 26px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 34, marginBottom: 30 }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, fontStyle: 'italic', background: 'linear-gradient(90deg,#ff6b2b,#ff4500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 14 }}>
+              SafeTails
+            </div>
+            <p style={{ fontSize: 13, color: '#717171', lineHeight: 1.8, maxWidth: 290, margin: 0 }}>
+              Допомагаємо тваринам знайти безпеку, турботу та новий дім. Разом ми можемо змінити їхнє майбутнє.
+            </p>
+          </div>
+          <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
+          <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
+          <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
+          <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
+        </div>
+        <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 18, display: 'flex', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: '#4d4d4d' }}>© 2026 SafeTails. Всі права захищені.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
 
 const logisticsSeed = [
   { id: 1, icon: '📦', title: 'Поповнення запасів', detail: 'Поповнення медичного набору для центральної клініки', eta: '45 хв', type: 'Низький' },
@@ -140,6 +182,10 @@ export default function HomePage() {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [mainImage, setMainImage] = useState(null)
+  const [mainPreview, setMainPreview] = useState(null)
+  const [gallery, setGallery] = useState([])
+  const [galleryPreviews, setGalleryPreviews] = useState([])
 
   const [form, setForm] = useState({
     name: '',
@@ -202,17 +248,22 @@ export default function HomePage() {
 
   const visibleMissions = useMemo(() => {
     let items = [...missions]
+
     if (query.trim()) {
       const q = query.toLowerCase()
       items = items.filter((m) =>
         [m.name, m.species, m.status, m.description, m.temperament, m.city]
-          .join(' ').toLowerCase().includes(q)
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
       )
     }
+
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
+
     return items
   }, [missions, filter, query, sort])
 
@@ -226,14 +277,28 @@ export default function HomePage() {
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
   const archivedCount = archivedMissions.length
   const totalCount = missions.length + archivedMissions.length
-  const dogsCount = missions.filter((m) =>
-    m.species?.toLowerCase().includes('dog') ||
-    m.species?.toLowerCase().includes('соб') ||
-    m.species?.toLowerCase().includes('пес')
+  const dogsCount = missions.filter(
+    (m) =>
+      m.species?.toLowerCase().includes('dog') ||
+      m.species?.toLowerCase().includes('соб') ||
+      m.species?.toLowerCase().includes('пес')
   ).length
 
   function resetForm() {
-    setForm({ name: '', species: 'собака', age: '', description: '', status: 'needs rescue', temperament: 'лагідний', city: '', weight: '' })
+    setForm({
+      name: '',
+      species: 'собака',
+      age: '',
+      description: '',
+      status: 'needs rescue',
+      temperament: 'лагідний',
+      city: '',
+      weight: '',
+    })
+    setMainImage(null)
+    setMainPreview(null)
+    setGallery([])
+    setGalleryPreviews([])
   }
 
   function handleFormChange(e) {
@@ -242,46 +307,85 @@ export default function HomePage() {
   }
 
   function handleOpenCreateModal() {
-    if (!isAuthenticated) { setIsLoginPromptOpen(true); return }
+    if (!isAuthenticated) {
+      setIsLoginPromptOpen(true)
+      return
+    }
     setIsCreateOpen(true)
   }
 
   async function handleCreateAnimal(e) {
     e.preventDefault()
-    if (!isAuthenticated) { setIsCreateOpen(false); setIsLoginPromptOpen(true); return }
-    if (!form.name.trim() || !form.description.trim()) return
 
-    let lat = null, lng = null
-    if (form.city.trim()) {
-      try {
-        const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(form.city)}&format=json&limit=1&countrycodes=ua`, { headers: { 'Accept-Language': 'uk' } })
-        const geoData = await geo.json()
-        if (geoData.length > 0) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon) }
-      } catch (err) { console.warn('Geocoding failed:', err) }
+    if (!isAuthenticated) {
+      setIsCreateOpen(false)
+      setIsLoginPromptOpen(true)
+      return
     }
 
-    const payload = {
-      name: form.name.trim(), species: form.species, age: Number(form.age) || 0,
-      description: form.description.trim(), status: form.status, temperament: form.temperament,
-      city: form.city.trim(), weight: form.weight ? Number(form.weight) : null, lat, lng,
+    if (!form.name.trim() || !form.description.trim()) return
+
+    let lat = null
+    let lng = null
+
+    if (form.city.trim()) {
+      try {
+        const geo = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(form.city)}&format=json&limit=1&countrycodes=ua`,
+          { headers: { 'Accept-Language': 'uk' } }
+        )
+        const geoData = await geo.json()
+        if (geoData.length > 0) {
+          lat = parseFloat(geoData[0].lat)
+          lng = parseFloat(geoData[0].lon)
+        }
+      } catch (err) {
+        console.warn('Geocoding failed:', err)
+      }
     }
 
     try {
+      const formData = new FormData()
+      formData.append('name', form.name.trim())
+      formData.append('species', form.species)
+      formData.append('age', Number(form.age) || 0)
+      formData.append('description', form.description.trim())
+      formData.append('status', form.status)
+      formData.append('temperament', form.temperament)
+      formData.append('city', form.city.trim())
+      if (form.weight) formData.append('weight', Number(form.weight))
+      if (lat) formData.append('lat', lat)
+      if (lng) formData.append('lng', lng)
+      if (mainImage) formData.append('mainImage', mainImage)
+      gallery.forEach(f => formData.append('gallery', f))
+
       const res = await fetch(`${API}/api/animals`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET },
-        body: JSON.stringify(payload),
+        headers: { 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET },
+        body: formData,
       })
+
       if (!res.ok) throw new Error('Server error')
+
       const saved = await res.json()
       const newAnimal = {
-        id: saved._id, name: saved.name, species: saved.species, age: saved.age,
-        description: saved.description, temperament: saved.temperament, status: saved.status,
-        city: saved.city ?? '', weight: saved.weight ?? null, lat: saved.lat ?? null,
-        lng: saved.lng ?? null, imageUrl: saved.imageUrl || null,
-        emoji: emojiFromSpecies(saved.species), theme: themeFromStatus(saved.status),
+        id: saved._id,
+        name: saved.name,
+        species: saved.species,
+        age: saved.age,
+        description: saved.description,
+        temperament: saved.temperament,
+        status: saved.status,
+        city: saved.city ?? '',
+        weight: saved.weight ?? null,
+        lat: saved.lat ?? null,
+        lng: saved.lng ?? null,
+        imageUrl: saved.imageUrl || null,
+        emoji: emojiFromSpecies(saved.species),
+        theme: themeFromStatus(saved.status),
         updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
       }
+
       if (newAnimal.status === 'archived') {
         setArchivedMissions((prev) => [newAnimal, ...prev])
         setActiveSection('archive')
@@ -290,6 +394,7 @@ export default function HomePage() {
         setSelectedId(newAnimal.id)
         setActiveSection('rescues')
       }
+
       setIsCreateOpen(false)
       resetForm()
     } catch (err) {
@@ -305,6 +410,7 @@ export default function HomePage() {
 
   async function handleArchive() {
     if (!selectedMission) return
+
     try {
       await fetch(`${API}/api/animals/${selectedMission.id}/archive`, {
         method: 'PATCH',
@@ -315,15 +421,26 @@ export default function HomePage() {
       alert('Не вдалося заархівувати тварину.')
       return
     }
+
     const archivedAnimal = {
-      ...selectedMission, status: 'archived', theme: 'archive',
+      ...selectedMission,
+      status: 'archived',
+      theme: 'archive',
       updated: new Date().toLocaleDateString('uk-UA'),
       archivedAt: new Date().toLocaleDateString('uk-UA'),
     }
+
     setArchivedMissions((prev) => [archivedAnimal, ...prev])
+
     const updatedMissions = missions.filter((m) => m.id !== selectedMission.id)
     setMissions(updatedMissions)
-    setSelectedId(updatedMissions.length > 0 ? updatedMissions[0].id : null)
+
+    if (updatedMissions.length > 0) {
+      setSelectedId(updatedMissions[0].id)
+    } else {
+      setSelectedId(null)
+    }
+
     setActiveSection('archive')
   }
 
@@ -336,12 +453,8 @@ export default function HomePage() {
               <h2>Дашборд</h2>
               <p>Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.</p>
             </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
-              </button>
-            </div>
           </section>
+
           <section className="stats-grid">
             <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Потрібне негайне реагування" />
             <StatCard label="Врятовано" value={String(rescuedCount).padStart(2, '0')} meta="Тварини під контрольованим доглядом" />
@@ -349,6 +462,7 @@ export default function HomePage() {
             <StatCard label="Всього тварин" value={String(totalCount).padStart(2, '0')} meta="У системі" />
             <StatCard label="Собаки" value={String(dogsCount).padStart(2, '0')} meta="Собачі випадки" />
           </section>
+
           <section className="workspace">
             <SectionCard title="Пріоритетна дошка" subtitle="Швидкий огляд тварин, що потребують порятунку">
               <div className="simple-list">
@@ -363,6 +477,7 @@ export default function HomePage() {
                 ))}
               </div>
             </SectionCard>
+
             <SectionCard title="Оперативна нотатка" subtitle="Зведення поточного командування">
               <div className="detail-note">
                 <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
@@ -381,18 +496,20 @@ export default function HomePage() {
               <h2>Диспетчер</h2>
               <p>Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.</p>
             </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
-              </button>
-            </div>
           </section>
+
           <section className="logistics" aria-label="Черга диспетчера">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
                 <div className="logistics-icon">{item.icon}</div>
-                <div><h4>{item.title}</h4><p>{item.detail}</p></div>
-                <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
+                <div>
+                  <h4>{item.title}</h4>
+                  <p>{item.detail}</p>
+                </div>
+                <div className="logistics-meta">
+                  <strong>{item.eta}</strong>
+                  <span>{item.type}</span>
+                </div>
               </button>
             ))}
           </section>
@@ -408,17 +525,16 @@ export default function HomePage() {
               <h2>Медичний журнал</h2>
               <p>Переглядайте хід лікування, призначений персонал та оновлення одужання для кожного пацієнта.</p>
             </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
-              </button>
-            </div>
           </section>
+
           <SectionCard title="Медичні записи" subtitle="Останні дії з лікування">
             <div className="simple-list">
               {medicalSeed.map((item) => (
                 <div className="simple-row" key={item.id}>
-                  <div><strong>{item.patient}</strong><p>{item.treatment} · {item.doctor}</p></div>
+                  <div>
+                    <strong>{item.patient}</strong>
+                    <p>{item.treatment} · {item.doctor}</p>
+                  </div>
                   <StatusPill status={item.status} />
                 </div>
               ))}
@@ -436,12 +552,8 @@ export default function HomePage() {
               <h2>Архів</h2>
               <p>Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.</p>
             </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
-              </button>
-            </div>
           </section>
+
           <SectionCard title="Архівовані тварини" subtitle="Справи, переміщені з активного потоку порятунку">
             <div className="simple-list">
               {archivedMissions.length > 0 ? (
@@ -455,7 +567,9 @@ export default function HomePage() {
                   </div>
                 ))
               ) : (
-                <div className="detail-note"><p>Архівованих тварин ще немає.</p></div>
+                <div className="detail-note">
+                  <p>Архівованих тварин ще немає.</p>
+                </div>
               )}
             </div>
           </SectionCard>
@@ -463,17 +577,13 @@ export default function HomePage() {
       )
     }
 
+    // activeSection === 'rescues' (default)
     return (
       <>
         <section className="hero-block">
           <div className="hero-copy">
             <h2>Активні порятунки</h2>
             <p>Відстежуйте активні справи порятунку, відправляйте команди та переглядайте деталі в одному місці.</p>
-          </div>
-          <div className="topbar-actions">
-            <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-              {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
-            </button>
           </div>
         </section>
 
@@ -491,25 +601,67 @@ export default function HomePage() {
                 <h3>Список тварин</h3>
                 <p>Оберіть тварину для перегляду деталей.</p>
               </div>
+
               <div className="controls">
-                <input className="search" type="text" placeholder="Пошук тварин" value={query} onChange={(e) => setQuery(e.target.value)} autoComplete="off" />
-                {[{ value: 'All', label: 'Всі' }, { value: 'needs rescue', label: 'Потребують порятунку' }, { value: 'rescued', label: 'Врятовано' }].map(({ value, label }) => (
-                  <button key={value} type="button" className={`toolbar-btn ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>{label}</button>
+                <input
+                  className="search"
+                  type="text"
+                  placeholder="Пошук тварин"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  autoComplete="off"
+                />
+
+                {[
+                  { value: 'All', label: 'Всі' },
+                  { value: 'needs rescue', label: 'Потребують порятунку' },
+                  { value: 'rescued', label: 'Врятовано' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`toolbar-btn ${filter === value ? 'active' : ''}`}
+                    onClick={() => setFilter(value)}
+                  >
+                    {label}
+                  </button>
                 ))}
-                {[{ value: 'Name', label: "Ім'я" }, { value: 'Age', label: 'Вік' }, { value: 'Status', label: 'Статус' }].map(({ value, label }) => (
-                  <button key={value} type="button" className={`toolbar-btn ${sort === value ? 'active' : ''}`} onClick={() => setSort(value)}>{label}</button>
+
+                {[
+                  { value: 'Name', label: "Ім'я" },
+                  { value: 'Age', label: 'Вік' },
+                  { value: 'Status', label: 'Статус' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`toolbar-btn ${sort === value ? 'active' : ''}`}
+                    onClick={() => setSort(value)}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
             </div>
+
             <div className="mission-list">
               {loading ? (
-                <div className="detail-note"><p>Завантаження тварин...</p></div>
+                <div className="detail-note">
+                  <p>Завантаження тварин...</p>
+                </div>
               ) : visibleMissions.length > 0 ? (
                 visibleMissions.map((mission) => (
-                  <MissionRow key={mission.id} mission={mission} active={selectedMission?.id === mission.id} onSelect={setSelectedId} />
+                  <MissionRow
+                    key={mission.id}
+                    mission={mission}
+                    active={selectedMission?.id === mission.id}
+                    onSelect={setSelectedId}
+                  />
                 ))
               ) : (
-                <div className="detail-note"><p>Тварин за поточним пошуком або фільтрами не знайдено.</p></div>
+                <div className="detail-note">
+                  <p>Тварин за поточним пошуком або фільтрами не знайдено.</p>
+                </div>
               )}
             </div>
           </div>
@@ -522,6 +674,7 @@ export default function HomePage() {
                   : selectedMission.emoji
                 }
               </div>
+
               <div className="detail-body">
                 <div className="detail-head">
                   <div>
@@ -530,16 +683,41 @@ export default function HomePage() {
                     <p>{selectedMission.species} · {selectedMission.age} р.</p>
                   </div>
                 </div>
+
                 <div className="detail-grid">
-                  <div className="mini-card"><span>Темперамент</span><strong>{selectedMission.temperament || 'Невідомо'}</strong></div>
-                  <div className="mini-card"><span>Вік</span><strong>{selectedMission.age} р.</strong></div>
-                  {selectedMission.city && <div className="mini-card"><span>Місто</span><strong>{selectedMission.city}</strong></div>}
-                  {selectedMission.weight && <div className="mini-card"><span>Вага</span><strong>{selectedMission.weight} кг</strong></div>}
+                  <div className="mini-card">
+                    <span>Темперамент</span>
+                    <strong>{selectedMission.temperament || 'Невідомо'}</strong>
+                  </div>
+                  <div className="mini-card">
+                    <span>Вік</span>
+                    <strong>{selectedMission.age} р.</strong>
+                  </div>
+                  {selectedMission.city && (
+                    <div className="mini-card">
+                      <span>Місто</span>
+                      <strong>{selectedMission.city}</strong>
+                    </div>
+                  )}
+                  {selectedMission.weight && (
+                    <div className="mini-card">
+                      <span>Вага</span>
+                      <strong>{selectedMission.weight} кг</strong>
+                    </div>
+                  )}
                 </div>
-                <div className="detail-note"><p>{selectedMission.description}</p></div>
+
+                <div className="detail-note">
+                  <p>{selectedMission.description}</p>
+                </div>
+
                 <div className="detail-actions">
-                  <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>Відкрити справу</button>
-                  <button className="detail-ghost-btn" type="button" onClick={handleArchive}>Архівувати</button>
+                  <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>
+                    Відкрити справу
+                  </button>
+                  <button className="detail-ghost-btn" type="button" onClick={handleArchive}>
+                    Архівувати
+                  </button>
                 </div>
               </div>
             </aside>
@@ -551,11 +729,18 @@ export default function HomePage() {
             <h3>Додаткова логістика</h3>
             <span className="eyebrow small-no-margin">Черга підтримки</span>
           </div>
+
           {logisticsSeed.map((item) => (
             <button key={item.id} className="logistics-item" type="button">
               <div className="logistics-icon">{item.icon}</div>
-              <div><h4>{item.title}</h4><p>{item.detail}</p></div>
-              <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
+              <div>
+                <h4>{item.title}</h4>
+                <p>{item.detail}</p>
+              </div>
+              <div className="logistics-meta">
+                <strong>{item.eta}</strong>
+                <span>{item.type}</span>
+              </div>
             </button>
           ))}
         </section>
@@ -565,8 +750,15 @@ export default function HomePage() {
 
   return (
     <div className="missions-shell">
+      <button
+        className="collapse-btn-fixed"
+        type="button"
+        onClick={() => setSidebarOpen((p) => !p)}
+      >
+        {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
+      </button>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Adamina&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
           --bg: #07090d;
@@ -580,8 +772,8 @@ export default function HomePage() {
           --accent: #ff6b2b;
           --shadow: 0 18px 48px rgba(0,0,0,0.24);
           --radius: 22px;
-          --font-display: 'Alexandria', sans-serif;
-          --font-body: 'Adamina', serif;
+          --font-display: 'Playfair Display', serif;
+          --font-body: 'Inter', sans-serif;
         }
 
         * { box-sizing: border-box; }
@@ -593,37 +785,75 @@ export default function HomePage() {
             linear-gradient(180deg, #07090d 0%, #090c11 100%);
           color: var(--text);
           font-family: var(--font-body);
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        .new-mission-btn, .modal-submit-btn, .detail-primary-btn,
+        .eyebrow, .command-card h3, .command-card p,
+        .ref-nav-link, .toolbar-btn, .status-pill, .archive-tag,
+        .mini-card span, .form-field label {
+          font-family: var(--font-display);
+        }
+
+        .collapse-btn-fixed {
+          position: fixed; top: 70px; right: 20px; z-index: 100;
+          border: 1px solid var(--border);
+          background: rgba(17,21,28,0.95);
+          backdrop-filter: blur(12px);
+          color: var(--text); border-radius: 14px; height: 40px;
+          padding: 0 16px; cursor: pointer; font-family: var(--font-body);
+          font-size: 13px; font-weight: 500;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          transition: transform .18s ease, background .18s ease;
+        }
+        .collapse-btn-fixed:hover { transform: translateY(-1px); background: #1a1f28; }
+
+        p, li,
+        span:not(.eyebrow):not(.status-pill):not(.status-dot):not(.archive-tag):not(.nav-icon):not(.mini-card span),
+        input, select, textarea,
+        .detail-note p, .mission-copy p, .logistics-item p,
+        .simple-row p, .panel-header p, .hero-copy p, .stat-card p, .detail-head p {
+          font-family: var(--font-body);
         }
 
         .layout { min-height: calc(100vh - 60px); }
 
         .sidebar {
-          position: fixed; top: 60px; left: 0; width: 188px;
-          height: calc(100vh - 60px); overflow-y: auto;
+          position: fixed; top: 60px; left: 0;
+          width: 188px; height: calc(100vh - 60px);
+          overflow-y: auto;
           background: linear-gradient(180deg, #05070b 0%, #070912 100%);
-          border-right: 1px solid rgba(255,255,255,0.05); z-index: 30;
+          border-right: 1px solid rgba(255,255,255,0.05);
+          z-index: 30;
         }
 
         .command-card {
-          margin: 14px 8px; border: 1px solid rgba(255,255,255,0.08);
+          margin: 14px 8px;
+          border: 1px solid rgba(255,255,255,0.08);
           background: linear-gradient(180deg, rgba(32,30,54,0.95), rgba(25,24,42,0.92));
-          border-radius: 12px; padding: 8px 10px; display: flex; align-items: center; gap: 9px;
+          border-radius: 12px; padding: 8px 10px;
+          display: flex; align-items: center; gap: 9px;
         }
+
         .command-icon {
-          width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+          width: 36px; height: 36px; border-radius: 11px;
+          display: grid; place-items: center;
           background: linear-gradient(135deg, #ff7b32, #ff5a1f);
           color: white; font-size: 13px; font-weight: 700; flex-shrink: 0;
         }
-        .command-card h3 { margin: 0; font-size: 10px; font-weight: 800; color: #f4f4f8; line-height: 1.15; font-family: var(--font-display); }
-        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: #73778a; line-height: 1.1; font-family: var(--font-display); }
+
+        .command-card h3 { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #f4f4f8; line-height: 1.15; }
+        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: #73778a; line-height: 1.1; font-weight: 600; }
 
         .nav-list { display: grid; padding: 0 0 8px; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
 
         .ref-nav-link {
-          position: relative; min-height: 42px; border-radius: 0; padding: 0 13px;
-          color: #6f7385; border: 0; background: transparent;
+          position: relative; min-height: 42px; border-radius: 0;
+          padding: 0 13px; color: #6f7385; border: 0; background: transparent;
           display: flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 500; font-family: var(--font-display);
+          font-size: 12px; font-weight: 500; letter-spacing: 0.01em;
           width: 100%; cursor: pointer; text-align: left;
         }
         .ref-nav-link:hover { background: rgba(255,255,255,0.02); color: #d5d8e3; }
@@ -631,63 +861,63 @@ export default function HomePage() {
         .ref-nav-link.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #ff6b2b; }
 
         .nav-icon { width: 12px; display: inline-flex; justify-content: center; font-size: 10px; }
+
         .sidebar-footer-ref { padding: 12px 8px 14px; display: grid; gap: 6px; }
 
-        .new-mission-btn, .collapse-btn, .toolbar-btn, .mission-row,
-        .detail-primary-btn, .detail-ghost-btn, .logistics-item,
-        .modal-close-btn, .modal-submit-btn {
+        .new-mission-btn, .footer-link-btn, .collapse-btn, .toolbar-btn,
+        .mission-row, .detail-primary-btn, .detail-ghost-btn,
+        .logistics-item, .modal-close-btn, .modal-submit-btn {
           transition: transform .18s ease, background .18s ease, border-color .18s ease;
         }
-        .new-mission-btn:hover, .collapse-btn:hover, .toolbar-btn:hover, .mission-row:hover,
-        .detail-primary-btn:hover, .detail-ghost-btn:hover, .logistics-item:hover,
+        .new-mission-btn:hover, .footer-link-btn:hover, .collapse-btn:hover,
+        .toolbar-btn:hover, .mission-row:hover, .detail-primary-btn:hover,
+        .detail-ghost-btn:hover, .logistics-item:hover,
         .modal-close-btn:hover, .modal-submit-btn:hover { transform: translateY(-1px); }
 
         .new-mission-btn {
           width: 100%; min-height: 40px; border: 0; border-radius: 999px;
           background: linear-gradient(135deg, #ff7c32, #f35a19);
-          color: white; font-size: 13px; font-weight: 800; cursor: pointer; font-family: var(--font-display);
+          color: white; font-size: 13px; font-weight: 800; letter-spacing: 0.03em; cursor: pointer;
         }
+
+        .footer-link-btn { width: 100%; text-align: left; background: transparent; border: 0; color: #6f7385; padding: 6px 0; font-size: 12px; cursor: pointer; }
 
         .content { min-width: 0; width: 100%; max-width: 100%; display: grid; gap: 24px; transition: padding 0.25s ease; }
         .content.with-sidebar { padding: 28px 28px 28px 212px; }
         .content.full-width { padding: 28px; }
 
         .hero-block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
-        .hero-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
-        .hero-copy p { margin: 12px 0 0; font-family: var(--font-body); max-width: 620px; color: var(--muted); font-size: 15px; line-height: 1.75; }
+
+        .hero-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: #f4f7fb; }
+        .hero-copy p { margin: 12px 0 0; font-family: var(--font-body); max-width: 620px; color: var(--muted); font-size: 15px; line-height: 1.75; font-weight: 400; }
+
         .topbar-actions { display: flex; justify-content: flex-end; }
 
-        .collapse-btn, .toolbar-btn, .modal-close-btn {
-          border: 1px solid var(--border); background: var(--panel); color: var(--text);
-          border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer;
-          font-family: var(--font-display); font-size: 13px; font-weight: 500;
-        }
-        .modal-submit-btn, .detail-primary-btn {
-          border: 0; background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%);
-          color: white; border-radius: 14px; min-height: 46px; padding: 0 16px;
-          cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 14px;
-        }
+        .collapse-btn, .toolbar-btn, .modal-close-btn { border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 500; }
+
+        .modal-submit-btn, .detail-primary-btn { border: 0; background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%); color: white; border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 14px; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
         .stat-card, .panel { background: rgba(17,21,28,0.94); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); }
         .stat-card { padding: 18px; }
 
         .eyebrow { display: block; margin-bottom: 10px; color: var(--muted); font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
         .small-no-margin { margin-bottom: 0; }
-        .stat-card strong { display: block; font-family: var(--font-display); font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em; }
-        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13px; line-height: 1.5; }
+
+        .stat-card strong { display: block; font-family: var(--font-display); font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em; color: #f4f7fb; }
+
+        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13px; line-height: 1.5; font-weight: 400; }
 
         .workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: 20px; align-items: start; }
 
         .panel-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
-        .panel-header h3, .logistics-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+        .panel-header h3, .logistics-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: #f4f7fb; }
         .panel-pad { padding: 16px; }
+
         .controls { display: flex; flex-wrap: wrap; gap: 10px; }
 
-        .search, .form-input, .form-select, .form-textarea {
-          width: 100%; border-radius: 14px; border: 1px solid var(--border);
-          background: var(--panel-3); color: var(--text); padding: 12px 14px; outline: none; font-family: var(--font-body); font-size: 14px;
-        }
+        .search, .form-input, .form-select, .form-textarea { width: 100%; border-radius: 14px; border: 1px solid var(--border); background: var(--panel-3); color: var(--text); padding: 12px 14px; outline: none; font-family: var(--font-body); font-size: 14px; }
         .search { min-width: 220px; border-radius: 999px; }
         .form-textarea { min-height: 110px; resize: vertical; }
         .toolbar-btn.active { background: rgba(255,255,255,0.08); }
@@ -706,13 +936,15 @@ export default function HomePage() {
         .mission-thumb.archive { background: linear-gradient(180deg, #374151, #1f2937); }
 
         .mission-topline, .detail-head, .simple-row, .logistics-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .mission-topline h3, .detail-head h3 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+
+        .mission-topline h3, .detail-head h3 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #f4f7fb; }
         .mission-meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--soft); font-family: var(--font-body); font-size: 12px; }
 
-        .status-pill, .archive-tag { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 11px; font-family: var(--font-display); font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .status-pill, .archive-tag, .distance-chip { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 11px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .detail-card { overflow: hidden; }
+
         .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); overflow: hidden; }
         .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
         .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
@@ -722,29 +954,34 @@ export default function HomePage() {
         .detail-body { padding: 20px; display: grid; gap: 18px; }
         .detail-head p { margin: 6px 0 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
 
-        .archive-tag { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
+        .archive-tag, .distance-chip { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
+
         .detail-grid, .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .mini-card, .detail-note { border-radius: 18px; background: var(--panel-3); border: 1px solid var(--border); padding: 16px; }
+
         .mini-card span { display: block; color: var(--muted); font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-        .mini-card strong { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+        .mini-card strong { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #f4f7fb; letter-spacing: -0.01em; }
         .detail-note p { margin: 0; font-family: var(--font-body); color: #d0d5dd; line-height: 1.75; font-size: 14px; }
 
         .detail-actions, .modal-actions { display: flex; gap: 12px; }
+
         .detail-primary-btn, .detail-ghost-btn, .modal-close-btn, .modal-submit-btn { flex: 1; min-height: 46px; font-weight: 700; }
+
         .detail-ghost-btn { border: 1px solid var(--border); background: var(--panel); color: var(--muted); border-radius: 14px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 600; }
 
         .logistics-item { text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; cursor: pointer; }
         .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); font-size: 20px; }
-        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+
+        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #f4f7fb; letter-spacing: -0.01em; }
         .logistics-meta { text-align: right; }
-        .logistics-meta strong { display: block; font-family: var(--font-display); font-size: 13px; font-weight: 700; }
+        .logistics-meta strong { display: block; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #f4f7fb; }
         .logistics-meta span { font-family: var(--font-body); color: var(--muted); font-size: 11px; }
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
         .modal-card { width: min(680px, 100%); height: min(88vh, 760px); background: #0f141b; border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden; display: flex; flex-direction: column; margin: auto; }
         .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .modal-head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+        .modal-head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #f4f7fb; }
         .modal-head p { margin: 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
         .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
         .modal-scroll { flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
@@ -754,10 +991,12 @@ export default function HomePage() {
         .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; }
 
         @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
+
         @media (max-width: 980px) {
           .sidebar { position: static; width: 100%; height: auto; display: block; }
           .content.with-sidebar, .content.full-width { padding: 20px 16px 24px; }
         }
+
         @media (max-width: 780px) {
           .hero-block, .mission-row, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
           .mission-thumb { width: 100%; height: 120px; }
@@ -778,16 +1017,25 @@ export default function HomePage() {
                 <p>СЕКТОР 7 ДЕЛЬТА</p>
               </div>
             </div>
+
             <nav className="nav-list" aria-label="Головна навігація">
               {navItems.map((item) => (
-                <button key={item.id} type="button" className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`} onClick={() => setActiveSection(item.id)}>
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(item.id)}
+                >
                   <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
+
             <div className="sidebar-footer-ref">
-              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>+ Додати тварину</button>
+              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>
+                + Додати тварину
+              </button>
             </div>
           </aside>
         ) : null}
@@ -804,13 +1052,74 @@ export default function HomePage() {
               <h3>Додати нову тварину</h3>
               <p>Заповніть форму, щоб створити нову рятувальну місію.</p>
             </div>
+
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
+                {/* ГОЛОВНЕ ФОТО */}
+                <div className="form-field">
+                  <label>Головне фото</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {mainPreview && (
+                      <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b', flexShrink: 0 }}>
+                        <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <label htmlFor="mainImageInput" style={{
+                      width: 80, height: 80, borderRadius: 12,
+                      border: '2px dashed #333', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                      color: '#555', fontSize: 24, gap: 4, flexShrink: 0,
+                    }}>
+                      <span>+</span>
+                      <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                    </label>
+                    <input id="mainImageInput" type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files[0]
+                        if (!file) return
+                        setMainImage(file)
+                        setMainPreview(URL.createObjectURL(file))
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* ГАЛЕРЕЯ */}
+                <div className="form-field">
+                  <label>Галерея (до 3 фото)</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {galleryPreviews.map((src, i) => (
+                      <div key={i} style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b', flexShrink: 0 }}>
+                        <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                    {galleryPreviews.length < 3 && (
+                      <label htmlFor="galleryInput" style={{
+                        width: 80, height: 80, borderRadius: 12,
+                        border: '2px dashed #333', display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                        color: '#555', fontSize: 24, gap: 4, flexShrink: 0,
+                      }}>
+                        <span>+</span>
+                        <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                      </label>
+                    )}
+                    <input id="galleryInput" type="file" accept="image/*" multiple style={{ display: 'none' }}
+                      onChange={e => {
+                        const files = Array.from(e.target.files).slice(0, 3)
+                        setGallery(files)
+                        setGalleryPreviews(files.map(f => URL.createObjectURL(f)))
+                      }}
+                    />
+                  </div>
+                </div>
+
                 <div className="form-grid">
                   <div className="form-field">
                     <label htmlFor="name">Ім'я тварини</label>
                     <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} placeholder="Барні" autoComplete="new-password" />
                   </div>
+
                   <div className="form-field">
                     <label htmlFor="species">Вид</label>
                     <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
@@ -819,14 +1128,17 @@ export default function HomePage() {
                       <option value="інше">🐾 Інше</option>
                     </select>
                   </div>
+
                   <div className="form-field">
                     <label htmlFor="age">Вік (років)</label>
                     <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
                   </div>
+
                   <div className="form-field">
                     <label htmlFor="weight">Вага (кг)</label>
                     <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
                   </div>
+
                   <div className="form-field">
                     <label htmlFor="status">Статус</label>
                     <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
@@ -835,6 +1147,7 @@ export default function HomePage() {
                       <option value="archived">В архіві</option>
                     </select>
                   </div>
+
                   <div className="form-field">
                     <label htmlFor="temperament">Темперамент</label>
                     <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
@@ -846,15 +1159,18 @@ export default function HomePage() {
                     </select>
                   </div>
                 </div>
+
                 <div className="form-field">
                   <label htmlFor="city">Місто знаходження</label>
                   <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} placeholder="Львів" autoComplete="new-password" />
                 </div>
+
                 <div className="form-field">
                   <label htmlFor="description">Опис</label>
                   <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleFormChange} placeholder="Короткий опис тварини..." />
                 </div>
               </div>
+
               <div className="modal-actions">
                 <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>Скасувати</button>
                 <button type="submit" className="modal-submit-btn">Зберегти тварину</button>
@@ -884,6 +1200,8 @@ export default function HomePage() {
           }}
         />
       )}
+
+      <Footer sidebarOpen={sidebarOpen} />
     </div>
   )
 }
