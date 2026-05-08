@@ -6,47 +6,6 @@ import AuthModal from '../components/AuthModal'
 const API = 'https://safetails-production-8790.up.railway.app'
 const mono = "'Inter', monospace"
 
-function FooterColumn({ title, links }) {
-  return (
-    <div>
-      <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 16 }}>{title}</div>
-      {links.map((link) => (
-        <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
-      ))}
-    </div>
-  )
-}
-
-function Footer({ sidebarOpen }) {
-  return (
-    <footer style={{ background: '#0d0d0d', fontFamily: "'Inter', sans-serif", borderTop: '1px solid #1e1e1e', marginTop: 'auto', paddingLeft: sidebarOpen ? 188 : 0, transition: 'padding-left 0.25s ease' }}>
-      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '42px 40px 26px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 34, marginBottom: 30 }}>
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 700, fontStyle: 'italic', background: 'linear-gradient(90deg,#ff6b2b,#ff4500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 14 }}>
-              SafeTails
-            </div>
-            <p style={{ fontSize: 13, color: '#717171', lineHeight: 1.8, maxWidth: 290, margin: 0 }}>
-              Допомагаємо тваринам знайти безпеку, турботу та новий дім. Разом ми можемо змінити їхнє майбутнє.
-            </p>
-          </div>
-          <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
-          <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
-          <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
-          <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
-        </div>
-        <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 18, display: 'flex', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#4d4d4d' }}>© 2026 SafeTails. Всі права захищені.</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
-            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 const logisticsSeed = [
   { id: 1, icon: '📦', title: 'Поповнення запасів', detail: 'Поповнення медичного набору для центральної клініки', eta: '45 хв', type: 'Низький' },
   { id: 2, icon: '🧼', title: 'Технічне обслуговування притулку', detail: 'Перевірка водопостачання і санітарії у вольєрі А', eta: 'Зараз', type: 'Заплановано' },
@@ -66,6 +25,76 @@ const navItems = [
   { id: 'medical', label: 'Медичний журнал', icon: '◌' },
   { id: 'archive', label: 'Архів', icon: '◌' },
 ]
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 16 }}>{title}</div>
+      {links.map((link) => (
+        <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+      ))}
+    </div>
+  )
+}
+
+function Footer({ sidebarOpen }) {
+  return (
+    <footer
+      style={{
+        background: '#0d0d0d',
+        fontFamily: "'Inter', sans-serif",
+        borderTop: '1px solid #1e1e1e',
+        marginTop: 'auto',
+        paddingLeft: sidebarOpen ? 188 : 0,
+        transition: 'padding-left 0.25s ease',
+      }}
+    >
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '42px 40px 26px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 34, marginBottom: 30 }}>
+          <div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                fontStyle: 'italic',
+                background: 'linear-gradient(90deg,#ff6b2b,#ff4500)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                marginBottom: 14,
+              }}
+            >
+              SafeTails
+            </div>
+            <p style={{ fontSize: 13, color: '#717171', lineHeight: 1.8, maxWidth: 290, margin: 0 }}>
+              Допомагаємо тваринам знайти безпеку, турботу та новий дім. Разом ми можемо змінити їхнє майбутнє.
+            </p>
+          </div>
+          <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
+          <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
+          <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
+          <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
+        </div>
+        <div
+          style={{
+            borderTop: '1px solid #1a1a1a',
+            paddingTop: 18,
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 20,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontSize: 12, color: '#4d4d4d' }}>© 2026 SafeTails. Всі права захищені.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
 
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
@@ -132,10 +161,15 @@ function MissionRow({ mission, active, onSelect }) {
       onClick={() => onSelect(mission.id)}
     >
       <div className={`mission-thumb ${mission.theme}`}>
-        {mission.imageUrl
-          ? <img src={mission.imageUrl} alt={mission.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 18 }} />
-          : mission.emoji
-        }
+        {mission.imageUrl ? (
+          <img
+            src={mission.imageUrl}
+            alt={mission.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 18 }}
+          />
+        ) : (
+          mission.emoji
+        )}
       </div>
       <div className="mission-copy">
         <div className="mission-topline">
@@ -205,7 +239,7 @@ export default function HomePage() {
     setLoading(true)
 
     const mapAnimal = (a) => ({
-      id: a._id,
+      id: a.id ?? a._id,
       name: a.name,
       species: a.species ?? '',
       age: a.age ?? '?',
@@ -220,9 +254,10 @@ export default function HomePage() {
       emoji: emojiFromSpecies(a.species),
       theme: themeFromStatus(a.status),
       updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
-      archivedAt: a.status === 'archived'
-        ? new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA')
-        : null,
+      archivedAt:
+        a.status === 'archived'
+          ? new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA')
+          : null,
     })
 
     Promise.all([
@@ -236,7 +271,7 @@ export default function HomePage() {
         setArchivedMissions(mappedArchived)
         setSelectedId(mappedActive[0]?.id ?? null)
       })
-      .catch((err) => console.error('Fetch error:', err))
+      .catch((err) => console.error('Fetch animals error:', err))
       .finally(() => setLoading(false))
   }, [])
 
@@ -260,6 +295,7 @@ export default function HomePage() {
     }
 
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
+
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
@@ -357,7 +393,7 @@ export default function HomePage() {
       if (lat) formData.append('lat', lat)
       if (lng) formData.append('lng', lng)
       if (mainImage) formData.append('mainImage', mainImage)
-      gallery.forEach(f => formData.append('gallery', f))
+      gallery.forEach((f) => formData.append('gallery', f))
 
       const res = await fetch(`${API}/api/animals`, {
         method: 'POST',
@@ -369,7 +405,7 @@ export default function HomePage() {
 
       const saved = await res.json()
       const newAnimal = {
-        id: saved._id,
+        id: saved.id ?? saved._id,
         name: saved.name,
         species: saved.species,
         age: saved.age,
@@ -444,16 +480,94 @@ export default function HomePage() {
     setActiveSection('archive')
   }
 
+  function renderFooter() {
+    return (
+      <footer className="homepage-footer">
+        <div className="homepage-footer-top">
+          <div className="homepage-footer-brand">
+            <h2>SafeTails</h2>
+            <p>
+              Допомагаємо тваринам знайти безпеку,
+              турботу та новий дім. Разом ми можемо
+              змінити їхнє майбутнє.
+            </p>
+          </div>
+
+          <div className="homepage-footer-columns">
+            <div className="homepage-footer-column">
+              <span>НАВІГАЦІЯ</span>
+              <button type="button" onClick={() => setActiveSection('dashboard')}>
+                Панель
+              </button>
+              <button type="button" onClick={() => setActiveSection('rescues')}>
+                Тварини
+              </button>
+              <button type="button" onClick={() => setActiveSection('dispatch')}>
+                Відправка
+              </button>
+            </div>
+
+            <div className="homepage-footer-column">
+              <span>ДОПОМОГА</span>
+              <button type="button" onClick={() => setActiveSection('rescues')}>
+                Прихисток
+              </button>
+              <button type="button" onClick={() => setActiveSection('medical')}>
+                Медична карта
+              </button>
+              <button type="button" onClick={() => setActiveSection('archive')}>
+                Архів
+              </button>
+            </div>
+
+            <div className="homepage-footer-column">
+              <span>ПІДТРИМКА</span>
+              <button type="button">Довідка</button>
+              <button type="button">Донат</button>
+              <button type="button">Волонтерство</button>
+            </div>
+
+            <div className="homepage-footer-column">
+              <span>ПРАВОВА</span>
+              <button type="button">Конфіденційність</button>
+              <button type="button">Умови</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="homepage-footer-bottom">
+          <p>© 2026 SafeTails. Всі права захищені.</p>
+          <div className="homepage-footer-bottom-icons" aria-hidden="true">
+            <span>↗</span>
+            <span>✦</span>
+          </div>
+        </div>
+      </footer>
+    )
+  }
+
+  function renderTopBar(title, text) {
+    return (
+      <section className="hero-block">
+        <div className="hero-copy">
+          <h2>{title}</h2>
+          <p>{text}</p>
+        </div>
+
+        <div className="topbar-actions">
+          <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+            {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
+          </button>
+        </div>
+      </section>
+    )
+  }
+
   function renderContent() {
     if (activeSection === 'dashboard') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Дашборд</h2>
-              <p>Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.</p>
-            </div>
-          </section>
+          {renderTopBar('Дашборд', 'Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.')}
 
           <section className="stats-grid">
             <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Потрібне негайне реагування" />
@@ -484,6 +598,8 @@ export default function HomePage() {
               </div>
             </SectionCard>
           </section>
+
+          {renderFooter()}
         </>
       )
     }
@@ -491,12 +607,7 @@ export default function HomePage() {
     if (activeSection === 'dispatch') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Диспетчер</h2>
-              <p>Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.</p>
-            </div>
-          </section>
+          {renderTopBar('Диспетчер', 'Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.')}
 
           <section className="logistics" aria-label="Черга диспетчера">
             {logisticsSeed.map((item) => (
@@ -513,6 +624,8 @@ export default function HomePage() {
               </button>
             ))}
           </section>
+
+          {renderFooter()}
         </>
       )
     }
@@ -520,12 +633,7 @@ export default function HomePage() {
     if (activeSection === 'medical') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Медичний журнал</h2>
-              <p>Переглядайте хід лікування, призначений персонал та оновлення одужання для кожного пацієнта.</p>
-            </div>
-          </section>
+          {renderTopBar('Медичний журнал', 'Переглядайте хід лікування, призначений персонал та оновлення одужання для кожного пацієнта.')}
 
           <SectionCard title="Медичні записи" subtitle="Останні дії з лікування">
             <div className="simple-list">
@@ -540,6 +648,8 @@ export default function HomePage() {
               ))}
             </div>
           </SectionCard>
+
+          {renderFooter()}
         </>
       )
     }
@@ -547,12 +657,7 @@ export default function HomePage() {
     if (activeSection === 'archive') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Архів</h2>
-              <p>Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.</p>
-            </div>
-          </section>
+          {renderTopBar('Архів', 'Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.')}
 
           <SectionCard title="Архівовані тварини" subtitle="Справи, переміщені з активного потоку порятунку">
             <div className="simple-list">
@@ -573,11 +678,12 @@ export default function HomePage() {
               )}
             </div>
           </SectionCard>
+
+          {renderFooter()}
         </>
       )
     }
 
-    // activeSection === 'rescues' (default)
     return (
       <>
         <section className="hero-block">
@@ -669,10 +775,11 @@ export default function HomePage() {
           {selectedMission ? (
             <aside className="panel detail-card">
               <div className={`hero ${selectedMission.theme}`}>
-                {selectedMission.imageUrl
-                  ? <img src={selectedMission.imageUrl} alt={selectedMission.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : selectedMission.emoji
-                }
+                {selectedMission.imageUrl ? (
+                  <img src={selectedMission.imageUrl} alt={selectedMission.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  selectedMission.emoji
+                )}
               </div>
 
               <div className="detail-body">
@@ -744,6 +851,8 @@ export default function HomePage() {
             </button>
           ))}
         </section>
+
+        {renderFooter()}
       </>
     )
   }
@@ -757,6 +866,7 @@ export default function HomePage() {
       >
         {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
       </button>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -776,238 +886,829 @@ export default function HomePage() {
           --font-body: 'Inter', sans-serif;
         }
 
-        * { box-sizing: border-box; }
-
-        .missions-shell {
-          min-height: calc(100vh - 60px);
-          background:
-            radial-gradient(circle at top right, rgba(255,107,43,0.12), transparent 26%),
-            linear-gradient(180deg, #07090d 0%, #090c11 100%);
-          color: var(--text);
-          font-family: var(--font-body);
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
+        * {
+          box-sizing: border-box;
         }
 
-        h1, h2, h3, h4, h5, h6,
-        .new-mission-btn, .modal-submit-btn, .detail-primary-btn,
-        .eyebrow, .command-card h3, .command-card p,
-        .ref-nav-link, .toolbar-btn, .status-pill, .archive-tag,
-        .mini-card span, .form-field label {
-          font-family: var(--font-display);
+        .missions-shell {
+          min-height: 100vh;
+          background:
+            radial-gradient(circle at top left, rgba(255,107,43,0.12), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(59,130,246,0.12), transparent 24%),
+            var(--bg);
+          color: var(--text);
+          font-family: 'Inter', sans-serif;
         }
 
         .collapse-btn-fixed {
-          position: fixed; top: 70px; right: 20px; z-index: 100;
+          position: fixed;
+          top: 70px;
+          right: 20px;
+          z-index: 100;
           border: 1px solid var(--border);
           background: rgba(17,21,28,0.95);
           backdrop-filter: blur(12px);
-          color: var(--text); border-radius: 14px; height: 40px;
-          padding: 0 16px; cursor: pointer; font-family: var(--font-body);
-          font-size: 13px; font-weight: 500;
+          color: var(--text);
+          border-radius: 14px;
+          height: 40px;
+          padding: 0 16px;
+          cursor: pointer;
+          font-family: var(--font-body);
+          font-size: 13px;
+          font-weight: 500;
           box-shadow: 0 4px 20px rgba(0,0,0,0.5);
           transition: transform .18s ease, background .18s ease;
         }
-        .collapse-btn-fixed:hover { transform: translateY(-1px); background: #1a1f28; }
 
-        p, li,
-        span:not(.eyebrow):not(.status-pill):not(.status-dot):not(.archive-tag):not(.nav-icon):not(.mini-card span),
-        input, select, textarea,
-        .detail-note p, .mission-copy p, .logistics-item p,
-        .simple-row p, .panel-header p, .hero-copy p, .stat-card p, .detail-head p {
-          font-family: var(--font-body);
+        .collapse-btn-fixed:hover {
+          transform: translateY(-1px);
+          background: #1a1f28;
         }
 
-        .layout { min-height: calc(100vh - 60px); }
+        .layout {
+          display: grid;
+          min-height: 100vh;
+          width: 100%;
+        }
+
+        .layout.sidebar-open {
+          grid-template-columns: 290px minmax(0, 1fr);
+        }
+
+        .layout.sidebar-closed {
+          grid-template-columns: 1fr;
+        }
 
         .sidebar {
-          position: fixed; top: 60px; left: 0;
-          width: 188px; height: calc(100vh - 60px);
-          overflow-y: auto;
-          background: linear-gradient(180deg, #05070b 0%, #070912 100%);
-          border-right: 1px solid rgba(255,255,255,0.05);
-          z-index: 30;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          padding: 24px 18px;
+          border-right: 1px solid var(--border);
+          background: rgba(8, 10, 14, 0.88);
+          backdrop-filter: blur(18px);
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          gap: 20px;
+        }
+
+        .content.with-sidebar,
+        .content.full-width {
+          width: 100%;
+          padding: 28px;
+        }
+
+        .content.with-sidebar {
+          max-width: none;
+          margin: 0;
+        }
+
+        .content.full-width {
+          max-width: 1440px;
+          margin: 0 auto;
+        }
+
+        .command-card,
+        .panel,
+        .stat-card {
+          border: 1px solid var(--border);
+          background: rgba(17,21,28,0.9);
+          border-radius: var(--radius);
+          box-shadow: var(--shadow);
+        }
+
+        .homepage-footer {
+          margin-top: 22px;
+          padding: 28px 0 0;
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
         }
 
         .command-card {
-          margin: 14px 8px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: linear-gradient(180deg, rgba(32,30,54,0.95), rgba(25,24,42,0.92));
-          border-radius: 12px; padding: 8px 10px;
-          display: flex; align-items: center; gap: 9px;
+          padding: 18px;
+          display: flex;
+          align-items: center;
+          gap: 14px;
         }
 
         .command-icon {
-          width: 36px; height: 36px; border-radius: 11px;
-          display: grid; place-items: center;
-          background: linear-gradient(135deg, #ff7b32, #ff5a1f);
-          color: white; font-size: 13px; font-weight: 700; flex-shrink: 0;
+          width: 52px;
+          height: 52px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          background: linear-gradient(180deg, rgba(255,107,43,0.18), rgba(255,107,43,0.04));
+          color: #ffd7c2;
+          font-size: 24px;
         }
 
-        .command-card h3 { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #f4f4f8; line-height: 1.15; }
-        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: #73778a; line-height: 1.1; font-weight: 600; }
+        .command-card h3,
+        .panel-header h3,
+        .hero-copy h2 {
+          margin: 0;
+          font-family: var(--font-display);
+        }
 
-        .nav-list { display: grid; padding: 0 0 8px; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .homepage-footer-brand h2 {
+          margin: 0;
+          color: var(--accent);
+          font-family: var(--font-display);
+        }
+
+        .command-card p,
+        .panel-header p,
+        .hero-copy p,
+        .homepage-footer-brand p,
+        .homepage-footer-bottom p,
+        .detail-note p,
+        .simple-row p,
+        .mission-copy p,
+        .logistics-item p,
+        .detail-head p {
+          margin: 0;
+          color: var(--muted);
+          font-family: var(--font-body);
+        }
+
+        .nav-list {
+          display: grid;
+          gap: 10px;
+          align-content: start;
+        }
+
+        .ref-nav-link,
+        .toolbar-btn,
+        .collapse-btn,
+        .new-mission-btn,
+        .detail-primary-btn,
+        .detail-ghost-btn,
+        .homepage-footer-column button,
+        .modal-close-btn,
+        .modal-submit-btn {
+          border: 1px solid var(--border);
+          background: var(--panel-2);
+          color: var(--text);
+          cursor: pointer;
+          transition: 0.2s ease;
+          font-family: var(--font-body);
+        }
 
         .ref-nav-link {
-          position: relative; min-height: 42px; border-radius: 0;
-          padding: 0 13px; color: #6f7385; border: 0; background: transparent;
-          display: flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 500; letter-spacing: 0.01em;
-          width: 100%; cursor: pointer; text-align: left;
+          width: 100%;
+          border-radius: 18px;
+          padding: 14px 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-align: left;
         }
-        .ref-nav-link:hover { background: rgba(255,255,255,0.02); color: #d5d8e3; }
-        .ref-nav-link.active { background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04)); color: #ff6b2b; font-weight: 600; }
-        .ref-nav-link.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #ff6b2b; }
 
-        .nav-icon { width: 12px; display: inline-flex; justify-content: center; font-size: 10px; }
-
-        .sidebar-footer-ref { padding: 12px 8px 14px; display: grid; gap: 6px; }
-
-        .new-mission-btn, .footer-link-btn, .collapse-btn, .toolbar-btn,
-        .mission-row, .detail-primary-btn, .detail-ghost-btn,
-        .logistics-item, .modal-close-btn, .modal-submit-btn {
-          transition: transform .18s ease, background .18s ease, border-color .18s ease;
+        .ref-nav-link.active,
+        .ref-nav-link:hover,
+        .toolbar-btn:hover,
+        .collapse-btn:hover,
+        .new-mission-btn:hover,
+        .detail-primary-btn:hover,
+        .detail-ghost-btn:hover,
+        .homepage-footer-column button:hover,
+        .modal-close-btn:hover,
+        .modal-submit-btn:hover {
+          border-color: rgba(255,107,43,0.4);
+          background: rgba(255,107,43,0.1);
         }
-        .new-mission-btn:hover, .footer-link-btn:hover, .collapse-btn:hover,
-        .toolbar-btn:hover, .mission-row:hover, .detail-primary-btn:hover,
-        .detail-ghost-btn:hover, .logistics-item:hover,
-        .modal-close-btn:hover, .modal-submit-btn:hover { transform: translateY(-1px); }
+
+        .nav-icon {
+          opacity: 0.8;
+        }
+
+        .sidebar-footer-ref {
+          display: grid;
+          gap: 10px;
+        }
 
         .new-mission-btn {
-          width: 100%; min-height: 40px; border: 0; border-radius: 999px;
-          background: linear-gradient(135deg, #ff7c32, #f35a19);
-          color: white; font-size: 13px; font-weight: 800; letter-spacing: 0.03em; cursor: pointer;
+          width: 100%;
+          min-height: 48px;
+          border-radius: 16px;
+          font-weight: 700;
         }
 
-        .footer-link-btn { width: 100%; text-align: left; background: transparent; border: 0; color: #6f7385; padding: 6px 0; font-size: 12px; cursor: pointer; }
+        .hero-block {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          margin-bottom: 22px;
+        }
 
-        .content { min-width: 0; width: 100%; max-width: 100%; display: grid; gap: 24px; transition: padding 0.25s ease; }
-        .content.with-sidebar { padding: 28px 28px 28px 212px; }
-        .content.full-width { padding: 28px; }
+        .hero-copy {
+          max-width: 620px;
+        }
 
-        .hero-block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+        .hero-copy h2 {
+          font-size: 46px;
+          line-height: 1;
+          margin-bottom: 10px;
+        }
 
-        .hero-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: #f4f7fb; }
-        .hero-copy p { margin: 12px 0 0; font-family: var(--font-body); max-width: 620px; color: var(--muted); font-size: 15px; line-height: 1.75; font-weight: 400; }
+        .topbar-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+          align-items: flex-start;
+          flex-shrink: 0;
+          padding-top: 6px;
+        }
 
-        .topbar-actions { display: flex; justify-content: flex-end; }
+        .collapse-btn {
+          padding: 12px 16px;
+          border-radius: 14px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
 
-        .collapse-btn, .toolbar-btn, .modal-close-btn { border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 500; }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 14px;
+          margin-bottom: 22px;
+        }
 
-        .modal-submit-btn, .detail-primary-btn { border: 0; background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%); color: white; border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+        .stat-card {
+          padding: 18px;
+        }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .eyebrow {
+          display: inline-block;
+          margin-bottom: 12px;
+          color: #ffb18b;
+          font-size: 12px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          font-family: var(--font-display);
+        }
 
-        .stat-card, .panel { background: rgba(17,21,28,0.94); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); }
-        .stat-card { padding: 18px; }
+        .small-no-margin {
+          margin-bottom: 0;
+        }
 
-        .eyebrow { display: block; margin-bottom: 10px; color: var(--muted); font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-        .small-no-margin { margin-bottom: 0; }
+        .stat-card strong {
+          display: block;
+          font-size: 34px;
+          margin-bottom: 6px;
+          font-family: var(--font-display);
+        }
 
-        .stat-card strong { display: block; font-family: var(--font-display); font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em; color: #f4f7fb; }
+        .workspace {
+          display: grid;
+          grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+          gap: 18px;
+          margin-bottom: 22px;
+        }
 
-        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13px; line-height: 1.5; font-weight: 400; }
+        .panel {
+          overflow: hidden;
+        }
 
-        .workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: 20px; align-items: start; }
+        .panel-header {
+          padding: 18px 18px 0;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+        }
 
-        .panel-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
-        .panel-header h3, .logistics-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: #f4f7fb; }
-        .panel-pad { padding: 16px; }
+        .panel-pad {
+          padding: 18px;
+        }
 
-        .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+        .controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
 
-        .search, .form-input, .form-select, .form-textarea { width: 100%; border-radius: 14px; border: 1px solid var(--border); background: var(--panel-3); color: var(--text); padding: 12px 14px; outline: none; font-family: var(--font-body); font-size: 14px; }
-        .search { min-width: 220px; border-radius: 999px; }
-        .form-textarea { min-height: 110px; resize: vertical; }
-        .toolbar-btn.active { background: rgba(255,255,255,0.08); }
+        .search,
+        .form-input,
+        .form-select,
+        .form-textarea {
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          color: var(--text);
+          padding: 12px 14px;
+          outline: none;
+          font: inherit;
+        }
 
-        .mission-list, .logistics, .simple-list { display: grid; gap: 12px; }
-        .mission-list { padding: 16px; }
+        .search {
+          min-width: 220px;
+          border-radius: 999px;
+        }
 
-        .mission-row, .logistics-item, .simple-row { width: 100%; border: 1px solid var(--border); background: var(--panel-2); color: inherit; border-radius: 18px; padding: 14px; }
-        .mission-row { display: grid; grid-template-columns: 70px 1fr; gap: 14px; text-align: left; cursor: pointer; }
-        .mission-row.active { border-color: rgba(255,107,43,0.6); background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02)); }
+        .form-textarea {
+          min-height: 110px;
+          resize: vertical;
+        }
 
-        .mission-thumb { width: 70px; height: 70px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; overflow: hidden; }
-        .mission-thumb.danger { background: linear-gradient(180deg, #4a201f, #2b1212); }
-        .mission-thumb.calm { background: linear-gradient(180deg, #12312b, #10201d); }
-        .mission-thumb.watch { background: linear-gradient(180deg, #3f3217, #241c0f); }
-        .mission-thumb.archive { background: linear-gradient(180deg, #374151, #1f2937); }
+        .toolbar-btn {
+          padding: 10px 14px;
+          border-radius: 999px;
+        }
 
-        .mission-topline, .detail-head, .simple-row, .logistics-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .toolbar-btn.active {
+          background: rgba(255,255,255,0.08);
+        }
 
-        .mission-topline h3, .detail-head h3 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #f4f7fb; }
-        .mission-meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--soft); font-family: var(--font-body); font-size: 12px; }
+        .mission-list,
+        .logistics,
+        .simple-list {
+          display: grid;
+          gap: 12px;
+        }
 
-        .status-pill, .archive-tag, .distance-chip { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 11px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .mission-list {
+          padding: 16px;
+        }
 
-        .detail-card { overflow: hidden; }
+        .mission-row,
+        .logistics-item,
+        .simple-row {
+          width: 100%;
+          border: 1px solid var(--border);
+          background: var(--panel-2);
+          color: inherit;
+          border-radius: 18px;
+          padding: 14px;
+        }
 
-        .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); overflow: hidden; }
-        .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
-        .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
-        .hero.watch { background: linear-gradient(180deg, #55451e 0%, #20180b 100%); }
-        .hero.archive { background: linear-gradient(180deg, #374151 0%, #111827 100%); }
+        .mission-row {
+          display: grid;
+          grid-template-columns: 70px 1fr;
+          gap: 14px;
+          text-align: left;
+          cursor: pointer;
+        }
 
-        .detail-body { padding: 20px; display: grid; gap: 18px; }
-        .detail-head p { margin: 6px 0 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
+        .mission-row.active {
+          border-color: rgba(255,107,43,0.6);
+          background: linear-gradient(180deg, rgba(255,107,43,0.08), rgba(255,255,255,0.02));
+        }
 
-        .archive-tag, .distance-chip { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
+        .mission-thumb {
+          width: 70px;
+          height: 70px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          font-size: 34px;
+          overflow: hidden;
+        }
 
-        .detail-grid, .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .mission-thumb.danger {
+          background: linear-gradient(180deg, #4a201f, #2b1212);
+        }
 
-        .mini-card, .detail-note { border-radius: 18px; background: var(--panel-3); border: 1px solid var(--border); padding: 16px; }
+        .mission-thumb.calm {
+          background: linear-gradient(180deg, #12312b, #10201d);
+        }
 
-        .mini-card span { display: block; color: var(--muted); font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-        .mini-card strong { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #f4f7fb; letter-spacing: -0.01em; }
-        .detail-note p { margin: 0; font-family: var(--font-body); color: #d0d5dd; line-height: 1.75; font-size: 14px; }
+        .mission-thumb.watch {
+          background: linear-gradient(180deg, #3f3217, #241c0f);
+        }
 
-        .detail-actions, .modal-actions { display: flex; gap: 12px; }
+        .mission-thumb.archive {
+          background: linear-gradient(180deg, #374151, #1f2937);
+        }
 
-        .detail-primary-btn, .detail-ghost-btn, .modal-close-btn, .modal-submit-btn { flex: 1; min-height: 46px; font-weight: 700; }
+        .mission-topline,
+        .detail-head,
+        .simple-row,
+        .logistics-head,
+        .homepage-footer-top,
+        .homepage-footer-bottom {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+        }
 
-        .detail-ghost-btn { border: 1px solid var(--border); background: var(--panel); color: var(--muted); border-radius: 14px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 600; }
+        .mission-topline h3,
+        .detail-head h3 {
+          margin: 0;
+          font-size: 16px;
+          font-family: var(--font-display);
+        }
 
-        .logistics-item { text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; cursor: pointer; }
-        .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); font-size: 20px; }
+        .mission-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          color: var(--soft);
+          font-size: 12px;
+        }
 
-        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #f4f7fb; letter-spacing: -0.01em; }
-        .logistics-meta { text-align: right; }
-        .logistics-meta strong { display: block; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #f4f7fb; }
-        .logistics-meta span { font-family: var(--font-body); color: var(--muted); font-size: 11px; }
+        .status-pill,
+        .archive-tag,
+        .distance-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          border-radius: 999px;
+          padding: 7px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
+          font-family: var(--font-display);
+        }
 
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
-        .modal-card { width: min(680px, 100%); height: min(88vh, 760px); background: #0f141b; border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden; display: flex; flex-direction: column; margin: auto; }
-        .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .modal-head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #f4f7fb; }
-        .modal-head p { margin: 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
-        .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-        .modal-scroll { flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
-        .modal-scroll::-webkit-scrollbar { display: none; }
-        .form-field { display: grid; gap: 8px; }
-        .form-field label { font-family: var(--font-display); font-size: 11px; color: #d7dde6; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-        .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; }
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
 
-        @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
+        .detail-card {
+          overflow: hidden;
+        }
+
+        .hero {
+          min-height: 220px;
+          display: grid;
+          place-items: center;
+          font-size: 96px;
+          border-bottom: 1px solid var(--border);
+          overflow: hidden;
+        }
+
+        .hero.danger {
+          background: linear-gradient(180deg, #5c2622 0%, #241110 100%);
+        }
+
+        .hero.calm {
+          background: linear-gradient(180deg, #173830 0%, #0d1514 100%);
+        }
+
+        .hero.watch {
+          background: linear-gradient(180deg, #55451e 0%, #20180b 100%);
+        }
+
+        .hero.archive {
+          background: linear-gradient(180deg, #374151 0%, #111827 100%);
+        }
+
+        .detail-body {
+          padding: 20px;
+          display: grid;
+          gap: 18px;
+        }
+
+        .detail-grid,
+        .form-grid,
+        .homepage-footer-columns {
+          display: grid;
+          gap: 12px;
+        }
+
+        .detail-grid {
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+
+        .mini-card {
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          border-radius: 16px;
+          padding: 14px;
+          display: grid;
+          gap: 8px;
+        }
+
+        .mini-card span {
+          color: var(--soft);
+          font-size: 12px;
+          font-family: var(--font-display);
+        }
+
+        .detail-note {
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          border-radius: 18px;
+          padding: 16px;
+        }
+
+        .detail-actions,
+        .modal-actions {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .detail-primary-btn,
+        .detail-ghost-btn {
+          min-height: 48px;
+          border-radius: 14px;
+          padding: 0 18px;
+          font-weight: 700;
+        }
+
+        .detail-primary-btn {
+          background: var(--accent);
+          color: #fff;
+          border-color: transparent;
+        }
+
+        .detail-ghost-btn {
+          background: transparent;
+        }
+
+        .logistics-item {
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          gap: 14px;
+          align-items: center;
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .logistics-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          font-size: 22px;
+          background: var(--panel-3);
+        }
+
+        .logistics-meta {
+          display: grid;
+          gap: 4px;
+          text-align: right;
+          color: var(--muted);
+          font-size: 12px;
+        }
+
+        .archive-tag,
+        .distance-chip {
+          border: 1px solid var(--border);
+          background: var(--panel-3);
+          color: var(--text);
+        }
+
+        .homepage-footer-top {
+          display: grid;
+          grid-template-columns: 1.2fr 1.8fr;
+          gap: 40px;
+          margin-bottom: 24px;
+        }
+
+        .homepage-footer-brand p {
+          max-width: 320px;
+          line-height: 1.7;
+        }
+
+        .homepage-footer-columns {
+          grid-template-columns: repeat(4, minmax(120px, 1fr));
+        }
+
+        .homepage-footer-column {
+          display: grid;
+          gap: 10px;
+          align-content: start;
+        }
+
+        .homepage-footer-column span {
+          font-size: 12px;
+          letter-spacing: 0.12em;
+          color: #ffb18b;
+          font-family: var(--font-display);
+        }
+
+        .homepage-footer-column button {
+          padding: 0;
+          background: transparent;
+          border: none;
+          color: var(--muted);
+          text-align: left;
+        }
+
+        .homepage-footer-bottom {
+          padding-top: 18px;
+          border-top: 1px solid var(--border);
+          align-items: center;
+        }
+
+        .homepage-footer-bottom-icons {
+          display: flex;
+          gap: 10px;
+          color: #ffb18b;
+        }
+
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          backdrop-filter: blur(6px);
+          display: grid;
+          place-items: center;
+          padding: 20px;
+          z-index: 1000;
+        }
+
+        .modal-card {
+          width: min(720px, 100%);
+          height: min(90vh, 820px);
+          background: #0f141b;
+          border: 1px solid var(--border);
+          border-radius: 24px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+          padding: 20px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          flex-shrink: 0;
+        }
+
+        .modal-close {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--panel-2);
+          color: var(--text);
+          cursor: pointer;
+        }
+
+        .modal-scroll {
+          flex: 1;
+          min-height: 0;
+          padding: 20px;
+          display: grid;
+          gap: 14px;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .modal-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .form-field {
+          display: grid;
+          gap: 8px;
+        }
+
+        .form-field label {
+          font-size: 13px;
+          color: #d7dde6;
+          font-weight: 600;
+          font-family: var(--font-display);
+        }
+
+        .modal-actions {
+          padding: 16px 20px 20px;
+          border-top: 1px solid var(--border);
+          background: #0f141b;
+          flex-shrink: 0;
+        }
+
+        .modal-close-btn,
+        .modal-submit-btn {
+          min-height: 48px;
+          border-radius: 14px;
+          padding: 0 18px;
+          font-weight: 700;
+        }
+
+        .modal-submit-btn {
+          background: var(--accent);
+          color: white;
+          border-color: transparent;
+        }
+
+        @media (max-width: 1180px) {
+          .workspace {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 1100px) {
+          .homepage-footer-top {
+            grid-template-columns: 1fr;
+            gap: 28px;
+          }
+
+          .homepage-footer-columns {
+            grid-template-columns: repeat(2, minmax(160px, 1fr));
+          }
+        }
 
         @media (max-width: 980px) {
-          .sidebar { position: static; width: 100%; height: auto; display: block; }
-          .content.with-sidebar, .content.full-width { padding: 20px 16px 24px; }
+          .sidebar {
+            position: static;
+            width: 100%;
+            height: auto;
+            display: block;
+          }
+
+          .layout,
+          .layout.sidebar-open,
+          .layout.sidebar-closed {
+            grid-template-columns: 1fr;
+          }
+
+          .content.with-sidebar,
+          .content.full-width {
+            max-width: none;
+            margin: 0;
+            padding: 20px 16px 24px;
+          }
         }
 
         @media (max-width: 780px) {
-          .hero-block, .mission-row, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
-          .mission-thumb { width: 100%; height: 120px; }
-          .detail-head, .simple-row, .logistics-head, .topbar-actions, .controls, .detail-actions, .modal-actions { flex-direction: column; align-items: stretch; }
-          .hero-copy h2 { font-size: 28px; }
-          .modal-card { height: min(92vh, 760px); width: 100%; }
-          .modal-backdrop { padding: 12px; }
+          .hero-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .mission-row,
+          .detail-grid,
+          .form-grid,
+          .logistics-item {
+            grid-template-columns: 1fr;
+          }
+
+          .mission-thumb {
+            width: 100%;
+            height: 120px;
+          }
+
+          .detail-head,
+          .simple-row,
+          .logistics-head,
+          .topbar-actions,
+          .controls,
+          .detail-actions,
+          .modal-actions {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .hero-copy h2 {
+            font-size: 34px;
+          }
+
+          .modal-card {
+            height: min(92vh, 760px);
+            width: 100%;
+          }
+
+          .modal-backdrop {
+            padding: 12px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .homepage-footer {
+            padding: 24px 0 18px;
+            border-radius: 0;
+          }
+
+          .homepage-footer-columns {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+
+          .homepage-footer-bottom {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .homepage-footer-brand h2 {
+            font-size: 22px;
+          }
+
+          .homepage-footer-column button {
+            font-size: 15px;
+          }
         }
       `}</style>
 
-      <div className="layout">
+      <div className={`layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         {sidebarOpen ? (
           <aside className="sidebar">
             <div className="command-card">
@@ -1046,17 +1747,20 @@ export default function HomePage() {
       </div>
 
       {isCreateOpen && (
-        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
-              <h3>Додати нову тварину</h3>
-              <p>Заповніть форму, щоб створити нову рятувальну місію.</p>
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Додати тварину">
+          <div className="modal-card">
+            <div className="modal-header">
+              <div>
+                <h3 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>Додати нову тварину</h3>
+                <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>Заповніть форму, щоб створити нову рятувальну місію.</p>
+              </div>
+              <button className="modal-close" type="button" onClick={() => setIsCreateOpen(false)}>
+                ✕
+              </button>
             </div>
 
-            <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
+            <form onSubmit={handleCreateAnimal} style={{ display: 'contents' }}>
               <div className="modal-scroll">
-
-                {/* ГОЛОВНЕ ФОТО */}
                 <div className="form-field">
                   <label>Головне фото</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1067,22 +1771,61 @@ export default function HomePage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => { setMainImage(null); setMainPreview(null) }}
-                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                        >×</button>
+                          onClick={() => {
+                            setMainImage(null)
+                            setMainPreview(null)
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: -6,
+                            right: -6,
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: '#ff3b30',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: 14,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     )}
-                    <label htmlFor="mainImageInput" style={{
-                      width: 80, height: 80, borderRadius: 12,
-                      border: '2px dashed #333', display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                      color: '#555', fontSize: 24, gap: 4, flexShrink: 0,
-                    }}>
+
+                    <label
+                      htmlFor="mainImageInput"
+                      style={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 12,
+                        border: '2px dashed #333',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: '#555',
+                        fontSize: 24,
+                        gap: 4,
+                        flexShrink: 0,
+                      }}
+                    >
                       <span>+</span>
                       <span style={{ fontSize: 10, color: '#444' }}>фото</span>
                     </label>
-                    <input id="mainImageInput" type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={e => {
+
+                    <input
+                      id="mainImageInput"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
                         const file = e.target.files[0]
                         if (!file) return
                         setMainImage(file)
@@ -1092,7 +1835,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* ГАЛЕРЕЯ — ВИПРАВЛЕНО */}
                 <div className="form-field">
                   <label>Галерея (до 3 фото)</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1104,31 +1846,61 @@ export default function HomePage() {
                         <button
                           type="button"
                           onClick={() => {
-                            setGallery(prev => prev.filter((_, idx) => idx !== i))
-                            setGalleryPreviews(prev => prev.filter((_, idx) => idx !== i))
+                            setGallery((prev) => prev.filter((_, idx) => idx !== i))
+                            setGalleryPreviews((prev) => prev.filter((_, idx) => idx !== i))
                           }}
-                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                        >×</button>
+                          style={{
+                            position: 'absolute',
+                            top: -6,
+                            right: -6,
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: '#ff3b30',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: 14,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     ))}
+
                     {galleryPreviews.length < 3 && (
-                      <label style={{
-                        width: 80, height: 80, borderRadius: 12,
-                        border: '2px dashed #333', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                        color: '#555', fontSize: 24, gap: 4, flexShrink: 0,
-                      }}>
+                      <label
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 12,
+                          border: '2px dashed #333',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          color: '#555',
+                          fontSize: 24,
+                          gap: 4,
+                          flexShrink: 0,
+                        }}
+                      >
                         <span>+</span>
                         <span style={{ fontSize: 10, color: '#444' }}>фото</span>
                         <input
                           type="file"
                           accept="image/*"
                           style={{ display: 'none' }}
-                          onChange={e => {
+                          onChange={(e) => {
                             const file = e.target.files[0]
                             if (!file) return
-                            setGallery(prev => [...prev, file])
-                            setGalleryPreviews(prev => [...prev, URL.createObjectURL(file)])
+                            setGallery((prev) => [...prev, file])
+                            setGalleryPreviews((prev) => [...prev, URL.createObjectURL(file)])
                             e.target.value = ''
                           }}
                         />
@@ -1139,27 +1911,18 @@ export default function HomePage() {
 
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Ім'я тварини</label>
-                    <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} placeholder="Барні" autoComplete="new-password" />
+                    <label htmlFor="name">Ім'я</label>
+                    <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
                     <label htmlFor="species">Вид</label>
-                    <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
-                      <option value="собака">🐕 Собака</option>
-                      <option value="кіт">🐈 Кіт</option>
-                      <option value="інше">🐾 Інше</option>
-                    </select>
+                    <input id="species" name="species" className="form-input" value={form.species} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="age">Вік (років)</label>
-                    <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
-                  </div>
-
-                  <div className="form-field">
-                    <label htmlFor="weight">Вага (кг)</label>
-                    <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
+                    <label htmlFor="age">Вік</label>
+                    <input id="age" name="age" type="number" className="form-input" value={form.age} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
@@ -1173,30 +1936,39 @@ export default function HomePage() {
 
                   <div className="form-field">
                     <label htmlFor="temperament">Темперамент</label>
-                    <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
-                      <option value="лагідний">Лагідний</option>
-                      <option value="активний">Активний</option>
-                      <option value="спокійний">Спокійний</option>
-                      <option value="грайливий">Грайливий</option>
-                      <option value="незалежний">Незалежний</option>
-                    </select>
+                    <input id="temperament" name="temperament" className="form-input" value={form.temperament} onChange={handleFormChange} />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="city">Місто</label>
+                    <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="weight">Вага</label>
+                    <input id="weight" name="weight" type="number" className="form-input" value={form.weight} onChange={handleFormChange} />
                   </div>
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="city">Місто знаходження</label>
-                  <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} placeholder="Львів" autoComplete="new-password" />
-                </div>
-
-                <div className="form-field">
                   <label htmlFor="description">Опис</label>
-                  <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleFormChange} placeholder="Короткий опис тварини..." />
+                  <textarea
+                    id="description"
+                    name="description"
+                    className="form-textarea"
+                    value={form.description}
+                    onChange={handleFormChange}
+                  />
                 </div>
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>Скасувати</button>
-                <button type="submit" className="modal-submit-btn">Зберегти тварину</button>
+                <button className="detail-ghost-btn" type="button" onClick={() => setIsCreateOpen(false)}>
+                  Скасувати
+                </button>
+                <button className="detail-primary-btn" type="submit">
+                  Зберегти тварину
+                </button>
               </div>
             </form>
           </div>
