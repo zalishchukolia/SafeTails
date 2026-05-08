@@ -445,21 +445,28 @@ export default function HomePage() {
     )
   }
 
+  function renderTopBar(title, text) {
+    return (
+      <section className="hero-block">
+        <div className="hero-copy">
+          <h2>{title}</h2>
+          <p>{text}</p>
+        </div>
+
+        <div className="topbar-actions">
+          <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
+            {sidebarOpen ? 'Hide menu' : 'Show menu'}
+          </button>
+        </div>
+      </section>
+    )
+  }
+
   function renderContent() {
     if (activeSection === 'dashboard') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Dashboard</h2>
-              <p>Overview of rescue activity, critical alerts, logistics load, and current medical flow.</p>
-            </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Hide menu' : 'Show menu'}
-              </button>
-            </div>
-          </section>
+          {renderTopBar('Dashboard', 'Overview of rescue activity, critical alerts, logistics load, and current medical flow.')}
 
           <section className="stats-grid">
             <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
@@ -499,17 +506,7 @@ export default function HomePage() {
     if (activeSection === 'dispatch') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Dispatch</h2>
-              <p>Coordinate teams, assign routes, and track outgoing rescue transport requests.</p>
-            </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Hide menu' : 'Show menu'}
-              </button>
-            </div>
-          </section>
+          {renderTopBar('Dispatch', 'Coordinate teams, assign routes, and track outgoing rescue transport requests.')}
 
           <section className="logistics" aria-label="Dispatch queue">
             {logisticsSeed.map((item) => (
@@ -535,17 +532,7 @@ export default function HomePage() {
     if (activeSection === 'medical') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Medical Log</h2>
-              <p>Review treatment progress, assigned staff, and recovery updates for each patient.</p>
-            </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Hide menu' : 'Show menu'}
-              </button>
-            </div>
-          </section>
+          {renderTopBar('Medical Log', 'Review treatment progress, assigned staff, and recovery updates for each patient.')}
 
           <SectionCard title="Medical records" subtitle="Latest care actions">
             <div className="simple-list">
@@ -569,17 +556,7 @@ export default function HomePage() {
     if (activeSection === 'archive') {
       return (
         <>
-          <section className="hero-block">
-            <div className="hero-copy">
-              <h2>Archive</h2>
-              <p>Browse completed rescue missions, recovery outcomes, and archived animal cases.</p>
-            </div>
-            <div className="topbar-actions">
-              <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-                {sidebarOpen ? 'Hide menu' : 'Show menu'}
-              </button>
-            </div>
-          </section>
+          {renderTopBar('Archive', 'Browse completed rescue missions, recovery outcomes, and archived animal cases.')}
 
           <SectionCard title="Archived animals" subtitle="Cases moved from active rescue flow">
             <div className="simple-list">
@@ -608,17 +585,7 @@ export default function HomePage() {
 
     return (
       <>
-        <section className="hero-block">
-          <div className="hero-copy">
-            <h2>Active Rescues</h2>
-            <p>Track active rescue cases, dispatch teams, and review field details in one place.</p>
-          </div>
-          <div className="topbar-actions">
-            <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((p) => !p)}>
-              {sidebarOpen ? 'Hide menu' : 'Show menu'}
-            </button>
-          </div>
-        </section>
+        {renderTopBar('Active Rescues', 'Track active rescue cases, dispatch teams, and review field details in one place.')}
 
         <section className="stats-grid" aria-label="Mission statistics">
           <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
@@ -793,7 +760,9 @@ export default function HomePage() {
           --radius: 22px;
         }
 
-        * { box-sizing: border-box; }
+        * {
+          box-sizing: border-box;
+        }
 
         .missions-shell {
           min-height: 100vh;
@@ -807,8 +776,16 @@ export default function HomePage() {
 
         .layout {
           display: grid;
-          grid-template-columns: 290px minmax(0, 1fr);
           min-height: 100vh;
+          width: 100%;
+        }
+
+        .layout.sidebar-open {
+          grid-template-columns: 290px minmax(0, 1fr);
+        }
+
+        .layout.sidebar-closed {
+          grid-template-columns: 1fr;
         }
 
         .sidebar {
@@ -826,17 +803,36 @@ export default function HomePage() {
 
         .content.with-sidebar,
         .content.full-width {
+          width: 100%;
           padding: 28px;
+        }
+
+        .content.with-sidebar {
+          max-width: none;
+          margin: 0;
+        }
+
+        .content.full-width {
+          max-width: 1440px;
+          margin: 0 auto;
         }
 
         .command-card,
         .panel,
-        .stat-card,
-        .homepage-footer {
+        .stat-card {
           border: 1px solid var(--border);
           background: rgba(17,21,28,0.9);
           border-radius: var(--radius);
           box-shadow: var(--shadow);
+        }
+
+        .homepage-footer {
+          margin-top: 22px;
+          padding: 28px 0 0;
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
         }
 
         .command-card {
@@ -859,9 +855,13 @@ export default function HomePage() {
 
         .command-card h3,
         .panel-header h3,
-        .hero-copy h2,
+        .hero-copy h2 {
+          margin: 0;
+        }
+
         .homepage-footer-brand h2 {
           margin: 0;
+          color: var(--accent);
         }
 
         .command-card p,
@@ -937,11 +937,15 @@ export default function HomePage() {
         }
 
         .hero-block {
-          display: grid;
-          grid-template-columns: 1fr auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
           gap: 16px;
-          align-items: end;
           margin-bottom: 22px;
+        }
+
+        .hero-copy {
+          max-width: 620px;
         }
 
         .hero-copy h2 {
@@ -954,13 +958,16 @@ export default function HomePage() {
           display: flex;
           gap: 12px;
           justify-content: flex-end;
-          align-items: center;
+          align-items: flex-start;
+          flex-shrink: 0;
+          padding-top: 6px;
         }
 
         .collapse-btn {
           padding: 12px 16px;
           border-radius: 14px;
           font-weight: 600;
+          white-space: nowrap;
         }
 
         .stats-grid {
@@ -1285,11 +1292,6 @@ export default function HomePage() {
           color: var(--text);
         }
 
-        .homepage-footer {
-          margin-top: 22px;
-          padding: 28px;
-        }
-
         .homepage-footer-top {
           display: grid;
           grid-template-columns: 1.2fr 1.8fr;
@@ -1440,18 +1442,27 @@ export default function HomePage() {
             display: block;
           }
 
-          .layout {
+          .layout,
+          .layout.sidebar-open,
+          .layout.sidebar-closed {
             grid-template-columns: 1fr;
           }
 
           .content.with-sidebar,
           .content.full-width {
+            max-width: none;
+            margin: 0;
             padding: 20px 16px 24px;
           }
         }
 
         @media (max-width: 780px) {
-          .hero-block,
+          .hero-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
           .mission-row,
           .detail-grid,
           .form-grid,
@@ -1491,8 +1502,8 @@ export default function HomePage() {
 
         @media (max-width: 640px) {
           .homepage-footer {
-            padding: 24px 18px 18px;
-            border-radius: 22px;
+            padding: 24px 0 18px;
+            border-radius: 0;
           }
 
           .homepage-footer-columns {
@@ -1515,7 +1526,7 @@ export default function HomePage() {
         }
       `}</style>
 
-      <div className="layout">
+      <div className={`layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         {sidebarOpen ? (
           <aside className="sidebar">
             <div className="command-card">
