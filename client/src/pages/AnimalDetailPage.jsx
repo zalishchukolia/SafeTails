@@ -9,13 +9,17 @@ function AnimalDetailPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/animals/${id}`)
+    fetch(`https://safetails-production-8790.up.railway.app/api/animals/${id}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log('DATA FROM API:', data)
         setAnimal(data)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => {
+        console.log('FETCH ERROR:', err)
+        setLoading(false)
+      })
   }, [id])
 
   if (loading) {
@@ -39,11 +43,11 @@ function AnimalDetailPage() {
   const species = animal.species || 'Animal'
   const age = animal.age ? `${animal.age} years` : 'Age unknown'
   const temperament = animal.temperament || 'Friendly'
-  const weight = animal.weight || '24 kg'
+  const weight = animal.weight ? `${animal.weight} кг` : 'Невідомо'
 
   const gallery =
     animal.gallery && Array.isArray(animal.gallery) && animal.gallery.length > 0
-      ? animal.gallery.slice(0, 3)
+      ? [...new Set(animal.gallery)].slice(0, 3)
       : [mainImage, mainImage, mainImage]
 
   return (
@@ -52,17 +56,11 @@ function AnimalDetailPage() {
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_470px] gap-6">
           <section className="space-y-6">
             <div className="rounded-[30px] bg-[#151517] border border-white/10 p-4">
-              <div className="relative rounded-[24px] overflow-hidden bg-black h-[270px] sm:h-[310px] lg:h-[360px]">
+              <div className="relative rounded-[24px] overflow-hidden bg-black h-[300px] sm:h-[420px] lg:h-[480px]">
                 {mainImage ? (
-                  <img
-                    src={mainImage}
-                    alt={title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={mainImage} alt={title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-7xl">
-                    🐾
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-7xl">🐾</div>
                 )}
 
                 <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/50 to-transparent">
@@ -74,31 +72,20 @@ function AnimalDetailPage() {
                       #{String(id).slice(-6)}
                     </span>
                   </div>
-
                   <h1 className="text-3xl sm:text-4xl font-bold">{title}</h1>
                   <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/70">
-                    {animal.description ||
-                      'This animal is being cared for and is ready for the next stage of the rescue journey.'}
+                    {animal.description || 'This animal is being cared for and is ready for the next stage of the rescue journey.'}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 {gallery.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-2xl overflow-hidden bg-white/5 aspect-[4/3] border border-white/10"
-                  >
+                  <div key={idx} className="rounded-2xl overflow-hidden bg-white/5 aspect-[4/3] border border-white/10">
                     {img ? (
-                      <img
-                        src={img}
-                        alt={`${title} ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={img} alt={`${title} ${idx + 1}`} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl">
-                        🐶
-                      </div>
+                      <div className="w-full h-full flex items-center justify-center text-3xl">🐶</div>
                     )}
                   </div>
                 ))}
@@ -111,22 +98,15 @@ function AnimalDetailPage() {
                   <span className="w-2 h-2 rounded-full bg-[#ff6b2b]" />
                   The Rescue Story
                 </div>
-
-                <h2 className="text-2xl font-semibold mb-3">
-                  {title} is ready for a new beginning
-                </h2>
-
+                <h2 className="text-2xl font-semibold mb-3">{title} is ready for a new beginning</h2>
                 <p className="text-sm sm:text-base leading-7 text-[#4f4638]">
-                  {animal.description ||
-                    'This animal came into care with a detailed history, received treatment, and is now being prepared for adoption. The story here can be fully edited from the database and expanded with milestones, medical notes, or rescue context.'}
+                  {animal.description || 'This animal came into care with a detailed history, received treatment, and is now being prepared for adoption.'}
                 </p>
               </article>
 
               <div className="space-y-6">
                 <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
-                    Personality
-                  </div>
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">Personality</div>
                   <ul className="space-y-3 text-sm text-white/70">
                     <li>• Calm around people and other animals.</li>
                     <li>• Learns routines quickly and responds well to care.</li>
@@ -135,22 +115,11 @@ function AnimalDetailPage() {
                 </div>
 
                 <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">
-                    Medical History
-                  </div>
+                  <div className="text-xs uppercase tracking-[0.24em] text-white/35 mb-4">Medical History</div>
                   <div className="space-y-3 text-sm text-white/70">
-                    <div className="flex justify-between gap-3">
-                      <span>Initial check</span>
-                      <span className="text-white/40">Completed</span>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <span>Vaccination</span>
-                      <span className="text-white/40">Up to date</span>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <span>Recovery phase</span>
-                      <span className="text-white/40">Active</span>
-                    </div>
+                    <div className="flex justify-between gap-3"><span>Initial check</span><span className="text-white/40">Completed</span></div>
+                    <div className="flex justify-between gap-3"><span>Vaccination</span><span className="text-white/40">Up to date</span></div>
+                    <div className="flex justify-between gap-3"><span>Recovery phase</span><span className="text-white/40">Active</span></div>
                   </div>
                 </div>
               </div>
@@ -159,9 +128,7 @@ function AnimalDetailPage() {
 
           <aside className="space-y-4">
             <div className="rounded-[28px] bg-[#151517] border border-white/10 p-6">
-              <div className="text-xs uppercase tracking-[0.24em] text-white/35">
-                Profile
-              </div>
+              <div className="text-xs uppercase tracking-[0.24em] text-white/35">Profile</div>
               <div className="mt-2 text-3xl font-semibold">{title}</div>
               <div className="mt-1 text-sm text-white/50">{species}</div>
 
@@ -190,14 +157,6 @@ function AnimalDetailPage() {
               >
                 Apply to Adopt
               </Link>
-
-              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 p-4">
-                <div className="w-12 h-12 rounded-full bg-white/10" />
-                <div>
-                  <div className="text-base font-medium">Sarah Admin</div>
-                  <div className="text-sm text-white/45">Assigned caregiver</div>
-                </div>
-              </div>
             </div>
 
             <div className="rounded-[28px] bg-[#151517] border border-white/10 p-5">
@@ -215,10 +174,7 @@ function AnimalDetailPage() {
               <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                 <div className="h-full rounded-full bg-[#ff6b2b]" style={{ width: '68%' }} />
               </div>
-
-              <p className="text-xs text-white/45 mt-3">
-                Covering medical care, food, and recovery support.
-              </p>
+              <p className="text-xs text-white/45 mt-3">Covering medical care, food, and recovery support.</p>
 
               <div className="mt-4">
                 <a
