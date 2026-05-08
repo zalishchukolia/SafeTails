@@ -808,10 +808,6 @@ export default function HomePage() {
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
 
-<<<<<<< HEAD
-                {/* ГОЛОВНЕ ФОТО */}
-=======
->>>>>>> origin/main
                 <div className="form-field">
                   <label>Головне фото</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -820,15 +816,7 @@ export default function HomePage() {
                         <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
                           <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-<<<<<<< HEAD
-                        <button
-                          type="button"
-                          onClick={() => { setMainImage(null); setMainPreview(null) }}
-                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                        >×</button>
-=======
                         <button type="button" onClick={() => { setMainImage(null); setMainPreview(null) }} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
->>>>>>> origin/main
                       </div>
                     )}
                     <label htmlFor="mainImageInput" style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
@@ -846,7 +834,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* ГАЛЕРЕЯ — ВИПРАВЛЕНО */}
                 <div className="form-field">
                   <label>Галерея (до 3 фото)</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -855,40 +842,14 @@ export default function HomePage() {
                         <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
                           <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-<<<<<<< HEAD
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setGallery(prev => prev.filter((_, idx) => idx !== i))
-                            setGalleryPreviews(prev => prev.filter((_, idx) => idx !== i))
-                          }}
-                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
-                        >×</button>
-=======
                         <button type="button" onClick={() => { setGallery(prev => prev.filter((_, idx) => idx !== i)); setGalleryPreviews(prev => prev.filter((_, idx) => idx !== i)) }} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
->>>>>>> origin/main
                       </div>
                     ))}
                     {galleryPreviews.length < 3 && (
-<<<<<<< HEAD
-                      <label style={{
-                        width: 80, height: 80, borderRadius: 12,
-                        border: '2px dashed #333', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                        color: '#555', fontSize: 24, gap: 4, flexShrink: 0,
-                      }}>
-                        <span>+</span>
-                        <span style={{ fontSize: 10, color: '#444' }}>фото</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-=======
                       <label style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
                         <span>+</span>
                         <span style={{ fontSize: 10, color: '#444' }}>фото</span>
                         <input type="file" accept="image/*" style={{ display: 'none' }}
->>>>>>> origin/main
                           onChange={e => {
                             const file = e.target.files[0]
                             if (!file) return
