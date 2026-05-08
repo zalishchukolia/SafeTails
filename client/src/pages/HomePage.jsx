@@ -1055,13 +1055,21 @@ export default function HomePage() {
 
             <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
+
                 {/* ГОЛОВНЕ ФОТО */}
                 <div className="form-field">
                   <label>Головне фото</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     {mainPreview && (
-                      <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b', flexShrink: 0 }}>
-                        <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setMainImage(null); setMainPreview(null) }}
+                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                        >×</button>
                       </div>
                     )}
                     <label htmlFor="mainImageInput" style={{
@@ -1084,17 +1092,27 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* ГАЛЕРЕЯ */}
+                {/* ГАЛЕРЕЯ — ВИПРАВЛЕНО */}
                 <div className="form-field">
                   <label>Галерея (до 3 фото)</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     {galleryPreviews.map((src, i) => (
-                      <div key={i} style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b', flexShrink: 0 }}>
-                        <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setGallery(prev => prev.filter((_, idx) => idx !== i))
+                            setGalleryPreviews(prev => prev.filter((_, idx) => idx !== i))
+                          }}
+                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                        >×</button>
                       </div>
                     ))}
                     {galleryPreviews.length < 3 && (
-                      <label htmlFor="galleryInput" style={{
+                      <label style={{
                         width: 80, height: 80, borderRadius: 12,
                         border: '2px dashed #333', display: 'flex', flexDirection: 'column',
                         alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
@@ -1102,15 +1120,20 @@ export default function HomePage() {
                       }}>
                         <span>+</span>
                         <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files[0]
+                            if (!file) return
+                            setGallery(prev => [...prev, file])
+                            setGalleryPreviews(prev => [...prev, URL.createObjectURL(file)])
+                            e.target.value = ''
+                          }}
+                        />
                       </label>
                     )}
-                    <input id="galleryInput" type="file" accept="image/*" multiple style={{ display: 'none' }}
-                      onChange={e => {
-                        const files = Array.from(e.target.files).slice(0, 3)
-                        setGallery(files)
-                        setGalleryPreviews(files.map(f => URL.createObjectURL(f)))
-                      }}
-                    />
                   </div>
                 </div>
 
