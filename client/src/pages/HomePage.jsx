@@ -582,7 +582,7 @@ export default function HomePage() {
       <>
         <section className="hero-block">
           <div className="hero-copy">
-            <h2>Активні порятунки</h2>
+            <h2>Активні <span style={{ color: '#ff6b2b', fontFamily: 'inherit', fontWeight: 'inherit' }}>порятунки</span></h2>
             <p>Відстежуйте активні справи порятунку, відправляйте команди та переглядайте деталі в одному місці.</p>
           </div>
         </section>
