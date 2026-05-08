@@ -4,26 +4,97 @@ import LoginPromptModal from '../components/LoginPromptModal'
 import AuthModal from '../components/AuthModal'
 
 const API = 'https://safetails-production-8790.up.railway.app'
+const mono = "'Inter', monospace"
 
 const logisticsSeed = [
-  { id: 1, icon: '📦', title: 'Supply run', detail: 'Medical kit restock for central clinic', eta: '45 min', type: 'Low' },
-  { id: 2, icon: '🧼', title: 'Shelter maintenance', detail: 'Water and sanitation check in Kennel A', eta: 'Now', type: 'Scheduled' },
-  { id: 3, icon: '🚑', title: 'Transport pickup', detail: 'Crate and ambulance required at Dock 2', eta: '15 min', type: 'High' },
+  { id: 1, icon: '📦', title: 'Поповнення запасів', detail: 'Поповнення медичного набору для центральної клініки', eta: '45 хв', type: 'Низький' },
+  { id: 2, icon: '🧼', title: 'Технічне обслуговування притулку', detail: 'Перевірка водопостачання і санітарії у вольєрі А', eta: 'Зараз', type: 'Заплановано' },
+  { id: 3, icon: '🚑', title: 'Транспортне забезпечення', detail: 'Потрібна клітка та машина швидкої допомоги на Док 2', eta: '15 хв', type: 'Високий' },
 ]
 
 const medicalSeed = [
-  { id: 1, patient: '🐕 Bruno', treatment: 'IV fluids', doctor: 'Dr. Aris', status: 'Urgent' },
-  { id: 2, patient: '🐈 Mila', treatment: 'Post-op monitoring', doctor: 'Nurse Milla', status: 'Stable' },
-  { id: 3, patient: '🐇 Snow', treatment: 'Wound cleaning', doctor: 'Rapid Team A', status: 'Critical' },
+  { id: 1, patient: '🐕 Бруно', treatment: 'Внутрішньовенні рідини', doctor: 'Лікар Аріс', status: 'Urgent' },
+  { id: 2, patient: '🐈 Міла', treatment: 'Спостереження після операції', doctor: 'Медсестра Мілла', status: 'Stable' },
+  { id: 3, patient: '🐇 Сніжок', treatment: 'Обробка рани', doctor: 'Швидка команда А', status: 'Critical' },
 ]
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '◌' },
-  { id: 'rescues', label: 'Active Rescues', icon: '◌' },
-  { id: 'dispatch', label: 'Dispatch', icon: '◌' },
-  { id: 'medical', label: 'Medical Log', icon: '◌' },
-  { id: 'archive', label: 'Archive', icon: '◌' },
+  { id: 'dashboard', label: 'Дашборд', icon: '◌' },
+  { id: 'rescues', label: 'Активні порятунки', icon: '◌' },
+  { id: 'dispatch', label: 'Диспетчер', icon: '◌' },
+  { id: 'medical', label: 'Медичний журнал', icon: '◌' },
+  { id: 'archive', label: 'Архів', icon: '◌' },
 ]
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: '#555', letterSpacing: 2, fontFamily: mono, marginBottom: 16 }}>{title}</div>
+      {links.map((link) => (
+        <div key={link} style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 12, cursor: 'pointer' }}>{link}</div>
+      ))}
+    </div>
+  )
+}
+
+function Footer({ sidebarOpen }) {
+  return (
+    <footer
+      style={{
+        background: '#0d0d0d',
+        fontFamily: "'Inter', sans-serif",
+        borderTop: '1px solid #1e1e1e',
+        marginTop: 'auto',
+        paddingLeft: sidebarOpen ? 188 : 0,
+        transition: 'padding-left 0.25s ease',
+      }}
+    >
+      <div style={{ maxWidth: 1320, margin: '0 auto', padding: '42px 40px 26px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 34, marginBottom: 30 }}>
+          <div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                fontStyle: 'italic',
+                background: 'linear-gradient(90deg,#ff6b2b,#ff4500)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                marginBottom: 14,
+              }}
+            >
+              SafeTails
+            </div>
+            <p style={{ fontSize: 13, color: '#717171', lineHeight: 1.8, maxWidth: 290, margin: 0 }}>
+              Допомагаємо тваринам знайти безпеку, турботу та новий дім. Разом ми можемо змінити їхнє майбутнє.
+            </p>
+          </div>
+          <FooterColumn title="НАВІГАЦІЯ" links={['Панель', 'Тварини', 'Відправка']} />
+          <FooterColumn title="ДОПОМОГА" links={['Прихисток', 'Медична карта', 'Архів']} />
+          <FooterColumn title="ПІДТРИМКА" links={['Довідка', 'Донат', 'Волонтерство']} />
+          <FooterColumn title="ПРАВОВА" links={['Конфіденційність', 'Умови']} />
+        </div>
+        <div
+          style={{
+            borderTop: '1px solid #1a1a1a',
+            paddingTop: 18,
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 20,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontSize: 12, color: '#4d4d4d' }}>© 2026 SafeTails. Всі права захищені.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>↗</span>
+            <span style={{ fontSize: 14, color: '#4d4d4d', cursor: 'pointer' }}>✦</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
 
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
@@ -36,9 +107,12 @@ function statusTone(status) {
 }
 
 function statusLabel(status) {
-  if (status === 'needs rescue') return 'Needs Rescue'
-  if (status === 'rescued') return 'Rescued'
-  if (status === 'archived') return 'Archived'
+  if (status === 'needs rescue') return 'Потребує порятунку'
+  if (status === 'rescued') return 'Врятовано'
+  if (status === 'archived') return 'В архіві'
+  if (status === 'Critical') return 'Критичний'
+  if (status === 'Stable') return 'Стабільний'
+  if (status === 'Urgent') return 'Терміновий'
   return status
 }
 
@@ -86,13 +160,23 @@ function MissionRow({ mission, active, onSelect }) {
       className={`mission-row ${active ? 'active' : ''}`}
       onClick={() => onSelect(mission.id)}
     >
-      <div className={`mission-thumb ${mission.theme}`}>{mission.emoji}</div>
+      <div className={`mission-thumb ${mission.theme}`}>
+        {mission.imageUrl ? (
+          <img
+            src={mission.imageUrl}
+            alt={mission.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 18 }}
+          />
+        ) : (
+          mission.emoji
+        )}
+      </div>
       <div className="mission-copy">
         <div className="mission-topline">
           <h3>{mission.name}</h3>
           <StatusPill status={mission.status} />
         </div>
-        <p>{mission.species} · {mission.age} y.o.</p>
+        <p>{mission.species} · {mission.age} р.</p>
         <div className="mission-meta">
           <span>{mission.temperament}</span>
           {mission.city ? <span>{mission.city}</span> : null}
@@ -132,6 +216,10 @@ export default function HomePage() {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [mainImage, setMainImage] = useState(null)
+  const [mainPreview, setMainPreview] = useState(null)
+  const [gallery, setGallery] = useState([])
+  const [galleryPreviews, setGalleryPreviews] = useState([])
 
   const [form, setForm] = useState({
     name: '',
@@ -150,39 +238,38 @@ export default function HomePage() {
   useEffect(() => {
     setLoading(true)
 
-    fetch(`${API}/api/animals`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!Array.isArray(data)) return
+    const mapAnimal = (a) => ({
+      id: a.id ?? a._id,
+      name: a.name,
+      species: a.species ?? '',
+      age: a.age ?? '?',
+      description: a.description ?? '',
+      temperament: a.temperament ?? '',
+      status: a.status ?? 'needs rescue',
+      city: a.city ?? '',
+      weight: a.weight ?? null,
+      lat: a.lat ?? null,
+      lng: a.lng ?? null,
+      imageUrl: a.imageUrl || null,
+      emoji: emojiFromSpecies(a.species),
+      theme: themeFromStatus(a.status),
+      updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
+      archivedAt:
+        a.status === 'archived'
+          ? new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA')
+          : null,
+    })
 
-        const mapped = data.map((a) => ({
-          id: a.id ?? a._id,
-          name: a.name,
-          species: a.species ?? '',
-          age: a.age ?? '?',
-          description: a.description ?? '',
-          temperament: a.temperament ?? '',
-          status: a.status ?? 'needs rescue',
-          city: a.city ?? '',
-          weight: a.weight ?? null,
-          lat: a.lat ?? null,
-          lng: a.lng ?? null,
-          emoji: emojiFromSpecies(a.species),
-          theme: themeFromStatus(a.status),
-          updated: new Date(a.updatedAt ?? Date.now()).toLocaleDateString('uk-UA'),
-        }))
-
-        const active = mapped.filter((item) => item.status !== 'archived')
-        const archived = mapped.filter((item) => item.status === 'archived')
-
-        setMissions(active)
-        setArchivedMissions(archived)
-
-        if (active.length > 0) {
-          setSelectedId(active[0].id)
-        } else {
-          setSelectedId(null)
-        }
+    Promise.all([
+      fetch(`${API}/api/animals`).then((r) => r.json()),
+      fetch(`${API}/api/animals/archived`).then((r) => r.json()),
+    ])
+      .then(([active, archived]) => {
+        const mappedActive = Array.isArray(active) ? active.map(mapAnimal) : []
+        const mappedArchived = Array.isArray(archived) ? archived.map(mapAnimal) : []
+        setMissions(mappedActive)
+        setArchivedMissions(mappedArchived)
+        setSelectedId(mappedActive[0]?.id ?? null)
       })
       .catch((err) => console.error('Fetch animals error:', err))
       .finally(() => setLoading(false))
@@ -244,6 +331,10 @@ export default function HomePage() {
       city: '',
       weight: '',
     })
+    setMainImage(null)
+    setMainPreview(null)
+    setGallery([])
+    setGalleryPreviews([])
   }
 
   function handleFormChange(e) {
@@ -289,27 +380,25 @@ export default function HomePage() {
       }
     }
 
-    const payload = {
-      name: form.name.trim(),
-      species: form.species,
-      age: Number(form.age) || 0,
-      description: form.description.trim(),
-      status: form.status,
-      temperament: form.temperament,
-      city: form.city.trim(),
-      weight: form.weight ? Number(form.weight) : null,
-      lat,
-      lng,
-    }
-
     try {
+      const formData = new FormData()
+      formData.append('name', form.name.trim())
+      formData.append('species', form.species)
+      formData.append('age', Number(form.age) || 0)
+      formData.append('description', form.description.trim())
+      formData.append('status', form.status)
+      formData.append('temperament', form.temperament)
+      formData.append('city', form.city.trim())
+      if (form.weight) formData.append('weight', Number(form.weight))
+      if (lat) formData.append('lat', lat)
+      if (lng) formData.append('lng', lng)
+      if (mainImage) formData.append('mainImage', mainImage)
+      gallery.forEach((f) => formData.append('gallery', f))
+
       const res = await fetch(`${API}/api/animals`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET,
-        },
-        body: JSON.stringify(payload),
+        headers: { 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET },
+        body: formData,
       })
 
       if (!res.ok) throw new Error('Server error')
@@ -327,6 +416,7 @@ export default function HomePage() {
         weight: saved.weight ?? null,
         lat: saved.lat ?? null,
         lng: saved.lng ?? null,
+        imageUrl: saved.imageUrl || null,
         emoji: emojiFromSpecies(saved.species),
         theme: themeFromStatus(saved.status),
         updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
@@ -345,7 +435,7 @@ export default function HomePage() {
       resetForm()
     } catch (err) {
       console.error(err)
-      alert('Не вдалося створити місію.')
+      alert('Не вдалося створити запис.')
     }
   }
 
@@ -354,8 +444,19 @@ export default function HomePage() {
     navigate(`/animals/${selectedMission.id}`)
   }
 
-  function handleArchive() {
+  async function handleArchive() {
     if (!selectedMission) return
+
+    try {
+      await fetch(`${API}/api/animals/${selectedMission.id}/archive`, {
+        method: 'PATCH',
+        headers: { 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET },
+      })
+    } catch (err) {
+      console.error('Archive error:', err)
+      alert('Не вдалося заархівувати тварину.')
+      return
+    }
 
     const archivedAnimal = {
       ...selectedMission,
@@ -455,7 +556,7 @@ export default function HomePage() {
 
         <div className="topbar-actions">
           <button className="collapse-btn" type="button" onClick={() => setSidebarOpen((prev) => !prev)}>
-            {sidebarOpen ? 'Hide menu' : 'Show menu'}
+            {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
           </button>
         </div>
       </section>
@@ -466,18 +567,18 @@ export default function HomePage() {
     if (activeSection === 'dashboard') {
       return (
         <>
-          {renderTopBar('Dashboard', 'Overview of rescue activity, critical alerts, logistics load, and current medical flow.')}
+          {renderTopBar('Дашборд', 'Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.')}
 
           <section className="stats-grid">
-            <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Immediate response required" />
-            <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Animals under controlled care" />
-            <StatCard label="Archived" value={String(archivedCount).padStart(2, '0')} meta="Moved to archive" />
-            <StatCard label="Total animals" value={String(totalCount).padStart(2, '0')} meta="In the system" />
-            <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
+            <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Потрібне негайне реагування" />
+            <StatCard label="Врятовано" value={String(rescuedCount).padStart(2, '0')} meta="Тварини під контрольованим доглядом" />
+            <StatCard label="В архіві" value={String(archivedCount).padStart(2, '0')} meta="Переміщено до архіву" />
+            <StatCard label="Всього тварин" value={String(totalCount).padStart(2, '0')} meta="У системі" />
+            <StatCard label="Собаки" value={String(dogsCount).padStart(2, '0')} meta="Собачі випадки" />
           </section>
 
           <section className="workspace">
-            <SectionCard title="Priority board" subtitle="Quick overview of animals needing rescue">
+            <SectionCard title="Пріоритетна дошка" subtitle="Швидкий огляд тварин, що потребують порятунку">
               <div className="simple-list">
                 {missions.filter((m) => m.status === 'needs rescue').slice(0, 3).map((item) => (
                   <div className="simple-row" key={item.id}>
@@ -491,7 +592,7 @@ export default function HomePage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Operations note" subtitle="Live command summary">
+            <SectionCard title="Оперативна нотатка" subtitle="Зведення поточного командування">
               <div className="detail-note">
                 <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
               </div>
@@ -506,9 +607,9 @@ export default function HomePage() {
     if (activeSection === 'dispatch') {
       return (
         <>
-          {renderTopBar('Dispatch', 'Coordinate teams, assign routes, and track outgoing rescue transport requests.')}
+          {renderTopBar('Диспетчер', 'Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.')}
 
-          <section className="logistics" aria-label="Dispatch queue">
+          <section className="logistics" aria-label="Черга диспетчера">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
                 <div className="logistics-icon">{item.icon}</div>
@@ -532,9 +633,9 @@ export default function HomePage() {
     if (activeSection === 'medical') {
       return (
         <>
-          {renderTopBar('Medical Log', 'Review treatment progress, assigned staff, and recovery updates for each patient.')}
+          {renderTopBar('Медичний журнал', 'Переглядайте хід лікування, призначений персонал та оновлення одужання для кожного пацієнта.')}
 
-          <SectionCard title="Medical records" subtitle="Latest care actions">
+          <SectionCard title="Медичні записи" subtitle="Останні дії з лікування">
             <div className="simple-list">
               {medicalSeed.map((item) => (
                 <div className="simple-row" key={item.id}>
@@ -556,23 +657,23 @@ export default function HomePage() {
     if (activeSection === 'archive') {
       return (
         <>
-          {renderTopBar('Archive', 'Browse completed rescue missions, recovery outcomes, and archived animal cases.')}
+          {renderTopBar('Архів', 'Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.')}
 
-          <SectionCard title="Archived animals" subtitle="Cases moved from active rescue flow">
+          <SectionCard title="Архівовані тварини" subtitle="Справи, переміщені з активного потоку порятунку">
             <div className="simple-list">
               {archivedMissions.length > 0 ? (
                 archivedMissions.map((item) => (
                   <div className="simple-row" key={item.id}>
                     <div>
                       <strong>{item.name}</strong>
-                      <p>{item.species} · Archived {item.archivedAt || item.updated}</p>
+                      <p>{item.species} · Архівовано {item.archivedAt || item.updated}</p>
                     </div>
-                    <span className="archive-tag">Archived</span>
+                    <span className="archive-tag">В архіві</span>
                   </div>
                 ))
               ) : (
                 <div className="detail-note">
-                  <p>No archived animals yet.</p>
+                  <p>Архівованих тварин ще немає.</p>
                 </div>
               )}
             </div>
@@ -585,52 +686,60 @@ export default function HomePage() {
 
     return (
       <>
-        {renderTopBar('Active Rescues', 'Track active rescue cases, dispatch teams, and review field details in one place.')}
+        {renderTopBar('Активні порятунки', 'Відстежуйте активні справи порятунку, відправляйте команди та переглядайте деталі в одному місці.')}
 
-        <section className="stats-grid" aria-label="Mission statistics">
-          <StatCard label="Needs rescue" value={String(needsRescueCount).padStart(2, '0')} meta="Animals needing immediate action" />
-          <StatCard label="Rescued" value={String(rescuedCount).padStart(2, '0')} meta="Successfully helped" />
-          <StatCard label="Archived" value={String(archivedCount).padStart(2, '0')} meta="Moved out of active list" />
-          <StatCard label="Dogs" value={String(dogsCount).padStart(2, '0')} meta="Canine cases" />
+        <section className="stats-grid" aria-label="Статистика місій">
+          <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Тварини, що потребують негайних дій" />
+          <StatCard label="Врятовано" value={String(rescuedCount).padStart(2, '0')} meta="Успішно врятовані" />
+          <StatCard label="В архіві" value={String(archivedCount).padStart(2, '0')} meta="Видалено з активного списку" />
+          <StatCard label="Собаки" value={String(dogsCount).padStart(2, '0')} meta="Собачі випадки" />
         </section>
 
         <section className="workspace">
           <div className="panel">
             <div className="panel-header">
               <div>
-                <h3>Animal stream</h3>
-                <p>Pick an animal to review details.</p>
+                <h3>Список тварин</h3>
+                <p>Оберіть тварину для перегляду деталей.</p>
               </div>
 
               <div className="controls">
                 <input
                   className="search"
                   type="text"
-                  placeholder="Search animals"
+                  placeholder="Пошук тварин"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   autoComplete="off"
                 />
 
-                {['All', 'needs rescue', 'rescued'].map((value) => (
+                {[
+                  { value: 'All', label: 'Всі' },
+                  { value: 'needs rescue', label: 'Потребують порятунку' },
+                  { value: 'rescued', label: 'Врятовано' },
+                ].map(({ value, label }) => (
                   <button
                     key={value}
                     type="button"
                     className={`toolbar-btn ${filter === value ? 'active' : ''}`}
                     onClick={() => setFilter(value)}
                   >
-                    {value === 'All' ? 'All' : statusLabel(value)}
+                    {label}
                   </button>
                 ))}
 
-                {['Name', 'Age', 'Status'].map((value) => (
+                {[
+                  { value: 'Name', label: "Ім'я" },
+                  { value: 'Age', label: 'Вік' },
+                  { value: 'Status', label: 'Статус' },
+                ].map(({ value, label }) => (
                   <button
                     key={value}
                     type="button"
                     className={`toolbar-btn ${sort === value ? 'active' : ''}`}
                     onClick={() => setSort(value)}
                   >
-                    {value}
+                    {label}
                   </button>
                 ))}
               </div>
@@ -652,7 +761,7 @@ export default function HomePage() {
                 ))
               ) : (
                 <div className="detail-note">
-                  <p>No animals match the current search or filters.</p>
+                  <p>Тварин за поточним пошуком або фільтрами не знайдено.</p>
                 </div>
               )}
             </div>
@@ -660,14 +769,20 @@ export default function HomePage() {
 
           {selectedMission ? (
             <aside className="panel detail-card">
-              <div className={`hero ${selectedMission.theme}`}>{selectedMission.emoji}</div>
+              <div className={`hero ${selectedMission.theme}`}>
+                {selectedMission.imageUrl ? (
+                  <img src={selectedMission.imageUrl} alt={selectedMission.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  selectedMission.emoji
+                )}
+              </div>
 
               <div className="detail-body">
                 <div className="detail-head">
                   <div>
                     <StatusPill status={selectedMission.status} />
                     <h3 style={{ marginTop: 12 }}>{selectedMission.name}</h3>
-                    <p>{selectedMission.species} · {selectedMission.age} y.o.</p>
+                    <p>{selectedMission.species} · {selectedMission.age} р.</p>
                   </div>
                 </div>
 
@@ -676,19 +791,16 @@ export default function HomePage() {
                     <span>Темперамент</span>
                     <strong>{selectedMission.temperament || 'Невідомо'}</strong>
                   </div>
-
                   <div className="mini-card">
                     <span>Вік</span>
                     <strong>{selectedMission.age} р.</strong>
                   </div>
-
                   {selectedMission.city && (
                     <div className="mini-card">
                       <span>Місто</span>
                       <strong>{selectedMission.city}</strong>
                     </div>
                   )}
-
                   {selectedMission.weight && (
                     <div className="mini-card">
                       <span>Вага</span>
@@ -703,11 +815,10 @@ export default function HomePage() {
 
                 <div className="detail-actions">
                   <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>
-                    Open case
+                    Відкрити справу
                   </button>
-
                   <button className="detail-ghost-btn" type="button" onClick={handleArchive}>
-                    Archive
+                    Архівувати
                   </button>
                 </div>
               </div>
@@ -715,10 +826,10 @@ export default function HomePage() {
           ) : null}
         </section>
 
-        <section className="logistics" aria-label="Secondary logistics">
+        <section className="logistics" aria-label="Додаткова логістика">
           <div className="logistics-head">
-            <h3>Secondary logistics</h3>
-            <span className="eyebrow small-no-margin">Support queue</span>
+            <h3>Додаткова логістика</h3>
+            <span className="eyebrow small-no-margin">Черга підтримки</span>
           </div>
 
           {logisticsSeed.map((item) => (
@@ -743,8 +854,16 @@ export default function HomePage() {
 
   return (
     <div className="missions-shell">
+      <button
+        className="collapse-btn-fixed"
+        type="button"
+        onClick={() => setSidebarOpen((p) => !p)}
+      >
+        {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
+      </button>
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
           --bg: #07090d;
@@ -758,6 +877,8 @@ export default function HomePage() {
           --accent: #ff6b2b;
           --shadow: 0 18px 48px rgba(0,0,0,0.24);
           --radius: 22px;
+          --font-display: 'Playfair Display', serif;
+          --font-body: 'Inter', sans-serif;
         }
 
         * {
@@ -772,6 +893,31 @@ export default function HomePage() {
             var(--bg);
           color: var(--text);
           font-family: 'Inter', sans-serif;
+        }
+
+        .collapse-btn-fixed {
+          position: fixed;
+          top: 70px;
+          right: 20px;
+          z-index: 100;
+          border: 1px solid var(--border);
+          background: rgba(17,21,28,0.95);
+          backdrop-filter: blur(12px);
+          color: var(--text);
+          border-radius: 14px;
+          height: 40px;
+          padding: 0 16px;
+          cursor: pointer;
+          font-family: var(--font-body);
+          font-size: 13px;
+          font-weight: 500;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          transition: transform .18s ease, background .18s ease;
+        }
+
+        .collapse-btn-fixed:hover {
+          transform: translateY(-1px);
+          background: #1a1f28;
         }
 
         .layout {
@@ -857,11 +1003,13 @@ export default function HomePage() {
         .panel-header h3,
         .hero-copy h2 {
           margin: 0;
+          font-family: var(--font-display);
         }
 
         .homepage-footer-brand h2 {
           margin: 0;
           color: var(--accent);
+          font-family: var(--font-display);
         }
 
         .command-card p,
@@ -876,6 +1024,7 @@ export default function HomePage() {
         .detail-head p {
           margin: 0;
           color: var(--muted);
+          font-family: var(--font-body);
         }
 
         .nav-list {
@@ -890,12 +1039,15 @@ export default function HomePage() {
         .new-mission-btn,
         .detail-primary-btn,
         .detail-ghost-btn,
-        .homepage-footer-column button {
+        .homepage-footer-column button,
+        .modal-close-btn,
+        .modal-submit-btn {
           border: 1px solid var(--border);
           background: var(--panel-2);
           color: var(--text);
           cursor: pointer;
           transition: 0.2s ease;
+          font-family: var(--font-body);
         }
 
         .ref-nav-link {
@@ -915,7 +1067,9 @@ export default function HomePage() {
         .new-mission-btn:hover,
         .detail-primary-btn:hover,
         .detail-ghost-btn:hover,
-        .homepage-footer-column button:hover {
+        .homepage-footer-column button:hover,
+        .modal-close-btn:hover,
+        .modal-submit-btn:hover {
           border-color: rgba(255,107,43,0.4);
           background: rgba(255,107,43,0.1);
         }
@@ -988,6 +1142,7 @@ export default function HomePage() {
           font-size: 12px;
           letter-spacing: 0.14em;
           text-transform: uppercase;
+          font-family: var(--font-display);
         }
 
         .small-no-margin {
@@ -998,6 +1153,7 @@ export default function HomePage() {
           display: block;
           font-size: 34px;
           margin-bottom: 6px;
+          font-family: var(--font-display);
         }
 
         .workspace {
@@ -1104,6 +1260,7 @@ export default function HomePage() {
           display: grid;
           place-items: center;
           font-size: 34px;
+          overflow: hidden;
         }
 
         .mission-thumb.danger {
@@ -1138,6 +1295,7 @@ export default function HomePage() {
         .detail-head h3 {
           margin: 0;
           font-size: 16px;
+          font-family: var(--font-display);
         }
 
         .mission-meta {
@@ -1159,6 +1317,7 @@ export default function HomePage() {
           font-size: 12px;
           font-weight: 700;
           white-space: nowrap;
+          font-family: var(--font-display);
         }
 
         .status-dot {
@@ -1177,6 +1336,7 @@ export default function HomePage() {
           place-items: center;
           font-size: 96px;
           border-bottom: 1px solid var(--border);
+          overflow: hidden;
         }
 
         .hero.danger {
@@ -1224,6 +1384,7 @@ export default function HomePage() {
         .mini-card span {
           color: var(--soft);
           font-size: 12px;
+          font-family: var(--font-display);
         }
 
         .detail-note {
@@ -1318,6 +1479,7 @@ export default function HomePage() {
           font-size: 12px;
           letter-spacing: 0.12em;
           color: #ffb18b;
+          font-family: var(--font-display);
         }
 
         .homepage-footer-column button {
@@ -1408,6 +1570,7 @@ export default function HomePage() {
           font-size: 13px;
           color: #d7dde6;
           font-weight: 600;
+          font-family: var(--font-display);
         }
 
         .modal-actions {
@@ -1415,6 +1578,20 @@ export default function HomePage() {
           border-top: 1px solid var(--border);
           background: #0f141b;
           flex-shrink: 0;
+        }
+
+        .modal-close-btn,
+        .modal-submit-btn {
+          min-height: 48px;
+          border-radius: 14px;
+          padding: 0 18px;
+          font-weight: 700;
+        }
+
+        .modal-submit-btn {
+          background: var(--accent);
+          color: white;
+          border-color: transparent;
         }
 
         @media (max-width: 1180px) {
@@ -1532,12 +1709,12 @@ export default function HomePage() {
             <div className="command-card">
               <div className="command-icon">✦</div>
               <div>
-                <h3>Command Center</h3>
-                <p>SECTOR 7 DELTA</p>
+                <h3>Командний центр</h3>
+                <p>СЕКТОР 7 ДЕЛЬТА</p>
               </div>
             </div>
 
-            <nav className="nav-list" aria-label="Main navigation">
+            <nav className="nav-list" aria-label="Головна навігація">
               {navItems.map((item) => (
                 <button
                   key={item.id}
@@ -1553,7 +1730,7 @@ export default function HomePage() {
 
             <div className="sidebar-footer-ref">
               <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>
-                + Add Animal
+                + Додати тварину
               </button>
             </div>
           </aside>
@@ -1565,12 +1742,12 @@ export default function HomePage() {
       </div>
 
       {isCreateOpen && (
-        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Create animal">
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Додати тварину">
           <div className="modal-card">
             <div className="modal-header">
               <div>
-                <h3>Create animal</h3>
-                <p>Add a new rescue case to SafeTails.</p>
+                <h3 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>Додати нову тварину</h3>
+                <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>Заповніть форму, щоб створити нову рятувальну місію.</p>
               </div>
               <button className="modal-close" type="button" onClick={() => setIsCreateOpen(false)}>
                 ✕
@@ -1579,49 +1756,197 @@ export default function HomePage() {
 
             <form onSubmit={handleCreateAnimal} style={{ display: 'contents' }}>
               <div className="modal-scroll">
+                <div className="form-field">
+                  <label>Головне фото</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {mainPreview && (
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMainImage(null)
+                            setMainPreview(null)
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: -6,
+                            right: -6,
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: '#ff3b30',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: 14,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+
+                    <label
+                      htmlFor="mainImageInput"
+                      style={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 12,
+                        border: '2px dashed #333',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: '#555',
+                        fontSize: 24,
+                        gap: 4,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span>+</span>
+                      <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                    </label>
+
+                    <input
+                      id="mainImageInput"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files[0]
+                        if (!file) return
+                        setMainImage(file)
+                        setMainPreview(URL.createObjectURL(file))
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label>Галерея (до 3 фото)</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {galleryPreviews.map((src, i) => (
+                      <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setGallery((prev) => prev.filter((_, idx) => idx !== i))
+                            setGalleryPreviews((prev) => prev.filter((_, idx) => idx !== i))
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: -6,
+                            right: -6,
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: '#ff3b30',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: 14,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+
+                    {galleryPreviews.length < 3 && (
+                      <label
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 12,
+                          border: '2px dashed #333',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          color: '#555',
+                          fontSize: 24,
+                          gap: 4,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span>+</span>
+                        <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const file = e.target.files[0]
+                            if (!file) return
+                            setGallery((prev) => [...prev, file])
+                            setGalleryPreviews((prev) => [...prev, URL.createObjectURL(file)])
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
                 <div className="form-grid">
                   <div className="form-field">
-                    <label htmlFor="name">Name</label>
+                    <label htmlFor="name">Ім'я</label>
                     <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="species">Species</label>
+                    <label htmlFor="species">Вид</label>
                     <input id="species" name="species" className="form-input" value={form.species} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="age">Age</label>
+                    <label htmlFor="age">Вік</label>
                     <input id="age" name="age" type="number" className="form-input" value={form.age} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="status">Status</label>
+                    <label htmlFor="status">Статус</label>
                     <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
-                      <option value="needs rescue">Needs rescue</option>
-                      <option value="rescued">Rescued</option>
-                      <option value="archived">Archived</option>
+                      <option value="needs rescue">Потребує порятунку</option>
+                      <option value="rescued">Врятовано</option>
+                      <option value="archived">В архіві</option>
                     </select>
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="temperament">Temperament</label>
+                    <label htmlFor="temperament">Темперамент</label>
                     <input id="temperament" name="temperament" className="form-input" value={form.temperament} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="city">City</label>
+                    <label htmlFor="city">Місто</label>
                     <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} />
                   </div>
 
                   <div className="form-field">
-                    <label htmlFor="weight">Weight</label>
+                    <label htmlFor="weight">Вага</label>
                     <input id="weight" name="weight" type="number" className="form-input" value={form.weight} onChange={handleFormChange} />
                   </div>
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">Опис</label>
                   <textarea
                     id="description"
                     name="description"
@@ -1634,10 +1959,10 @@ export default function HomePage() {
 
               <div className="modal-actions">
                 <button className="detail-ghost-btn" type="button" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
+                  Скасувати
                 </button>
                 <button className="detail-primary-btn" type="submit">
-                  Save animal
+                  Зберегти тварину
                 </button>
               </div>
             </form>
@@ -1665,6 +1990,8 @@ export default function HomePage() {
           }}
         />
       )}
+
+      <Footer sidebarOpen={sidebarOpen} />
     </div>
   )
 }

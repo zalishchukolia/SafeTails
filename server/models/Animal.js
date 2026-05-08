@@ -13,6 +13,7 @@ const animalSchema = new mongoose.Schema({
     default: 'needs rescue'
   },
   imageUrl:    { type: String },
+  gallery:     [{ type: String }],
   temperament: { type: String, enum: ['спокійний', 'активний', 'грайливий', 'лагідний', 'незалежний'], default: 'спокійний' },
   city:        { type: String },
   lat:         { type: Number },
