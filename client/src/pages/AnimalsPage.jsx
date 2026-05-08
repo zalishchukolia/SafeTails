@@ -124,8 +124,8 @@ function AnimalCard({ animal, onClose, isHover }) {
               onClick={() => window.location.href = `/animals/${animal._id}`}
               style={{
                 flex: 1, height: 42,
-                background: 'rgba(255,255,255,0.07)',
-                color: '#ccc', border: '1px solid #2a2a3a', borderRadius: 12,
+                background: 'rgba(198, 44, 44, 0.98)',
+                color: '#ccc',  borderRadius: 12,
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font,
               }}>
               Переглянути інформацію
