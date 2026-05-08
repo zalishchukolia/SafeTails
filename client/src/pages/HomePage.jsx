@@ -96,10 +96,24 @@ function Footer({ sidebarOpen }) {
   )
 }
 
+const logisticsSeed = [
+  { id: 1, icon: '📦', title: 'Поповнення запасів', detail: 'Поповнення медичного набору для центральної клініки', eta: '45 хв', type: 'Низький' },
+  { id: 2, icon: '🧼', title: 'Технічне обслуговування притулку', detail: 'Перевірка водопостачання і санітарії у вольєрі А', eta: 'Зараз', type: 'Заплановано' },
+  { id: 3, icon: '🚑', title: 'Транспортне забезпечення', detail: 'Потрібна клітка та машина швидкої допомоги на Док 2', eta: '15 хв', type: 'Високий' },
+]
+
+const navItems = [
+  { id: 'dashboard', label: 'Дашборд', icon: '◌' },
+  { id: 'rescues', label: 'Активні порятунки', icon: '◌' },
+  { id: 'dispatch', label: 'Диспетчер', icon: '◌' },
+  { id: 'archive', label: 'Архів', icon: '◌' },
+]
+
 function statusTone(status) {
   if (status === 'needs rescue') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'rescued') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'archived') return { fg: '#e5e7eb', bg: '#374151', dot: '#9ca3af' }
+  if (status === 'in rescue') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
   if (status === 'Critical') return { fg: '#fff1f1', bg: '#8f1d1d', dot: '#ff6b6b' }
   if (status === 'Stable') return { fg: '#dcfce7', bg: '#143220', dot: '#4ade80' }
   if (status === 'Urgent') return { fg: '#fff7ed', bg: '#7c2d12', dot: '#fb923c' }
@@ -110,6 +124,7 @@ function statusLabel(status) {
   if (status === 'needs rescue') return 'Потребує порятунку'
   if (status === 'rescued') return 'Врятовано'
   if (status === 'archived') return 'В архіві'
+  if (status === 'in rescue') return 'В процесі'
   if (status === 'Critical') return 'Критичний'
   if (status === 'Stable') return 'Стабільний'
   if (status === 'Urgent') return 'Терміновий'
@@ -283,23 +298,18 @@ export default function HomePage() {
 
   const visibleMissions = useMemo(() => {
     let items = [...missions]
-
     if (query.trim()) {
       const q = query.toLowerCase()
       items = items.filter((m) =>
         [m.name, m.species, m.status, m.description, m.temperament, m.city]
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
+          .join(' ').toLowerCase().includes(q)
       )
     }
-
     if (filter !== 'All') items = items.filter((m) => m.status === filter)
 
     if (sort === 'Name') items.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
     else if (sort === 'Age') items.sort((a, b) => Number(a.age) - Number(b.age))
     else if (sort === 'Status') items.sort((a, b) => a.status.localeCompare(b.status))
-
     return items
   }, [missions, filter, query, sort])
 
@@ -311,26 +321,17 @@ export default function HomePage() {
 
   const needsRescueCount = missions.filter((m) => m.status === 'needs rescue').length
   const rescuedCount = missions.filter((m) => m.status === 'rescued').length
+  const inRescueCount = missions.filter((m) => m.status === 'in rescue').length
   const archivedCount = archivedMissions.length
   const totalCount = missions.length + archivedMissions.length
-  const dogsCount = missions.filter(
-    (m) =>
-      m.species?.toLowerCase().includes('dog') ||
-      m.species?.toLowerCase().includes('соб') ||
-      m.species?.toLowerCase().includes('пес')
+  const dogsCount = missions.filter((m) =>
+    m.species?.toLowerCase().includes('dog') ||
+    m.species?.toLowerCase().includes('соб') ||
+    m.species?.toLowerCase().includes('пес')
   ).length
 
   function resetForm() {
-    setForm({
-      name: '',
-      species: 'собака',
-      age: '',
-      description: '',
-      status: 'needs rescue',
-      temperament: 'лагідний',
-      city: '',
-      weight: '',
-    })
+    setForm({ name: '', species: 'собака', age: '', description: '', status: 'needs rescue', temperament: 'лагідний', city: '', weight: '' })
     setMainImage(null)
     setMainPreview(null)
     setGallery([])
@@ -343,41 +344,22 @@ export default function HomePage() {
   }
 
   function handleOpenCreateModal() {
-    if (!isAuthenticated) {
-      setIsLoginPromptOpen(true)
-      return
-    }
+    if (!isAuthenticated) { setIsLoginPromptOpen(true); return }
     setIsCreateOpen(true)
   }
 
   async function handleCreateAnimal(e) {
     e.preventDefault()
-
-    if (!isAuthenticated) {
-      setIsCreateOpen(false)
-      setIsLoginPromptOpen(true)
-      return
-    }
-
+    if (!isAuthenticated) { setIsCreateOpen(false); setIsLoginPromptOpen(true); return }
     if (!form.name.trim() || !form.description.trim()) return
 
-    let lat = null
-    let lng = null
-
+    let lat = null, lng = null
     if (form.city.trim()) {
       try {
-        const geo = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(form.city)}&format=json&limit=1&countrycodes=ua`,
-          { headers: { 'Accept-Language': 'uk' } }
-        )
+        const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(form.city)}&format=json&limit=1&countrycodes=ua`, { headers: { 'Accept-Language': 'uk' } })
         const geoData = await geo.json()
-        if (geoData.length > 0) {
-          lat = parseFloat(geoData[0].lat)
-          lng = parseFloat(geoData[0].lon)
-        }
-      } catch (err) {
-        console.warn('Geocoding failed:', err)
-      }
+        if (geoData.length > 0) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon) }
+      } catch (err) { console.warn('Geocoding failed:', err) }
     }
 
     try {
@@ -400,7 +382,6 @@ export default function HomePage() {
         headers: { 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET },
         body: formData,
       })
-
       if (!res.ok) throw new Error('Server error')
 
       const saved = await res.json()
@@ -419,6 +400,11 @@ export default function HomePage() {
         imageUrl: saved.imageUrl || null,
         emoji: emojiFromSpecies(saved.species),
         theme: themeFromStatus(saved.status),
+        id: saved._id, name: saved.name, species: saved.species, age: saved.age,
+        description: saved.description, temperament: saved.temperament, status: saved.status,
+        city: saved.city ?? '', weight: saved.weight ?? null, lat: saved.lat ?? null,
+        lng: saved.lng ?? null, imageUrl: saved.imageUrl || null,
+        emoji: emojiFromSpecies(saved.species), theme: themeFromStatus(saved.status),
         updated: new Date(saved.createdAt ?? Date.now()).toLocaleDateString('uk-UA'),
       }
 
@@ -430,7 +416,6 @@ export default function HomePage() {
         setSelectedId(newAnimal.id)
         setActiveSection('rescues')
       }
-
       setIsCreateOpen(false)
       resetForm()
     } catch (err) {
@@ -446,7 +431,6 @@ export default function HomePage() {
 
   async function handleArchive() {
     if (!selectedMission) return
-
     try {
       await fetch(`${API}/api/animals/${selectedMission.id}/archive`, {
         method: 'PATCH',
@@ -459,24 +443,14 @@ export default function HomePage() {
     }
 
     const archivedAnimal = {
-      ...selectedMission,
-      status: 'archived',
-      theme: 'archive',
+      ...selectedMission, status: 'archived', theme: 'archive',
       updated: new Date().toLocaleDateString('uk-UA'),
       archivedAt: new Date().toLocaleDateString('uk-UA'),
     }
-
     setArchivedMissions((prev) => [archivedAnimal, ...prev])
-
     const updatedMissions = missions.filter((m) => m.id !== selectedMission.id)
     setMissions(updatedMissions)
-
-    if (updatedMissions.length > 0) {
-      setSelectedId(updatedMissions[0].id)
-    } else {
-      setSelectedId(null)
-    }
-
+    setSelectedId(updatedMissions.length > 0 ? updatedMissions[0].id : null)
     setActiveSection('archive')
   }
 
@@ -569,18 +543,27 @@ export default function HomePage() {
         <>
           {renderTopBar('Дашборд', 'Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.')}
 
+  function renderContent() {
+    if (activeSection === 'dashboard') {
+      return (
+        <>
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Дашборд</h2>
+              <p>Загальний огляд рятувальної діяльності, критичних сповіщень, логістичного навантаження та поточного медичного потоку.</p>
+            </div>
+          </section>
           <section className="stats-grid">
             <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Потрібне негайне реагування" />
+            <StatCard label="В процесі" value={String(inRescueCount).padStart(2, '0')} meta="Рятувальні операції активні" />
             <StatCard label="Врятовано" value={String(rescuedCount).padStart(2, '0')} meta="Тварини під контрольованим доглядом" />
             <StatCard label="В архіві" value={String(archivedCount).padStart(2, '0')} meta="Переміщено до архіву" />
             <StatCard label="Всього тварин" value={String(totalCount).padStart(2, '0')} meta="У системі" />
-            <StatCard label="Собаки" value={String(dogsCount).padStart(2, '0')} meta="Собачі випадки" />
           </section>
-
           <section className="workspace">
             <SectionCard title="Пріоритетна дошка" subtitle="Швидкий огляд тварин, що потребують порятунку">
               <div className="simple-list">
-                {missions.filter((m) => m.status === 'needs rescue').slice(0, 3).map((item) => (
+                {missions.filter((m) => m.status === 'needs rescue').map((item) => (
                   <div className="simple-row" key={item.id}>
                     <div>
                       <strong>{item.emoji} {item.name}</strong>
@@ -591,10 +574,9 @@ export default function HomePage() {
                 ))}
               </div>
             </SectionCard>
-
             <SectionCard title="Оперативна нотатка" subtitle="Зведення поточного командування">
               <div className="detail-note">
-                <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
+                <p>Наразі {needsRescueCount} тварин потребують термінової допомоги. {inRescueCount} в процесі порятунку. {rescuedCount} вже врятовано та перебувають під наглядом.</p>
               </div>
             </SectionCard>
           </section>
@@ -609,18 +591,18 @@ export default function HomePage() {
         <>
           {renderTopBar('Диспетчер', 'Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.')}
 
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Диспетчер</h2>
+              <p>Координуйте команди, призначайте маршрути та відстежуйте запити на рятувальний транспорт.</p>
+            </div>
+          </section>
           <section className="logistics" aria-label="Черга диспетчера">
             {logisticsSeed.map((item) => (
               <button key={item.id} className="logistics-item" type="button">
                 <div className="logistics-icon">{item.icon}</div>
-                <div>
-                  <h4>{item.title}</h4>
-                  <p>{item.detail}</p>
-                </div>
-                <div className="logistics-meta">
-                  <strong>{item.eta}</strong>
-                  <span>{item.type}</span>
-                </div>
+                <div><h4>{item.title}</h4><p>{item.detail}</p></div>
+                <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
               </button>
             ))}
           </section>
@@ -659,6 +641,12 @@ export default function HomePage() {
         <>
           {renderTopBar('Архів', 'Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.')}
 
+          <section className="hero-block">
+            <div className="hero-copy">
+              <h2>Архів</h2>
+              <p>Перегляд завершених рятувальних місій, результатів відновлення та архівованих справ тварин.</p>
+            </div>
+          </section>
           <SectionCard title="Архівовані тварини" subtitle="Справи, переміщені з активного потоку порятунку">
             <div className="simple-list">
               {archivedMissions.length > 0 ? (
@@ -672,9 +660,7 @@ export default function HomePage() {
                   </div>
                 ))
               ) : (
-                <div className="detail-note">
-                  <p>Архівованих тварин ще немає.</p>
-                </div>
+                <div className="detail-note"><p>Архівованих тварин ще немає.</p></div>
               )}
             </div>
           </SectionCard>
@@ -695,9 +681,9 @@ export default function HomePage() {
 
         <section className="stats-grid" aria-label="Статистика місій">
           <StatCard label="Потребують порятунку" value={String(needsRescueCount).padStart(2, '0')} meta="Тварини, що потребують негайних дій" />
+          <StatCard label="В процесі" value={String(inRescueCount).padStart(2, '0')} meta="Рятувальні операції активні" />
           <StatCard label="Врятовано" value={String(rescuedCount).padStart(2, '0')} meta="Успішно врятовані" />
           <StatCard label="В архіві" value={String(archivedCount).padStart(2, '0')} meta="Видалено з активного списку" />
-          <StatCard label="Собаки" value={String(dogsCount).padStart(2, '0')} meta="Собачі випадки" />
         </section>
 
         <section className="workspace">
@@ -707,67 +693,35 @@ export default function HomePage() {
                 <h3>Список тварин</h3>
                 <p>Оберіть тварину для перегляду деталей.</p>
               </div>
-
               <div className="controls">
-                <input
-                  className="search"
-                  type="text"
-                  placeholder="Пошук тварин"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  autoComplete="off"
-                />
-
+                <input className="search" type="text" placeholder="Пошук тварин" value={query} onChange={(e) => setQuery(e.target.value)} autoComplete="off" />
                 {[
                   { value: 'All', label: 'Всі' },
                   { value: 'needs rescue', label: 'Потребують порятунку' },
+                  { value: 'in rescue', label: 'В процесі' },
                   { value: 'rescued', label: 'Врятовано' },
                 ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`toolbar-btn ${filter === value ? 'active' : ''}`}
-                    onClick={() => setFilter(value)}
-                  >
-                    {label}
-                  </button>
+                  <button key={value} type="button" className={`toolbar-btn ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>{label}</button>
                 ))}
-
                 {[
                   { value: 'Name', label: "Ім'я" },
                   { value: 'Age', label: 'Вік' },
                   { value: 'Status', label: 'Статус' },
                 ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`toolbar-btn ${sort === value ? 'active' : ''}`}
-                    onClick={() => setSort(value)}
-                  >
-                    {label}
-                  </button>
+                  <button key={value} type="button" className={`toolbar-btn ${sort === value ? 'active' : ''}`} onClick={() => setSort(value)}>{label}</button>
                 ))}
               </div>
             </div>
 
             <div className="mission-list">
               {loading ? (
-                <div className="detail-note">
-                  <p>Завантаження тварин...</p>
-                </div>
+                <div className="detail-note"><p>Завантаження тварин...</p></div>
               ) : visibleMissions.length > 0 ? (
                 visibleMissions.map((mission) => (
-                  <MissionRow
-                    key={mission.id}
-                    mission={mission}
-                    active={selectedMission?.id === mission.id}
-                    onSelect={setSelectedId}
-                  />
+                  <MissionRow key={mission.id} mission={mission} active={selectedMission?.id === mission.id} onSelect={setSelectedId} />
                 ))
               ) : (
-                <div className="detail-note">
-                  <p>Тварин за поточним пошуком або фільтрами не знайдено.</p>
-                </div>
+                <div className="detail-note"><p>Тварин за поточним пошуком або фільтрами не знайдено.</p></div>
               )}
             </div>
           </div>
@@ -781,7 +735,6 @@ export default function HomePage() {
                   selectedMission.emoji
                 )}
               </div>
-
               <div className="detail-body">
                 <div className="detail-head">
                   <div>
@@ -790,41 +743,16 @@ export default function HomePage() {
                     <p>{selectedMission.species} · {selectedMission.age} р.</p>
                   </div>
                 </div>
-
                 <div className="detail-grid">
-                  <div className="mini-card">
-                    <span>Темперамент</span>
-                    <strong>{selectedMission.temperament || 'Невідомо'}</strong>
-                  </div>
-                  <div className="mini-card">
-                    <span>Вік</span>
-                    <strong>{selectedMission.age} р.</strong>
-                  </div>
-                  {selectedMission.city && (
-                    <div className="mini-card">
-                      <span>Місто</span>
-                      <strong>{selectedMission.city}</strong>
-                    </div>
-                  )}
-                  {selectedMission.weight && (
-                    <div className="mini-card">
-                      <span>Вага</span>
-                      <strong>{selectedMission.weight} кг</strong>
-                    </div>
-                  )}
+                  <div className="mini-card"><span>Темперамент</span><strong>{selectedMission.temperament || 'Невідомо'}</strong></div>
+                  <div className="mini-card"><span>Вік</span><strong>{selectedMission.age} р.</strong></div>
+                  {selectedMission.city && <div className="mini-card"><span>Місто</span><strong>{selectedMission.city}</strong></div>}
+                  {selectedMission.weight && <div className="mini-card"><span>Вага</span><strong>{selectedMission.weight} кг</strong></div>}
                 </div>
-
-                <div className="detail-note">
-                  <p>{selectedMission.description}</p>
-                </div>
-
+                <div className="detail-note"><p>{selectedMission.description}</p></div>
                 <div className="detail-actions">
-                  <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>
-                    Відкрити справу
-                  </button>
-                  <button className="detail-ghost-btn" type="button" onClick={handleArchive}>
-                    Архівувати
-                  </button>
+                  <button className="detail-primary-btn" type="button" onClick={handleOpenCase}>Відкрити справу</button>
+                  <button className="detail-ghost-btn" type="button" onClick={handleArchive}>Архівувати</button>
                 </div>
               </div>
             </aside>
@@ -836,18 +764,11 @@ export default function HomePage() {
             <h3>Додаткова логістика</h3>
             <span className="eyebrow small-no-margin">Черга підтримки</span>
           </div>
-
           {logisticsSeed.map((item) => (
             <button key={item.id} className="logistics-item" type="button">
               <div className="logistics-icon">{item.icon}</div>
-              <div>
-                <h4>{item.title}</h4>
-                <p>{item.detail}</p>
-              </div>
-              <div className="logistics-meta">
-                <strong>{item.eta}</strong>
-                <span>{item.type}</span>
-              </div>
+              <div><h4>{item.title}</h4><p>{item.detail}</p></div>
+              <div className="logistics-meta"><strong>{item.eta}</strong><span>{item.type}</span></div>
             </button>
           ))}
         </section>
@@ -859,31 +780,19 @@ export default function HomePage() {
 
   return (
     <div className="missions-shell">
-      <button
-        className="collapse-btn-fixed"
-        type="button"
-        onClick={() => setSidebarOpen((p) => !p)}
-      >
+      <button className="collapse-btn-fixed" type="button" onClick={() => setSidebarOpen((p) => !p)}>
         {sidebarOpen ? 'Сховати меню' : 'Показати меню'}
       </button>
+
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-          --bg: #07090d;
-          --panel: #11151c;
-          --panel-2: #171c24;
-          --panel-3: #0d1117;
-          --border: rgba(255,255,255,0.08);
-          --text: #f4f7fb;
-          --muted: #9aa4b2;
-          --soft: #6b7280;
-          --accent: #ff6b2b;
-          --shadow: 0 18px 48px rgba(0,0,0,0.24);
-          --radius: 22px;
-          --font-display: 'Playfair Display', serif;
-          --font-body: 'Inter', sans-serif;
+          --bg: #07090d; --panel: #11151c; --panel-2: #171c24; --panel-3: #0d1117;
+          --border: rgba(255,255,255,0.08); --text: #f4f7fb; --muted: #9aa4b2;
+          --soft: #6b7280; --accent: #ff6b2b; --shadow: 0 18px 48px rgba(0,0,0,0.24);
+          --radius: 22px; --font-display: 'Playfair Display', serif; --font-body: 'Inter', sans-serif;
         }
 
         * {
@@ -899,6 +808,14 @@ export default function HomePage() {
           color: var(--text);
           font-family: 'Inter', sans-serif;
         }
+          min-height: calc(100vh - 60px);
+          background: radial-gradient(circle at top right, rgba(255,107,43,0.12), transparent 26%), linear-gradient(180deg, #07090d 0%, #090c11 100%);
+          color: var(--text); font-family: var(--font-body);
+        }
+
+        h1, h2, h3, h4, h5, h6, .new-mission-btn, .modal-submit-btn, .detail-primary-btn,
+        .eyebrow, .command-card h3, .command-card p, .ref-nav-link, .toolbar-btn,
+        .status-pill, .archive-tag, .mini-card span, .form-field label { font-family: var(--font-display); }
 
         .collapse-btn-fixed {
           position: fixed;
@@ -917,6 +834,11 @@ export default function HomePage() {
           font-size: 13px;
           font-weight: 500;
           box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          position: fixed; top: 70px; right: 20px; z-index: 100;
+          border: 1px solid var(--border); background: rgba(17,21,28,0.95);
+          backdrop-filter: blur(12px); color: var(--text); border-radius: 14px;
+          height: 40px; padding: 0 16px; cursor: pointer; font-family: var(--font-body);
+          font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
           transition: transform .18s ease, background .18s ease;
         }
 
@@ -934,6 +856,7 @@ export default function HomePage() {
         .layout.sidebar-open {
           grid-template-columns: 290px minmax(0, 1fr);
         }
+        .collapse-btn-fixed:hover { transform: translateY(-1px); background: #1a1f28; }
 
         .layout.sidebar-closed {
           grid-template-columns: 1fr;
@@ -984,6 +907,9 @@ export default function HomePage() {
           border: none;
           border-radius: 0;
           box-shadow: none;
+          position: fixed; top: 60px; left: 0; width: 188px; height: calc(100vh - 60px);
+          overflow-y: auto; background: linear-gradient(180deg, #05070b 0%, #070912 100%);
+          border-right: 1px solid rgba(255,255,255,0.05); z-index: 30;
         }
 
         .command-card {
@@ -991,6 +917,9 @@ export default function HomePage() {
           display: flex;
           align-items: center;
           gap: 14px;
+          margin: 14px 8px; border: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(180deg, rgba(32,30,54,0.95), rgba(25,24,42,0.92));
+          border-radius: 12px; padding: 8px 10px; display: flex; align-items: center; gap: 9px;
         }
 
         .command-icon {
@@ -1031,6 +960,9 @@ export default function HomePage() {
           color: var(--muted);
           font-family: var(--font-body);
         }
+        .command-icon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(135deg, #ff7b32, #ff5a1f); color: white; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        .command-card h3 { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #f4f4f8; line-height: 1.15; }
+        .command-card p { margin: 3px 0 0; font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: #73778a; line-height: 1.1; font-weight: 600; }
 
         .nav-list {
           display: grid;
@@ -1063,6 +995,10 @@ export default function HomePage() {
           align-items: center;
           gap: 12px;
           text-align: left;
+          position: relative; min-height: 42px; border-radius: 0; padding: 0 13px;
+          color: #6f7385; border: 0; background: transparent;
+          display: flex; align-items: center; gap: 8px;
+          font-size: 12px; font-weight: 500; width: 100%; cursor: pointer; text-align: left;
         }
 
         .ref-nav-link.active,
@@ -1077,6 +1013,16 @@ export default function HomePage() {
         .modal-submit-btn:hover {
           border-color: rgba(255,107,43,0.4);
           background: rgba(255,107,43,0.1);
+        .ref-nav-link:hover { background: rgba(255,255,255,0.02); color: #d5d8e3; }
+        .ref-nav-link.active { background: linear-gradient(90deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04)); color: #ff6b2b; font-weight: 600; }
+        .ref-nav-link.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #ff6b2b; }
+
+        .nav-icon { width: 12px; display: inline-flex; justify-content: center; font-size: 10px; }
+        .sidebar-footer-ref { padding: 12px 8px 14px; display: grid; gap: 6px; }
+
+        .new-mission-btn, .toolbar-btn, .mission-row, .detail-primary-btn,
+        .detail-ghost-btn, .logistics-item, .modal-close-btn, .modal-submit-btn {
+          transition: transform .18s ease, background .18s ease, border-color .18s ease;
         }
 
         .nav-icon {
@@ -1087,6 +1033,8 @@ export default function HomePage() {
           display: grid;
           gap: 10px;
         }
+        .new-mission-btn:hover, .toolbar-btn:hover, .mission-row:hover, .detail-primary-btn:hover,
+        .detail-ghost-btn:hover, .logistics-item:hover, .modal-close-btn:hover, .modal-submit-btn:hover { transform: translateY(-1px); }
 
         .new-mission-btn {
           width: 100%;
@@ -1102,6 +1050,11 @@ export default function HomePage() {
           gap: 16px;
           margin-bottom: 22px;
         }
+        .new-mission-btn { width: 100%; min-height: 40px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #ff7c32, #f35a19); color: white; font-size: 13px; font-weight: 800; letter-spacing: 0.03em; cursor: pointer; }
+
+        .content { min-width: 0; width: 100%; max-width: 100%; display: grid; gap: 24px; transition: padding 0.25s ease; }
+        .content.with-sidebar { padding: 28px 28px 28px 212px; }
+        .content.full-width { padding: 28px; }
 
         .hero-copy {
           max-width: 620px;
@@ -1112,6 +1065,9 @@ export default function HomePage() {
           line-height: 1;
           margin-bottom: 10px;
         }
+        .hero-block { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+        .hero-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: #f4f7fb; }
+        .hero-copy p { margin: 12px 0 0; font-family: var(--font-body); max-width: 620px; color: var(--muted); font-size: 15px; line-height: 1.75; }
 
         .topbar-actions {
           display: flex;
@@ -1128,6 +1084,8 @@ export default function HomePage() {
           font-weight: 600;
           white-space: nowrap;
         }
+        .toolbar-btn, .modal-close-btn { border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 500; }
+        .modal-submit-btn, .detail-primary-btn { border: 0; background: linear-gradient(135deg, #ff7f47 0%, #ff6b2b 100%); color: white; border-radius: 14px; min-height: 46px; padding: 0 16px; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 14px; }
 
         .stats-grid {
           display: grid;
@@ -1139,6 +1097,9 @@ export default function HomePage() {
         .stat-card {
           padding: 18px;
         }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .stat-card, .panel { background: rgba(17,21,28,0.94); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); }
+        .stat-card { padding: 18px; }
 
         .eyebrow {
           display: inline-block;
@@ -1160,6 +1121,10 @@ export default function HomePage() {
           margin-bottom: 6px;
           font-family: var(--font-display);
         }
+        .eyebrow { display: block; margin-bottom: 10px; color: var(--muted); font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+        .small-no-margin { margin-bottom: 0; }
+        .stat-card strong { display: block; font-family: var(--font-display); font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em; color: #f4f7fb; }
+        .stat-card p, .panel-header p, .mission-copy p, .logistics-item p, .simple-row p { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13px; line-height: 1.5; }
 
         .workspace {
           display: grid;
@@ -1189,6 +1154,10 @@ export default function HomePage() {
           flex-wrap: wrap;
           gap: 10px;
         }
+        .panel-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+        .panel-header h3, .logistics-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: #f4f7fb; }
+        .panel-pad { padding: 16px; }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; }
 
         .search,
         .form-input,
@@ -1310,6 +1279,9 @@ export default function HomePage() {
           color: var(--soft);
           font-size: 12px;
         }
+        .mission-topline, .detail-head, .simple-row, .logistics-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .mission-topline h3, .detail-head h3 { margin: 0; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #f4f7fb; }
+        .mission-meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--soft); font-family: var(--font-body); font-size: 12px; }
 
         .status-pill,
         .archive-tag,
@@ -1330,6 +1302,8 @@ export default function HomePage() {
           height: 8px;
           border-radius: 50%;
         }
+        .status-pill, .archive-tag { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 11px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .detail-card {
           overflow: hidden;
@@ -1359,6 +1333,12 @@ export default function HomePage() {
         .hero.archive {
           background: linear-gradient(180deg, #374151 0%, #111827 100%);
         }
+        .detail-card { overflow: hidden; }
+        .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); overflow: hidden; }
+        .hero.danger { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
+        .hero.calm { background: linear-gradient(180deg, #173830 0%, #0d1514 100%); }
+        .hero.watch { background: linear-gradient(180deg, #55451e 0%, #20180b 100%); }
+        .hero.archive { background: linear-gradient(180deg, #374151 0%, #111827 100%); }
 
         .detail-body {
           padding: 20px;
@@ -1376,6 +1356,11 @@ export default function HomePage() {
         .detail-grid {
           grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         }
+        .detail-body { padding: 20px; display: grid; gap: 18px; }
+        .detail-head p { margin: 6px 0 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
+
+        .archive-tag { border: 1px solid var(--border); background: var(--panel-3); color: var(--text); }
+        .detail-grid, .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .mini-card {
           border: 1px solid var(--border);
@@ -1398,6 +1383,10 @@ export default function HomePage() {
           border-radius: 18px;
           padding: 16px;
         }
+        .mini-card, .detail-note { border-radius: 18px; background: var(--panel-3); border: 1px solid var(--border); padding: 16px; }
+        .mini-card span { display: block; color: var(--muted); font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+        .mini-card strong { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: #f4f7fb; }
+        .detail-note p { margin: 0; font-family: var(--font-body); color: #d0d5dd; line-height: 1.75; font-size: 14px; }
 
         .detail-actions,
         .modal-actions {
@@ -1423,6 +1412,9 @@ export default function HomePage() {
         .detail-ghost-btn {
           background: transparent;
         }
+        .detail-actions, .modal-actions { display: flex; gap: 12px; }
+        .detail-primary-btn, .detail-ghost-btn, .modal-close-btn, .modal-submit-btn { flex: 1; min-height: 46px; font-weight: 700; }
+        .detail-ghost-btn { border: 1px solid var(--border); background: var(--panel); color: var(--muted); border-radius: 14px; cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 600; }
 
         .logistics-item {
           display: grid;
@@ -1506,6 +1498,12 @@ export default function HomePage() {
           gap: 10px;
           color: #ffb18b;
         }
+        .logistics-item { text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; cursor: pointer; }
+        .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); font-size: 20px; }
+        .logistics-item h4, .simple-row strong { margin: 0 0 4px; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #f4f7fb; }
+        .logistics-meta { text-align: right; }
+        .logistics-meta strong { display: block; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #f4f7fb; }
+        .logistics-meta span { font-family: var(--font-body); color: var(--muted); font-size: 11px; }
 
         .modal-backdrop {
           position: fixed;
@@ -1598,6 +1596,17 @@ export default function HomePage() {
           color: white;
           border-color: transparent;
         }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .modal-card { width: min(680px, 100%); height: min(88vh, 760px); background: #0f141b; border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden; display: flex; flex-direction: column; margin: auto; }
+        .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .modal-head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; font-weight: 800; color: #f4f7fb; }
+        .modal-head p { margin: 0; font-family: var(--font-body); color: var(--muted); font-size: 13px; }
+        .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .modal-scroll { flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+        .modal-scroll::-webkit-scrollbar { display: none; }
+        .form-field { display: grid; gap: 8px; }
+        .form-field label { font-family: var(--font-display); font-size: 11px; color: #d7dde6; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; }
 
         @media (max-width: 1180px) {
           .workspace {
@@ -1616,6 +1625,7 @@ export default function HomePage() {
           }
         }
 
+        @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
         @media (max-width: 980px) {
           .sidebar {
             position: static;
@@ -1637,7 +1647,6 @@ export default function HomePage() {
             padding: 20px 16px 24px;
           }
         }
-
         @media (max-width: 780px) {
           .hero-block {
             display: flex;
@@ -1705,6 +1714,12 @@ export default function HomePage() {
           .homepage-footer-column button {
             font-size: 15px;
           }
+          .hero-block, .mission-row, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
+          .mission-thumb { width: 100%; height: 120px; }
+          .detail-head, .simple-row, .logistics-head, .controls, .detail-actions, .modal-actions { flex-direction: column; align-items: stretch; }
+          .hero-copy h2 { font-size: 28px; }
+          .modal-card { height: min(92vh, 760px); width: 100%; }
+          .modal-backdrop { padding: 12px; }
         }
       `}</style>
 
@@ -1718,25 +1733,16 @@ export default function HomePage() {
                 <p>СЕКТОР 7 ДЕЛЬТА</p>
               </div>
             </div>
-
             <nav className="nav-list" aria-label="Головна навігація">
               {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
-                  onClick={() => setActiveSection(item.id)}
-                >
+                <button key={item.id} type="button" className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`} onClick={() => setActiveSection(item.id)}>
                   <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
-
             <div className="sidebar-footer-ref">
-              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>
-                + Додати тварину
-              </button>
+              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>+ Додати тварину</button>
             </div>
           </aside>
         ) : null}
@@ -1760,7 +1766,9 @@ export default function HomePage() {
             </div>
 
             <form onSubmit={handleCreateAnimal} style={{ display: 'contents' }}>
+            <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
               <div className="modal-scroll">
+
                 <div className="form-field">
                   <label>Головне фото</label>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1795,6 +1803,7 @@ export default function HomePage() {
                         >
                           ×
                         </button>
+                        <button type="button" onClick={() => { setMainImage(null); setMainPreview(null) }} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
                       </div>
                     )}
 
@@ -1816,6 +1825,7 @@ export default function HomePage() {
                         flexShrink: 0,
                       }}
                     >
+                    <label htmlFor="mainImageInput" style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
                       <span>+</span>
                       <span style={{ fontSize: 10, color: '#444' }}>фото</span>
                     </label>
@@ -1869,6 +1879,7 @@ export default function HomePage() {
                         >
                           ×
                         </button>
+                        <button type="button" onClick={() => { setGallery(prev => prev.filter((_, idx) => idx !== i)); setGalleryPreviews(prev => prev.filter((_, idx) => idx !== i)) }} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
                       </div>
                     ))}
 
@@ -1890,6 +1901,7 @@ export default function HomePage() {
                           flexShrink: 0,
                         }}
                       >
+                      <label style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
                         <span>+</span>
                         <span style={{ fontSize: 10, color: '#444' }}>фото</span>
                         <input
@@ -1897,6 +1909,8 @@ export default function HomePage() {
                           accept="image/*"
                           style={{ display: 'none' }}
                           onChange={(e) => {
+                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                          onChange={e => {
                             const file = e.target.files[0]
                             if (!file) return
                             setGallery((prev) => [...prev, file])
@@ -1914,26 +1928,28 @@ export default function HomePage() {
                     <label htmlFor="name">Ім'я</label>
                     <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} />
                   </div>
-
                   <div className="form-field">
                     <label htmlFor="species">Вид</label>
                     <input id="species" name="species" className="form-input" value={form.species} onChange={handleFormChange} />
                   </div>
-
                   <div className="form-field">
                     <label htmlFor="age">Вік</label>
                     <input id="age" name="age" type="number" className="form-input" value={form.age} onChange={handleFormChange} />
+                    <label htmlFor="age">Вік (років)</label>
+                    <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
                   </div>
-
+                  <div className="form-field">
+                    <label htmlFor="weight">Вага (кг)</label>
+                    <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
+                  </div>
                   <div className="form-field">
                     <label htmlFor="status">Статус</label>
                     <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
                       <option value="needs rescue">Потребує порятунку</option>
+                      <option value="in rescue">В процесі</option>
                       <option value="rescued">Врятовано</option>
-                      <option value="archived">В архіві</option>
                     </select>
                   </div>
-
                   <div className="form-field">
                     <label htmlFor="temperament">Темперамент</label>
                     <input id="temperament" name="temperament" className="form-input" value={form.temperament} onChange={handleFormChange} />
@@ -1949,7 +1965,6 @@ export default function HomePage() {
                     <input id="weight" name="weight" type="number" className="form-input" value={form.weight} onChange={handleFormChange} />
                   </div>
                 </div>
-
                 <div className="form-field">
                   <label htmlFor="description">Опис</label>
                   <textarea
@@ -1978,10 +1993,7 @@ export default function HomePage() {
       <LoginPromptModal
         open={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
-        onLogin={() => {
-          setIsLoginPromptOpen(false)
-          window.dispatchEvent(new CustomEvent('open-auth-modal'))
-        }}
+        onLogin={() => { setIsLoginPromptOpen(false); window.dispatchEvent(new CustomEvent('open-auth-modal')) }}
         onContinueWithoutAccount={() => setIsLoginPromptOpen(false)}
       />
 
@@ -1989,10 +2001,7 @@ export default function HomePage() {
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
-          onSuccess={() => {
-            setShowAuthModal(false)
-            setIsCreateOpen(true)
-          }}
+          onSuccess={() => { setShowAuthModal(false); setIsCreateOpen(true) }}
         />
       )}
 
