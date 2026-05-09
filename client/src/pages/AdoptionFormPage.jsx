@@ -440,7 +440,7 @@ export default function AdoptionFormPage() {
   )
 }
 
-function AnimalCard({ animal, onApply, onClick }) {
+export function AnimalCard({ animal, onApply, onClick }) {
   const [hovered, setHovered] = useState(false)
 
   const badge = animal.status?.toUpperCase() || animal.badge?.toUpperCase()
