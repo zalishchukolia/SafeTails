@@ -5,14 +5,10 @@ import AuthModal from '../components/AuthModal'
 
 const API = 'https://safetails-production-8790.up.railway.app'
 
-// ─── Шрифти ────────────────────────────────────────────────────
-// Заголовки: Merriweather Black (жирний slab-serif як на фото)
-// UI/Body: Inter (чіткий sans)
-const fontTitle   = "'Merriweather', 'Georgia', serif"
-const fontUi      = "'Inter', 'Helvetica Neue', sans-serif"
-const fontBody    = "'Inter', 'Helvetica Neue', sans-serif"
+const fontTitle = "'Merriweather', 'Georgia', serif"
+const fontUi    = "'Inter', 'Helvetica Neue', sans-serif"
+const fontBody  = "'Inter', 'Helvetica Neue', sans-serif"
 
-// ─── SVG-іконки навігації ──────────────────────────────────────
 const NavIcons = {
   dashboard: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +84,7 @@ const logisticsSeed = [
 
 const navItems = [
   { id: 'dashboard', label: 'Дашборд' },
-  { id: 'rescues',   label: <><span>Активні </span><span style={{color:'#ff6b2b'}}>порятунки</span></> },
+  { id: 'rescues',   label: 'Активні порятунки' },
   { id: 'dispatch',  label: 'Диспетчер' },
   { id: 'archive',   label: 'Архів' },
 ]
@@ -464,7 +460,7 @@ export default function HomePage() {
       <>
         <section className="hero-block">
           <div className="hero-copy">
-            <h2>Активні <span style={{color:'#ff6b2b'}}>порятунки</span></h2>
+            <h2>Активні <span style={{ color: '#ff6b2b' }}>порятунки</span></h2>
             <p>Відстежуйте справи, відправляйте команди та переглядайте деталі в одному місці.</p>
           </div>
         </section>
@@ -691,20 +687,18 @@ export default function HomePage() {
         .content.with-sidebar { padding: 28px 28px 28px 224px; }
         .content.full-width   { padding: 28px; }
 
-        /* ── Hero block ── */
         .hero-block { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: start; }
         .hero-copy h2 {
           margin: 0; font-family: var(--font-title);
-          font-size: clamp(38px, 6vw, 70px); font-weight: 900;
-          line-height: 1.0; letter-spacing: -0.02em; color: #f4f7fb;
+          font-size: clamp(30px, 4vw, 46px); font-weight: 700;
+          line-height: 1.05; letter-spacing: -0.01em; color: #f4f7fb;
         }
         .hero-copy p {
-          margin: 16px 0 0; font-family: var(--font-body);
+          margin: 12px 0 0; font-family: var(--font-body);
           max-width: 620px; color: var(--muted);
-          font-size: 16px; line-height: 1.85; font-weight: 400; letter-spacing: 0;
+          font-size: 15px; line-height: 1.75; font-weight: 400;
         }
 
-        /* ── Stats ── */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
         .stat-card {
           background: rgba(17,21,28,0.94); border: 1px solid var(--border);
@@ -718,12 +712,11 @@ export default function HomePage() {
         .small-no-margin { margin-bottom: 0; }
         .stat-card strong {
           display: block; font-family: var(--font-title);
-          font-size: 34px; font-weight: 900; line-height: 1;
-          margin-bottom: 8px; letter-spacing: -0.02em; color: #f4f7fb;
+          font-size: 34px; font-weight: 700; line-height: 1;
+          margin-bottom: 8px; letter-spacing: -0.01em; color: #f4f7fb;
         }
         .stat-card p { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13.5px; line-height: 1.5; }
 
-        /* ── Panel ── */
         .panel { background: rgba(17,21,28,0.94); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); }
         .panel-header {
           padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
@@ -736,7 +729,6 @@ export default function HomePage() {
         .panel-header p { margin: 4px 0 0; color: var(--muted); font-family: var(--font-body); font-size: 14px; }
         .panel-pad { padding: 16px; }
 
-        /* ── Controls ── */
         .controls { display: flex; flex-wrap: wrap; gap: 10px; }
         .search {
           min-width: 200px; border-radius: 999px; border: 1px solid var(--border);
@@ -752,7 +744,6 @@ export default function HomePage() {
         .toolbar-btn:hover { transform: translateY(-1px); background: #1a1f28; color: var(--text); }
         .toolbar-btn.active { background: rgba(255,255,255,0.09); color: var(--text); }
 
-        /* ── Mission list ── */
         .mission-list { display: grid; gap: 10px; padding: 16px; }
 
         .mission-row {
@@ -780,7 +771,7 @@ export default function HomePage() {
         .mission-topline { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .mission-topline h3 {
           margin: 0; font-family: var(--font-title);
-          font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+          font-size: 20px; font-weight: 700; letter-spacing: 0;
           color: #f0f4fb; line-height: 1.15;
         }
         .mission-subline {
@@ -792,7 +783,6 @@ export default function HomePage() {
           color: var(--soft); font-family: var(--font-body); font-size: 13px; margin-top: 4px;
         }
 
-        /* ── Status pill ── */
         .status-pill {
           display: inline-flex; align-items: center; gap: 7px;
           border-radius: 999px; padding: 6px 12px;
@@ -801,10 +791,8 @@ export default function HomePage() {
         }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-        /* ── Workspace ── */
         .workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: 20px; align-items: start; }
 
-        /* ── Detail card ── */
         .detail-card { overflow: hidden; }
         .hero { min-height: 220px; display: grid; place-items: center; font-size: 96px; border-bottom: 1px solid var(--border); overflow: hidden; }
         .hero.danger  { background: linear-gradient(180deg, #5c2622 0%, #241110 100%); }
@@ -835,247 +823,283 @@ export default function HomePage() {
         }
         .detail-primary-btn:hover { transform: translateY(-1px); opacity: .9; }
         .detail-ghost-btn {
-          min-height: 46px; border: 1px solid var(--border);
-          background: transparent; color: var(--muted);
-          border-radius: 14px; cursor: pointer; padding: 0 18px;
-          font-family: var(--font-ui); font-weight: 600; font-size: 14px;
+          flex: 1; min-height: 46px; border: 1px solid var(--border);
+          background: var(--panel); color: var(--muted);
+          border-radius: 14px; cursor: pointer;
+          font-family: var(--font-ui); font-size: 13px; font-weight: 600;
           transition: transform .18s, background .18s;
         }
-        .detail-ghost-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.04); }
+        .detail-ghost-btn:hover { transform: translateY(-1px); background: #1a1f28; }
 
-        /* ── Logistics ── */
-        .logistics { display: grid; gap: 10px; }
-        .logistics-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 8px; }
-        .logistics-head h3 { margin: 0; font-family: var(--font-title); font-size: 18px; font-weight: 700; color: #f4f7fb; }
+        .logistics, .simple-list { display: grid; gap: 12px; }
+        .logistics-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .logistics-head h3 { margin: 0; font-family: var(--font-title); font-size: 19px; font-weight: 700; color: #f4f7fb; }
+
         .logistics-item {
-          display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; align-items: center;
-          background: rgba(17,21,28,0.94); border: 1px solid var(--border);
-          border-radius: 18px; padding: 14px 16px; cursor: pointer; text-align: left;
-          transition: border-color .18s, transform .18s;
-          font-family: var(--font-body);
+          width: 100%; border: 1px solid var(--border); background: var(--panel-2);
+          color: inherit; border-radius: 18px; padding: 14px;
+          text-align: left; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px;
+          align-items: center; cursor: pointer;
+          transition: transform .18s, border-color .18s;
         }
-        .logistics-item:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-1px); }
-        .logistics-icon {
-          width: 48px; height: 48px; border-radius: 14px;
-          display: grid; place-items: center; font-size: 22px;
-          background: var(--panel-2); border: 1px solid var(--border);
-        }
-        .logistics-item h4 { margin: 0 0 4px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--text); }
-        .logistics-item p  { margin: 0; font-family: var(--font-body); font-size: 13px; color: var(--muted); }
-        .logistics-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-        .logistics-meta strong { font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--text); }
-        .logistics-meta span  { font-family: var(--font-ui); font-size: 11px; color: var(--soft); }
+        .logistics-item:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.13); }
+        .logistics-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-3); font-size: 20px; }
+        .logistics-item h4    { margin: 0 0 4px; font-family: var(--font-title); font-size: 16px; font-weight: 700; color: #f4f7fb; }
+        .logistics-item p     { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13.5px; }
+        .logistics-meta strong { display: block; font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: #f4f7fb; text-align: right; }
+        .logistics-meta span   { font-family: var(--font-body); color: var(--soft); font-size: 11px; }
 
-        /* ── Simple list ── */
-        .simple-list { display: grid; gap: 10px; }
         .simple-row {
+          width: 100%; border: 1px solid var(--border); background: var(--panel-2);
+          border-radius: 16px; padding: 14px;
           display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-          padding: 12px; border-radius: 14px; background: var(--panel-3); border: 1px solid var(--border);
         }
-        .simple-row strong { font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--text); display: block; margin-bottom: 4px; }
-        .simple-row p { margin: 0; font-family: var(--font-body); font-size: 13px; color: var(--muted); }
+        .simple-row strong { display: block; font-family: var(--font-title); font-size: 16px; font-weight: 700; color: #f4f7fb; margin-bottom: 4px; }
+        .simple-row p      { margin: 0; color: var(--muted); font-family: var(--font-body); font-size: 13.5px; }
+
         .archive-tag {
-          font-family: var(--font-ui); font-size: 11px; font-weight: 600;
-          color: #9ca3af; background: #374151; border-radius: 999px;
-          padding: 4px 10px; white-space: nowrap;
+          display: inline-flex; align-items: center; border-radius: 999px;
+          padding: 6px 12px; border: 1px solid var(--border); background: var(--panel-3);
+          color: var(--text); font-family: var(--font-ui); font-size: 12px; font-weight: 600; white-space: nowrap;
         }
 
-        /* ── Modal ── */
-        .modal-overlay {
-          position: fixed; inset: 0; z-index: 200;
-          background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
-          display: flex; align-items: center; justify-content: center; padding: 20px;
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.62); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .modal-card {
+          width: min(680px,100%); height: min(88vh,760px);
+          background: #0f141b; border: 1px solid var(--border);
+          border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+          overflow: hidden; display: flex; flex-direction: column; margin: auto;
         }
-        .modal-box {
-          background: #11151c; border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 24px; padding: 32px; width: 100%; max-width: 520px;
-          max-height: 90vh; overflow-y: auto;
+        .modal-head { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .modal-head h3 { margin: 0 0 6px; font-family: var(--font-title); font-size: 22px; font-weight: 700; color: #f4f7fb; }
+        .modal-head p  { margin: 0; font-family: var(--font-body); color: var(--muted); font-size: 14px; }
+        .modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .modal-scroll { flex: 1; min-height: 0; padding: 20px; display: grid; gap: 14px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .modal-scroll::-webkit-scrollbar { display: none; }
+        .form-field { display: grid; gap: 8px; }
+        .form-field label { font-family: var(--font-ui); font-size: 11px; color: #d7dde6; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .form-input, .form-select, .form-textarea {
+          width: 100%; border-radius: 14px; border: 1px solid var(--border);
+          background: var(--panel-3); color: var(--text);
+          padding: 12px 14px; outline: none;
+          font-family: var(--font-body); font-size: 14px;
         }
-        .modal-box h2 {
-          margin: 0 0 6px; font-family: var(--font-title);
-          font-size: 24px; font-weight: 700; color: #f4f7fb;
-        }
-        .modal-box p.sub { margin: 0 0 24px; font-family: var(--font-body); font-size: 14px; color: var(--muted); }
-        .field { margin-bottom: 18px; }
-        .field label { display: block; margin-bottom: 6px; font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--soft); letter-spacing: 0.06em; text-transform: uppercase; }
-        .field input, .field select, .field textarea {
-          width: 100%; background: var(--panel-3); border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 12px; color: var(--text); padding: 11px 14px;
-          font-family: var(--font-body); font-size: 14px; outline: none;
-          transition: border-color .18s;
-        }
-        .field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(255,107,43,0.5); }
-        .field textarea { resize: vertical; min-height: 80px; }
-        .field select option { background: #11151c; }
-        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-textarea { min-height: 110px; resize: vertical; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-actions { padding: 16px 20px 20px; border-top: 1px solid var(--border); background: #0f141b; flex-shrink: 0; display: flex; gap: 12px; }
+        .modal-close-btn  { flex: 1; min-height: 46px; border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 14px; cursor: pointer; font-family: var(--font-ui); font-size: 13px; font-weight: 500; transition: transform .18s; }
+        .modal-close-btn:hover  { transform: translateY(-1px); }
+        .modal-submit-btn { flex: 1; min-height: 46px; border: 0; background: linear-gradient(135deg,#ff7f47,#ff6b2b); color: white; border-radius: 14px; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 14px; transition: transform .18s, opacity .18s; }
+        .modal-submit-btn:hover { transform: translateY(-1px); opacity: .9; }
 
-        .upload-label {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          border: 1.5px dashed rgba(255,255,255,0.15); border-radius: 14px;
-          padding: 18px; cursor: pointer; transition: border-color .18s;
-          font-family: var(--font-body); font-size: 13px; color: var(--muted);
-          gap: 6px; text-align: center;
+        @media (max-width: 1180px) { .workspace { grid-template-columns: 1fr; } }
+        @media (max-width: 980px) {
+          .sidebar { position: static; width: 100%; height: auto; }
+          .content.with-sidebar, .content.full-width { padding: 20px 16px 24px; }
         }
-        .upload-label:hover { border-color: rgba(255,107,43,0.4); }
-        .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .upload-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-
-        .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
-        .modal-actions button { flex: 1; min-height: 46px; border: 0; border-radius: 14px; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 14px; transition: opacity .18s, transform .18s; }
-        .modal-actions button:hover { transform: translateY(-1px); opacity: .9; }
-        .btn-primary { background: linear-gradient(135deg, #ff7f47, #ff6b2b); color: white; }
-        .btn-ghost   { background: rgba(255,255,255,0.07); color: var(--muted); border: 1px solid var(--border) !important; }
+        @media (max-width: 780px) {
+          .hero-block, .detail-grid, .form-grid, .logistics-item { grid-template-columns: 1fr; }
+          .mission-row { grid-template-columns: 1fr; }
+          .mission-thumb { width: 100%; height: 110px; }
+          .mission-topline, .detail-head, .simple-row, .logistics-head,
+          .controls, .detail-actions, .modal-actions { flex-direction: column; align-items: stretch; }
+          .hero-copy h2 { font-size: 28px; }
+          .modal-card { height: min(92vh,760px); width: 100%; }
+          .modal-backdrop { padding: 12px; }
+        }
       `}</style>
 
-      <div className="layout" style={{ display: 'flex' }}>
+      <div className="layout">
         {sidebarOpen && (
-          <nav className="sidebar" aria-label="Головна навігація">
+          <aside className="sidebar">
             <div className="command-card">
-              <div className="command-icon">ST</div>
+              <div className="command-icon">✦</div>
               <div>
-                <h3>SafeTails</h3>
-                <p>Командна панель</p>
+                <h3>Командний центр</h3>
+                <p>Сектор 7 Дельта</p>
               </div>
             </div>
-            <ul className="nav-list" role="list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+
+            <nav className="nav-list" aria-label="Головна навігація">
               {navItems.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
-                    onClick={() => setActiveSection(item.id)}
-                    aria-current={activeSection === item.id ? 'page' : undefined}
-                  >
-                    <span className="nav-icon" aria-hidden="true">{NavIcons[item.id]}</span>
-                    {item.label}
-                  </button>
-                </li>
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`ref-nav-link ${activeSection === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(item.id)}
+                >
+                  <span className="nav-icon" aria-hidden="true">{NavIcons[item.id]}</span>
+                  <span>{item.label}</span>
+                </button>
               ))}
-            </ul>
+            </nav>
+
             <div className="sidebar-footer-ref">
-              <button type="button" className="new-mission-btn" onClick={handleOpenCreateModal}>
-                + Нова місія
+              <button className="new-mission-btn" type="button" onClick={handleOpenCreateModal}>
+                + Додати тварину
               </button>
             </div>
-          </nav>
+          </aside>
         )}
 
-        <main className={`content ${sidebarOpen ? 'with-sidebar' : 'full-width'}`} id="main-content">
+        <main className={`content ${sidebarOpen ? 'with-sidebar' : 'full-width'}`}>
           {renderContent()}
         </main>
       </div>
 
-      <Footer sidebarOpen={sidebarOpen} />
-
+      {/* ── Modal: Create animal ── */}
       {isCreateOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-title">
-          <div className="modal-box">
-            <h2 id="create-title">Нова місія</h2>
-            <p className="sub">Додайте тварину до системи рятування</p>
-            <form onSubmit={handleCreateAnimal}>
-              <div className="field">
-                <label htmlFor="name">Ім'я тварини *</label>
-                <input id="name" name="name" value={form.name} onChange={handleFormChange} placeholder="Наприклад: Барсик" required />
-              </div>
-              <div className="field-row">
-                <div className="field">
-                  <label htmlFor="species">Вид</label>
-                  <select id="species" name="species" value={form.species} onChange={handleFormChange}>
-                    <option value="собака">Собака</option>
-                    <option value="кіт">Кіт</option>
-                    <option value="кролик">Кролик</option>
-                    <option value="птах">Птах</option>
-                    <option value="інше">Інше</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label htmlFor="age">Вік (років)</label>
-                  <input id="age" name="age" type="number" min="0" max="30" value={form.age} onChange={handleFormChange} placeholder="0" />
-                </div>
-              </div>
-              <div className="field-row">
-                <div className="field">
-                  <label htmlFor="city">Місто</label>
-                  <input id="city" name="city" value={form.city} onChange={handleFormChange} placeholder="Київ" />
-                </div>
-                <div className="field">
-                  <label htmlFor="weight">Вага (кг)</label>
-                  <input id="weight" name="weight" type="number" min="0" step="0.1" value={form.weight} onChange={handleFormChange} placeholder="0.0" />
-                </div>
-              </div>
-              <div className="field-row">
-                <div className="field">
-                  <label htmlFor="status">Статус</label>
-                  <select id="status" name="status" value={form.status} onChange={handleFormChange}>
-                    <option value="needs rescue">Потребує порятунку</option>
-                    <option value="in rescue">В процесі</option>
-                    <option value="rescued">Врятовано</option>
-                    <option value="archived">Архів</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label htmlFor="temperament">Темперамент</label>
-                  <select id="temperament" name="temperament" value={form.temperament} onChange={handleFormChange}>
-                    <option value="лагідний">Лагідний</option>
-                    <option value="активний">Активний</option>
-                    <option value="полохливий">Полохливий</option>
-                    <option value="агресивний">Агресивний</option>
-                  </select>
-                </div>
-              </div>
-              <div className="field">
-                <label htmlFor="description">Опис *</label>
-                <textarea id="description" name="description" value={form.description} onChange={handleFormChange} placeholder="Коротко опишіть ситуацію та стан тварини..." required />
-              </div>
-              <div className="field">
-                <label>Головне фото</label>
-                <label className="upload-label">
-                  {mainPreview
-                    ? <img src={mainPreview} alt="preview" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10 }} />
-                    : <><span style={{ fontSize: 24 }}>📷</span><span>Натисніть для завантаження</span></>
-                  }
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) { setMainImage(file); setMainPreview(URL.createObjectURL(file)) }
-                  }} />
-                </label>
-              </div>
-              <div className="field">
-                <label>Галерея (до 5 фото)</label>
-                <label className="upload-label">
-                  <span style={{ fontSize: 24 }}>🖼️</span>
-                  <span>Додати фото до галереї</span>
-                  <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => {
-                    const files = Array.from(e.target.files || []).slice(0, 5)
-                    setGallery(files)
-                    setGalleryPreviews(files.map((f) => URL.createObjectURL(f)))
-                  }} />
-                </label>
-                {galleryPreviews.length > 0 && (
-                  <div className="upload-preview">
-                    {galleryPreviews.map((src, i) => <img key={i} src={src} alt={`gallery-${i}`} />)}
+        <div className="modal-backdrop" onClick={() => setIsCreateOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <h3>Додати нову тварину</h3>
+              <p>Заповніть форму, щоб створити нову рятувальну місію.</p>
+            </div>
+
+            <form className="modal-form" onSubmit={handleCreateAnimal} autoComplete="off">
+              <div className="modal-scroll">
+
+                {/* Головне фото */}
+                <div className="form-field">
+                  <label>Головне фото</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {mainPreview && (
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={mainPreview} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button type="button"
+                          onClick={() => { setMainImage(null); setMainPreview(null) }}
+                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+                      </div>
+                    )}
+                    <label htmlFor="mainImageInput" style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
+                      <span>+</span>
+                      <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                    </label>
+                    <input id="mainImageInput" type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files[0]
+                        if (!file) return
+                        setMainImage(file)
+                        setMainPreview(URL.createObjectURL(file))
+                      }}
+                    />
                   </div>
-                )}
+                </div>
+
+                {/* Галерея */}
+                <div className="form-field">
+                  <label>Галерея (до 3 фото)</label>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {galleryPreviews.map((src, i) => (
+                      <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', border: '2px solid #ff6b2b' }}>
+                          <img src={src} alt={`gallery-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <button type="button"
+                          onClick={() => {
+                            setGallery(prev => prev.filter((_,idx) => idx !== i))
+                            setGalleryPreviews(prev => prev.filter((_,idx) => idx !== i))
+                          }}
+                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ff3b30', border: 'none', color: 'white', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+                      </div>
+                    ))}
+                    {galleryPreviews.length < 3 && (
+                      <label style={{ width: 80, height: 80, borderRadius: 12, border: '2px dashed #333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#555', fontSize: 24, gap: 4, flexShrink: 0 }}>
+                        <span>+</span>
+                        <span style={{ fontSize: 10, color: '#444' }}>фото</span>
+                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files[0]
+                            if (!file) return
+                            setGallery(prev => [...prev, file])
+                            setGalleryPreviews(prev => [...prev, URL.createObjectURL(file)])
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-grid">
+                  <div className="form-field">
+                    <label htmlFor="name">Ім'я тварини</label>
+                    <input id="name" name="name" className="form-input" value={form.name} onChange={handleFormChange} placeholder="Барні" autoComplete="new-password" />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="species">Вид</label>
+                    <select id="species" name="species" className="form-select" value={form.species} onChange={handleFormChange}>
+                      <option value="собака">🐕 Собака</option>
+                      <option value="кіт">🐈 Кіт</option>
+                      <option value="інше">🐾 Інше</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="age">Вік (років)</label>
+                    <input id="age" name="age" type="number" min="0" max="30" className="form-input" value={form.age} onChange={handleFormChange} placeholder="3" />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="weight">Вага (кг)</label>
+                    <input id="weight" name="weight" type="number" min="0" max="200" step="0.1" className="form-input" value={form.weight} onChange={handleFormChange} placeholder="5" />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="status">Статус</label>
+                    <select id="status" name="status" className="form-select" value={form.status} onChange={handleFormChange}>
+                      <option value="needs rescue">Потребує порятунку</option>
+                      <option value="in rescue">В процесі</option>
+                      <option value="rescued">Врятовано</option>
+                      <option value="archived">В архіві</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="temperament">Темперамент</label>
+                    <select id="temperament" name="temperament" className="form-select" value={form.temperament} onChange={handleFormChange}>
+                      <option value="лагідний">Лагідний</option>
+                      <option value="активний">Активний</option>
+                      <option value="спокійний">Спокійний</option>
+                      <option value="грайливий">Грайливий</option>
+                      <option value="незалежний">Незалежний</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="city">Місто знаходження</label>
+                  <input id="city" name="city" className="form-input" value={form.city} onChange={handleFormChange} placeholder="Львів" autoComplete="new-password" />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="description">Опис</label>
+                  <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleFormChange} placeholder="Короткий опис тварини..." />
+                </div>
               </div>
+
               <div className="modal-actions">
-                <button type="button" className="btn-ghost" onClick={() => { setIsCreateOpen(false); resetForm() }}>Скасувати</button>
-                <button type="submit" className="btn-primary">Створити місію</button>
+                <button type="button" className="modal-close-btn" onClick={() => setIsCreateOpen(false)}>Скасувати</button>
+                <button type="submit" className="modal-submit-btn">Зберегти тварину</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {isLoginPromptOpen && (
-        <LoginPromptModal
-          onClose={() => setIsLoginPromptOpen(false)}
-          onLogin={() => { setIsLoginPromptOpen(false); setShowAuthModal(true) }}
+      <LoginPromptModal
+        open={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+        onLogin={() => { setIsLoginPromptOpen(false); window.dispatchEvent(new CustomEvent('open-auth-modal')) }}
+        onContinueWithoutAccount={() => setIsLoginPromptOpen(false)}
+      />
+
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => { setShowAuthModal(false); setIsCreateOpen(true) }}
         />
       )}
 
-      {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
-      )}
+      <Footer sidebarOpen={sidebarOpen} />
     </div>
   )
 }
