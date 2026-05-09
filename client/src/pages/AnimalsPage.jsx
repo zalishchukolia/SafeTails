@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
 
-const font = "'DM Sans', 'Inter', sans-serif"
-const mono = "'DM Mono', 'Courier New', monospace"
+
+// ─── Шрифти ────────────────────────────────────────────────────
+// Заголовки: Merriweather Black (важкий slab-serif як на фото)
+// UI/Body: Inter
+const font  = "'Inter', 'Helvetica Neue', sans-serif"
+const title = "'Merriweather', 'Georgia', serif"
+const mono  = "'DM Mono', 'Courier New', monospace"
+
 
 const getUrgency  = s => s === 'needs rescue' ? 'critical' : s === 'in rescue' ? 'progress' : s === 'rescued' ? 'stable' : s === 'in recovery' ? 'progress' : 'stable'
 const getColor    = u => u === 'critical' ? '#ff3333' : u === 'stable' ? '#22c55e' : '#ff8c00'
 const getLabel    = s => s === 'needs rescue' ? 'URGENT' : s === 'in rescue' ? 'IN RESCUE' : s === 'rescued' ? 'RESCUED' : s === 'in recovery' ? 'IN CARE' : 'AVAILABLE'
 const speciesIcon = s => s === 'кіт' ? '🐈' : '🐕'
+
 
 const BASE_COORDS = [
   [30.52, 50.45], [36.23, 49.99], [34.98, 48.46], [37.80, 47.97],
@@ -14,6 +21,7 @@ const BASE_COORDS = [
   [31.99, 51.49], [30.73, 46.48], [25.34, 48.92], [29.10, 46.48],
   [22.30, 49.83], [32.05, 49.43], [35.14, 47.84], [38.01, 47.10],
 ]
+
 
 const MOCK_ANIMALS = [
   { _id: '0001', name: 'Buddy',  species: 'пес', gender: 'male',   age: 2, status: 'needs rescue', description: 'Found roaming Highway 101. Malnourished but friendly.',     imageUrl: null },
@@ -26,11 +34,13 @@ const MOCK_ANIMALS = [
   { _id: '0008', name: 'Тигр',   species: 'кіт', gender: 'male',   age: 1, status: 'needs rescue', description: 'Kitten found alone near train station. Very young.',        imageUrl: null },
 ]
 
+
 const ALL_LAYERS = [
   { l: 'Critical Units', c: '#ff3333', ua: 'Критичні місії'       },
   { l: 'Rescue Units',   c: '#ff8c00', ua: 'В процесі виконання'  },
   { l: 'Shelter Hubs',   c: '#22c55e', ua: 'Врятовані пухнастики' },
 ]
+
 
 const LAYER_URGENCY_MAP = {
   'Critical Units': 'critical',
@@ -38,7 +48,9 @@ const LAYER_URGENCY_MAP = {
   'Shelter Hubs':   'stable',
 }
 
+
 const DANGER_NAMES = ['Луганська', 'Донецька', 'Запорізька', 'Херсонська', 'Харківська']
+
 
 function AnimalCard({ animal, onClose, isHover }) {
   const urgency  = getUrgency(animal.status)
@@ -51,6 +63,7 @@ function AnimalCard({ animal, onClose, isHover }) {
   const isFemale     = ['female','f','Female','жіноча','дівчинка'].includes(animal.gender) || ['female','f'].includes(animal.sex)
   const genderSymbol = isFemale ? '♀' : '♂'
   const genderLabel  = isFemale ? 'Female' : 'Male'
+
 
   return (
     <div
@@ -71,9 +84,7 @@ function AnimalCard({ animal, onClose, isHover }) {
     >
       <div style={{
         width: 180, flexShrink: 0,
-        background: isCat
-          ? 'linear-gradient(145deg,#f5f0e8,#ede8dc)'
-          : 'linear-gradient(145deg,#f5f0e8,#ede8dc)',
+        background: 'linear-gradient(145deg,#f5f0e8,#ede8dc)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', position: 'relative',
       }}>
@@ -89,6 +100,7 @@ function AnimalCard({ animal, onClose, isHover }) {
         }}>{genderSymbol} {genderLabel}</div>
       </div>
 
+
       <div style={{ flex: 1, padding: '18px 20px', position: 'relative' }}>
         {!isHover && (
           <button onClick={onClose} style={{
@@ -100,23 +112,31 @@ function AnimalCard({ animal, onClose, isHover }) {
           }}>×</button>
         )}
 
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, paddingRight: 32 }}>
-          <span style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', fontFamily: font }}>{animal.name}</span>
+          <span style={{
+            fontSize: 22, fontWeight: 900, color: '#1a1a1a',
+            fontFamily: title, letterSpacing: '-0.02em', lineHeight: 1.1,
+          }}>{animal.name}</span>
           <span style={{
             fontSize: 9, fontWeight: 800, letterSpacing: 1,
             color: '#fff', background: color,
             padding: '3px 10px', borderRadius: 6, flexShrink: 0,
+            fontFamily: font,
           }}>{label}</span>
         </div>
+
 
         <div style={{ fontSize: 11, color: '#777', fontFamily: mono, marginBottom: 12 }}>
           ID: #RC-{idStr} • {isCat ? 'Cat' : 'Dog'} • {age} {ageLabel}
           {animal.city && ` • 📍 ${animal.city}`}
         </div>
 
-        <p style={{ fontSize: 12, color: '#555', lineHeight: 1.65, marginBottom: 16 }}>
+
+        <p style={{ fontSize: 12, color: '#555', lineHeight: 1.65, marginBottom: 16, fontFamily: font }}>
           {animal.description}
         </p>
+
 
         {!isHover && (
           <div style={{ display: 'flex', gap: 10 }}>
@@ -125,17 +145,17 @@ function AnimalCard({ animal, onClose, isHover }) {
               style={{
                 flex: 1, height: 42,
                 background: 'rgba(198, 44, 44, 0.98)',
-                color: '#ccc',  borderRadius: 12,
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font,
+                color: '#fff', border: 'none', borderRadius: 12,
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: font,
               }}>
               Переглянути інформацію
             </button>
-
           </div>
         )}
 
+
         {isHover && (
-          <div style={{ fontSize: 11, color: '#888', fontStyle: 'italic' }}>
+          <div style={{ fontSize: 11, color: '#888', fontStyle: 'italic', fontFamily: font }}>
             Клікни щоб закріпити
           </div>
         )}
@@ -144,11 +164,13 @@ function AnimalCard({ animal, onClose, isHover }) {
   )
 }
 
+
 function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut, onClick }) {
   const divRef              = useRef(null)
   const mapRef              = useRef(null)
   const dangerLayerGroupRef = useRef(null)
   const [ready, setReady]   = useState(false)
+
 
   useEffect(() => {
     if (!document.getElementById('lf-css')) {
@@ -182,6 +204,7 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
       setReady(false)
     }
   }, [])
+
 
   useEffect(() => {
     if (!ready || !mapRef.current) return
@@ -225,6 +248,7 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
     })
   }, [animals, activeLayers, ready])
 
+
   useEffect(() => {
     if (!ready || !mapRef.current || !window.L) return
     const L = window.L
@@ -252,6 +276,7 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
       .catch(() => {})
   }, [showDangerZone, ready])
 
+
   return (
     <>
       <style>{`
@@ -277,12 +302,13 @@ function LeafletMap({ animals, activeLayers, showDangerZone, onHover, onHoverOut
   )
 }
 
+
 export default function AnimalsPage() {
   const [animals, setAnimals]           = useState(MOCK_ANIMALS)
   const [sel, setSel]                   = useState(null)
   const [hovered, setHovered]           = useState(null)
-  // Danger Zones removed from default active layers
   const [activeLayers, setActiveLayers] = useState(['Critical Units', 'Rescue Units', 'Shelter Hubs'])
+
 
   useEffect(() => {
     fetch('https://safetails-production-8790.up.railway.app/api/animals')
@@ -291,17 +317,20 @@ export default function AnimalsPage() {
       .catch(() => {})
   }, [])
 
+
   const toggleLayer    = layer => setActiveLayers(prev =>
     prev.includes(layer) ? prev.filter(l => l !== layer) : [...prev, layer]
   )
   const handleHover    = animal => { if (!sel) setHovered(animal) }
   const handleHoverOut = () => { if (!sel) setHovered(null) }
   const handleClick    = animal => { setSel(animal); setHovered(null) }
-  const showDangerZone = false // Danger Zones layer removed
+  const showDangerZone = false
+
 
   const criticalAnimals   = animals.filter(a => a.status === 'needs rescue')
   const inProgressAnimals = animals.filter(a => a.status === 'in rescue')
   const successAnimals    = animals.filter(a => a.status === 'rescued')
+
 
   const panel = {
     background: 'rgba(8,8,20,0.88)',
@@ -311,15 +340,17 @@ export default function AnimalsPage() {
     borderRadius: 16,
   }
 
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,900&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:4px}
         ::-webkit-scrollbar-thumb{background:#252535;border-radius:2px}
         button:hover{filter:brightness(1.1)}
       `}</style>
+
 
       <div
         style={{
@@ -338,23 +369,31 @@ export default function AnimalsPage() {
           onClick={handleClick}
         />
 
+
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            position: 'absolute', top: 14, left: 14, zIndex: 1000,
-            display: 'flex', flexDirection: 'column', gap: 10,
-            width: 250,
+            position: 'absolute',
+            top: 14,
+            left: 14,
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            width: 320,
           }}
         >
-          {/* ① LIVE OPERATION */}
-          <div style={{ ...panel, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ ...panel, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
                 background: '#22c55e', flexShrink: 0,
                 boxShadow: '0 0 8px #22c55e99',
               }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Активна операція</span>
+              <span style={{
+                fontSize: 14, fontWeight: 900, color: '#fff',
+                fontFamily: title, letterSpacing: '-0.02em',
+              }}>Активна операція</span>
             </div>
             <div style={{ display: 'flex', gap: 0 }}>
               {[
@@ -366,7 +405,7 @@ export default function AnimalsPage() {
                   borderLeft: i === 1 ? '1px solid #1e1e2e' : 'none',
                   paddingLeft: i === 1 ? 14 : 0,
                 }}>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: '#fff', fontFamily: mono, lineHeight: 1 }}>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: '#fff', fontFamily: title, lineHeight: 1, letterSpacing: '-0.03em' }}>
                     {String(val).padStart(2, '0')}
                   </div>
                   <div style={{ fontSize: 8, color: '#444', letterSpacing: 1.5, fontFamily: mono, marginTop: 3 }}>
@@ -377,12 +416,13 @@ export default function AnimalsPage() {
             </div>
           </div>
 
+
           <div style={{ fontSize: 11, fontWeight: 700, color: '#555', fontFamily: mono, letterSpacing: 2, padding: '0 4px' }}>
             Термінова стрічка
           </div>
 
-          {/* ② CRITICAL */}
-          <div style={{ ...panel, borderColor: '#ff333360', padding: '14px 14px', background: 'linear-gradient(135deg, rgba(180,20,20,0.45) 0%, rgba(120,10,10,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
+
+          <div style={{ ...panel, borderColor: '#ff333360', padding: '16px 18px', background: 'linear-gradient(135deg, rgba(180,20,20,0.45) 0%, rgba(120,10,10,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{
                 fontSize: 9, fontWeight: 800, letterSpacing: 1.5, fontFamily: mono,
@@ -392,7 +432,7 @@ export default function AnimalsPage() {
                 {criticalAnimals.length > 0 ? `${criticalAnimals.length} на карті` : 'спокійно'}
               </span>
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 400, fontFamily: font }}>
               {criticalAnimals.length > 0
                 ? `На карті ${criticalAnimals.length} тварин, яким зараз потрібна допомога. Вони самотні, злякані або поранені — і кожна хвилина на рахунку. Волонтери вже сповіщені.`
                 : `Наразі критичних випадків немає. Всі відомі тварини під наглядом або вже в безпеці. Нові сигнали з'являться тут автоматично.`
@@ -400,8 +440,8 @@ export default function AnimalsPage() {
             </div>
           </div>
 
-          {/* ③ IN PROGRESS */}
-          <div style={{ ...panel, borderColor: '#ff8c0060', padding: '14px 14px', background: 'linear-gradient(135deg, rgba(180,90,0,0.45) 0%, rgba(120,55,0,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
+
+          <div style={{ ...panel, borderColor: '#ff8c0060', padding: '16px 18px', background: 'linear-gradient(135deg, rgba(180,90,0,0.45) 0%, rgba(120,55,0,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{
                 fontSize: 9, fontWeight: 800, letterSpacing: 1.5, fontFamily: mono,
@@ -411,7 +451,7 @@ export default function AnimalsPage() {
                 {inProgressAnimals.length > 0 ? `${inProgressAnimals.length} у дорозі` : 'в очікуванні'}
               </span>
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 400, fontFamily: font }}>
               {inProgressAnimals.length > 0
                 ? `${inProgressAnimals.length} рятувальних місій зараз активні. Групи волонтерів у дорозі — тварини отримують допомогу прямо зараз.`
                 : 'Усі рятувальні групи вільні. Чергові волонтери готові до виїзду — очікують підтвердження нових координат.'
@@ -419,8 +459,8 @@ export default function AnimalsPage() {
             </div>
           </div>
 
-          {/* ④ SUCCESS */}
-          <div style={{ ...panel, borderColor: '#22c55e60', padding: '14px 14px', background: 'linear-gradient(135deg, rgba(20,120,60,0.45) 0%, rgba(10,80,35,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
+
+          <div style={{ ...panel, borderColor: '#22c55e60', padding: '16px 18px', background: 'linear-gradient(135deg, rgba(20,120,60,0.45) 0%, rgba(10,80,35,0.35) 100%)', backdropFilter: 'blur(16px)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <span style={{
                 width: 17, height: 17, borderRadius: '50%', background: '#22c55e',
@@ -434,7 +474,7 @@ export default function AnimalsPage() {
                 {successAnimals.length > 0 ? `${successAnimals.length} сьогодні` : 'очікуємо'}
               </span>
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7, fontWeight: 400, fontFamily: font }}>
               {successAnimals.length > 0
                 ? `Сьогодні ${successAnimals.length} пухнастиків знайшли безпечне місце. Вони нагодовані, оглянуті ветеринаром і оточені турботою — попереду нове життя.`
                 : 'Сьогоднішніх порятунків ще не зафіксовано. Але щойно перший пухнастик опиниться в безпеці — ця стрічка стане зеленіти.'
@@ -442,51 +482,72 @@ export default function AnimalsPage() {
             </div>
           </div>
 
-          {/* ⑤ MAP LAYERS */}
-          <div style={{ ...panel, padding: '14px 14px' }}>
+
+          <div style={{ ...panel, padding: '16px 18px' }}>
             <div style={{ fontSize: 9, color: '#444', letterSpacing: 2, fontFamily: mono, marginBottom: 10 }}>
               ШАР КАРТИ
             </div>
             {ALL_LAYERS.map(({ l, c, ua }) => {
               const on = activeLayers.includes(l)
-              const labelUa = ua
               return (
                 <div
                   key={l}
                   onClick={e => { e.stopPropagation(); toggleLayer(l) }}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 10px', marginBottom: 5,
-                    borderRadius: 10, cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 8px',
+                    marginBottom: 5,
+                    borderRadius: 10,
+                    cursor: 'pointer',
                     background: on ? `${c}0e` : 'transparent',
                     border: `1px solid ${on ? c + '28' : '#1e1e2a'}`,
                     transition: 'all 0.15s',
                   }}
                 >
                   <div style={{
-                    width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                    width: 16,
+                    height: 16,
+                    borderRadius: 4,
+                    flexShrink: 0,
                     background: on ? `${c}25` : 'transparent',
                     border: `2px solid ${on ? c : '#2e2e3e'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     transition: 'all 0.15s',
                   }}>
                     {on && <span style={{ color: c, fontSize: 10, fontWeight: 700, lineHeight: 1 }}>✓</span>}
                   </div>
+
                   <span style={{
-                    fontSize: 12, color: on ? '#ccc' : '#444',
-                    fontWeight: on ? 600 : 400, transition: 'color 0.15s', flex: 1,
-                  }}>{labelUa}</span>
+                    fontSize: 12,
+                    color: on ? '#ccc' : '#444',
+                    fontWeight: on ? 600 : 400,
+                    transition: 'color 0.15s',
+                    flex: 1,
+                    minWidth: 0,
+                    fontFamily: font,
+                  }}>
+                    {ua}
+                  </span>
+
                   <div style={{
-                    width: 7, height: 7, borderRadius: '50%',
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
                     background: on ? c : '#2a2a3a',
                     boxShadow: on ? `0 0 6px ${c}88` : 'none',
                     transition: 'all 0.15s',
+                    flexShrink: 0,
                   }} />
                 </div>
               )
             })}
           </div>
         </div>
+
 
         {hovered && !sel && <AnimalCard animal={hovered} onClose={() => {}} isHover={true} />}
         {sel      && <AnimalCard animal={sel}    onClose={() => setSel(null)} isHover={false} />}
