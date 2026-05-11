@@ -10,14 +10,8 @@ const animalSchema = new mongoose.Schema(
     description: { type: String },
     status: {
       type: String,
-      enum: [
-        "Потребує порятунку",
-        "В процесі порятунку",
-        "На відновленні",
-        "Врятовано",
-        "В архіві",
-      ],
-      default: "Потребує порятунку",
+      enum: ["needs rescue", "in rescue", "in recovery", "rescued", "archived"],
+      default: "needs rescue",
     },
     imageUrl: { type: String },
     gallery: [{ type: String }],
